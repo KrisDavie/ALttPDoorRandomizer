@@ -14,17 +14,19 @@ from Text import Uncle_texts, Ganon1_texts, TavernMan_texts, Sahasrahla2_texts, 
 from Text import KingsReturn_texts, Sanctuary_texts, Kakariko_texts, Blacksmiths_texts, DeathMountain_texts, LostWoods_texts, WishingWell_texts, DesertPalace_texts, MountainTower_texts, LinksHouse_texts, Lumberjacks_texts, SickKid_texts, FluteBoy_texts, Zora_texts, MagicShop_texts, Sahasrahla_names
 from Utils import output_path, local_path, int16_as_bytes, int32_as_bytes, snes_to_pc
 from Items import ItemFactory, item_table
+from InitialSram import InitialSram
 from EntranceShuffle import door_addresses
 
 
 JAP10HASH = '03a63945398191337e896e5771f77173'
-RANDOMIZERBASEHASH = 'ac23ab12e7c442515d51370642772c3b'
+RANDOMIZERBASEHASH = '2f55b2be3691b962cf609749263ee447'
 
 
 class JsonRom(object):
 
     def __init__(self):
         self.name = None
+        self.initial_sram = InitialSram()
         self.patches = {}
 
     def write_byte(self, address, value):
@@ -45,6 +47,9 @@ class JsonRom(object):
     def write_int32(self, address, value):
         self.write_bytes(address, int32_as_bytes(value))
 
+    def write_initial_sram(self):
+        self.write_bytes(0x183000, self.initial_sram.get_initial_sram())
+
     def write_to_file(self, file):
         with open(file, 'w') as stream:
             json.dump([self.patches], stream)
@@ -60,6 +65,7 @@ class LocalRom(object):
 
     def __init__(self, file, patch=True):
         self.name = None
+        self.initial_sram = InitialSram()
         with open(file, 'rb') as stream:
             self.buffer = read_rom(stream)
         if patch:
@@ -85,6 +91,9 @@ class LocalRom(object):
     def write_int32s(self, startaddress, values):
         for i, value in enumerate(values):
             self.write_int32(startaddress + (i * 2), value)
+
+    def write_initial_sram(self):
+        self.write_bytes(0x183000, self.initial_sram.get_initial_sram())
 
     def write_to_file(self, file):
         with open(file, 'wb') as outfile:
@@ -558,11 +567,11 @@ def patch_rom(world, player, rom):
 
     # set open mode:
     if world.mode in ['open', 'inverted']:
-        rom.write_byte(0x180032, 0x01)  # open mode
+        init_open_mode_sram(rom)
     if world.mode == 'inverted':
         set_inverted_mode(world, rom)
     elif world.mode == 'standard':
-        rom.write_byte(0x180032, 0x00)  # standard mode
+        init_standard_mode_sram(rom)
 
     uncle_location = world.get_location('Link\'s Uncle', player)
     if uncle_location.item is None or uncle_location.item.name not in ['Master Sword', 'Tempered Sword', 'Fighter Sword', 'Golden Sword', 'Progressive Sword']:
@@ -792,10 +801,9 @@ def patch_rom(world, player, rom):
 
     # set swordless mode settings
     rom.write_byte(0x18003F, 0x01 if world.swords == 'swordless' else 0x00)  # hammer can harm ganon
-    rom.write_byte(0x180040, 0x01 if world.swords == 'swordless' else 0x00)  # open curtains
     rom.write_byte(0x180041, 0x01 if world.swords == 'swordless' else 0x00)  # swordless medallions
-    rom.write_byte(0x180043, 0xFF if world.swords == 'swordless' else 0x00)  # starting sword for link
     rom.write_byte(0x180044, 0x01 if world.swords == 'swordless' else 0x00)  # hammer activates tablets
+    rom.initial_sram.set_swordless_curtains()  # open curtains
 
     # set up clocks for timed modes
     if world.shuffle == 'vanilla':
@@ -811,34 +819,34 @@ def patch_rom(world, player, rom):
         rom.write_int32(0x180200, 0)  # red clock adjustment time (in frames, sint32)
         rom.write_int32(0x180204, 0)  # blue clock adjustment time (in frames, sint32)
         rom.write_int32(0x180208, 0)  # green clock adjustment time (in frames, sint32)
-        rom.write_int32(0x18020C, 0)  # starting time (in frames, sint32)
+        rom.initial_sram.set_starting_timer(0)  # starting time (in frames, sint32)
     elif world.clock_mode == 'ohko':
         rom.write_bytes(0x180190, [0x01, 0x02, 0x01])  # ohko timer with resetable timer functionality
         rom.write_int32(0x180200, 0)  # red clock adjustment time (in frames, sint32)
         rom.write_int32(0x180204, 0)  # blue clock adjustment time (in frames, sint32)
         rom.write_int32(0x180208, 0)  # green clock adjustment time (in frames, sint32)
-        rom.write_int32(0x18020C, 0)  # starting time (in frames, sint32)
+        rom.initial_sram.set_starting_timer(0)  # starting time (in frames, sint32)
     elif world.clock_mode == 'countdown-ohko':
         rom.write_bytes(0x180190, [0x01, 0x02, 0x01])  # ohko timer with resetable timer functionality
         rom.write_int32(0x180200, -100 * 60 * 60 * 60)  # red clock adjustment time (in frames, sint32)
         rom.write_int32(0x180204, 2 * 60 * 60)  # blue clock adjustment time (in frames, sint32)
         rom.write_int32(0x180208, 4 * 60 * 60)  # green clock adjustment time (in frames, sint32)
         if world.difficulty_adjustments == 'normal':
-            rom.write_int32(0x18020C, (10 + ERtimeincrease) * 60 * 60)  # starting time (in frames, sint32)
+            rom.initial_sram.set_starting_timer((10 + ERtimeincrease) * 60)  # starting time (in seconds)
         else:
-            rom.write_int32(0x18020C, int((5 + ERtimeincrease / 2) * 60 * 60))  # starting time (in frames, sint32)
+            rom.initial_sram.set_starting_timer(int((5 + ERtimeincrease / 2) * 60))  # starting time (in seconds)
     if world.clock_mode == 'stopwatch':
         rom.write_bytes(0x180190, [0x02, 0x01, 0x00])  # set stopwatch mode
         rom.write_int32(0x180200, -2 * 60 * 60)  # red clock adjustment time (in frames, sint32)
         rom.write_int32(0x180204, 2 * 60 * 60)  # blue clock adjustment time (in frames, sint32)
         rom.write_int32(0x180208, 4 * 60 * 60)  # green clock adjustment time (in frames, sint32)
-        rom.write_int32(0x18020C, 0)  # starting time (in frames, sint32)
+        rom.initial_sram.set_starting_timer(0)  # starting time (in frames, sint32)
     if world.clock_mode == 'countdown':
         rom.write_bytes(0x180190, [0x01, 0x01, 0x00])  # set countdown, with no reset available
         rom.write_int32(0x180200, -2 * 60 * 60)  # red clock adjustment time (in frames, sint32)
         rom.write_int32(0x180204, 2 * 60 * 60)  # blue clock adjustment time (in frames, sint32)
         rom.write_int32(0x180208, 4 * 60 * 60)  # green clock adjustment time (in frames, sint32)
-        rom.write_int32(0x18020C, (40 + ERtimeincrease) * 60 * 60)  # starting time (in frames, sint32)
+        rom.initial_sram.set_starting_timer((40 + ERtimeincrease) * 60)  # starting time (in seconds)
 
     # set up goals for treasure hunt
     rom.write_bytes(0x180165, [0x0E, 0x28] if world.treasure_hunt_icon == 'Triforce Piece' else [0x0D, 0x28])
@@ -857,14 +865,15 @@ def patch_rom(world, player, rom):
         rom.write_byte(0x180169, 0x02)  # lock aga/ganon tower door with crystals in inverted
     rom.write_byte(0x180171, 0x01 if world.ganon_at_pyramid[player] else 0x00)  # Enable respawning on pyramid after ganon death
     rom.write_byte(0x180173, 0x01) # Bob is enabled
-    rom.write_byte(0x180168, 0x08)  # Spike Cave Damage
+    rom.write_byte(0x180195, 0x08)  # Spike Cave Damage
     rom.write_bytes(0x18016B, [0x04, 0x02, 0x01]) #Set spike cave and MM spike room Cape usage
     rom.write_bytes(0x18016E, [0x04, 0x08, 0x10]) #Set spike cave and MM spike room Cape usage
     rom.write_bytes(0x50563, [0x3F, 0x14]) # disable below ganon chest
     rom.write_byte(0x50599, 0x00) # disable below ganon chest
     rom.write_bytes(0xE9A5, [0x7E, 0x00, 0x24]) # disable below ganon chest
     rom.write_byte(0x18008B, 0x00) # Pyramid Hole not pre-opened
-    rom.write_byte(0x18008C, 0x01 if world.crystals_needed_for_gt == 0 else 0x00) # Pyramid Hole pre-opened if crystal requirement is 0
+    if world.crystals_needed_for_gt == 0:
+        rom.initial_sram.pre_open_ganons_tower()
     rom.write_byte(0xF5D73, 0xF0) # bees are catchable
     rom.write_byte(0xF5F10, 0xF0) # bees are catchable
     rom.write_byte(0x180086, 0x00 if world.aga_randomness else 0x01)  # set blue ball and ganon warp randomness
@@ -874,22 +883,9 @@ def patch_rom(world, player, rom):
     rom.write_byte(0x18017E, 0x01) # Fairy fountains only trade in bottles
     rom.write_byte(0x180034, 0x0A) # starting max bombs
     rom.write_byte(0x180035, 30) # starting max arrows
-    for x in range(0x183000, 0x18304F):
-        rom.write_byte(x, 0) # Zero the initial equipment array
-    rom.write_byte(0x18302C, 0x18) # starting max health
-    rom.write_byte(0x18302D, 0x18) # starting current health
-    rom.write_byte(0x183039, 0x68) # starting abilities, bit array
-    
-    for item in world.precollected_items:
-        if item.player != player:
-            continue
-
-        if item.name == 'Fighter Sword':
-            rom.write_byte(0x183000+0x19, 0x01)
-            rom.write_byte(0x0271A6+0x19, 0x01)
-            rom.write_byte(0x180043, 0x01) # special starting sword byte
-        else:
-            raise RuntimeError("Unsupported pre-collected item: {}".format(item))
+    if world.pseudoboots[player]:
+        rom.write_byte(0x18008E, 0x01)
+    rom.initial_sram.set_starting_equipment(world, player)
 
     rom.write_byte(0x18004A, 0x00 if world.mode != 'inverted' else 0x01)  # Inverted mode
     rom.write_byte(0x18005D, 0x00) # Hammer always breaks barrier
@@ -1043,6 +1039,9 @@ def patch_rom(world, player, rom):
         rom.write_byte(0xFEE41, 0x2A)  # preopen bombable exit
 
     write_strings(rom, world, player)
+
+    # write initial sram
+    rom.write_initial_sram()
 
     # set rom name
     # 21 bytes
@@ -1424,6 +1423,17 @@ def write_strings(rom, world, player):
     (pointers, data) = credits.get_bytes()
     rom.write_bytes(0x181500, data)
     rom.write_bytes(0x76CC0, [byte for p in pointers for byte in [p & 0xFF, p >> 8 & 0xFF]])
+
+def init_open_mode_sram(rom):
+        rom.initial_sram.pre_open_castle_gate();
+        rom.initial_sram.set_progress_indicator(0x02);
+        rom.initial_sram.set_progress_flags(0x14);
+        rom.initial_sram.set_starting_entrance(0x01);
+
+def init_standard_mode_sram(rom):
+        rom.initial_sram.set_progress_indicator(0x00);
+        rom.initial_sram.set_progress_flags(0x0);
+        rom.initial_sram.set_starting_entrance(0x00);
 
 def set_inverted_mode(world, rom):
     rom.write_byte(snes_to_pc(0x0283E0), 0xF0)  # residual portals

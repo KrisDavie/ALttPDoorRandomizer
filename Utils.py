@@ -19,6 +19,12 @@ def snes_to_pc(value):
 def is_bundled():
     return getattr(sys, 'frozen', False)
 
+def count_set_bits(val):
+    if val == 0:
+        return 0
+    else:
+        return (val & 1) + count_set_bits(val >> 1)
+
 def local_path(path):
     if local_path.cached_path is not None:
         return os.path.join(local_path.cached_path, path)
