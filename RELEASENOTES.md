@@ -156,6 +156,10 @@ Same as above but both small keys and bigs keys of the dungeon are not allowed o
 
 #### Volatile
 
+* 1.0.1.12
+	* Inverted bug
+	* Fix for hammerdashing pots, if sprite limit is reached, items won't spawn, error beep won't play either because of other SFX
+	* Killing enemies freeze + hammer results in the droppable item instead of the freeze prize
 * 1.0.1.11
 	* Separated Collection Rate counter from experimental
 	* Added MSU Resume option

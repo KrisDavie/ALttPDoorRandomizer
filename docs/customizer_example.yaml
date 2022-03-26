@@ -102,7 +102,7 @@ bosses:
     Palace of Darkness: Arrghus
     Thieves Town: Blind
     Ganons Tower (top): Vitreous
-startinventory:
+start_inventory:
   1:
     - Pegasus Boots
 

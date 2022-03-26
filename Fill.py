@@ -451,6 +451,8 @@ def distribute_items_restrictive(world, gftower_trash=False, fill_locations=None
 
 def ensure_good_pots(world, write_skips=False):
     for loc in world.get_locations():
+        if loc.item is None:
+            loc.item = ItemFactory('Nothing', loc.player)
         # convert Arrows 5 and Nothing when necessary
         if (loc.item.name in {'Arrows (5)', 'Nothing'}
            and (loc.type != LocationType.Pot or loc.item.player != loc.player)):

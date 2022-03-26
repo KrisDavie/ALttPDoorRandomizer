@@ -17,6 +17,8 @@ class EntrancePool(object):
         self.links_on_mountain = False
         self.decoupled_entrances = []
         self.decoupled_exits = []
+        self.original_entrances = set()
+        self.original_exits = set()
 
         self.world = world
         self.player = player
@@ -48,6 +50,8 @@ def link_entrances_new(world, player):
         avail_pool.exits.add('Inverted Dark Sanctuary Exit')
     inverted_substitution(avail_pool, avail_pool.entrances, True, True)
     inverted_substitution(avail_pool, avail_pool.exits, False, True)
+    avail_pool.original_entrances.update(avail_pool.entrances)
+    avail_pool.original_exits.update(avail_pool.exits)
     default_map = {}
     default_map.update(entrance_map)
     one_way_map = {}
@@ -378,7 +382,7 @@ def do_holes_and_linked_drops(entrances, exits, avail, cross_world, keep_togethe
 
     hole_entrances, hole_targets = [], []
     for hole in drop_map:
-        if hole in entrances and hole in linked_drop_map:
+        if hole in avail.original_entrances and hole in linked_drop_map:
             linked_entrance = linked_drop_map[hole]
             if hole in entrances and linked_entrance in entrances:
                 hole_entrances.append((linked_entrance, hole))

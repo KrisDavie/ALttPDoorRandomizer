@@ -160,14 +160,14 @@ This is done as `<dungeon>: <boss>`
 
 E.g. `Skull Woods: Helmasaur King` for helmacopter. Be sure to turn on at least one enemizer setting for the bosses to actually be randomized.
 
-### startinventory
+### start_inventory
 
 This must be defined by player. Each player number should be listed with a list of items to start with.
 
 This is a yaml list (note the hyphens):
 
 ```
-startinventory:
+start_inventory:
     1:
       - Pegasus Boots
       - Progressive Sword

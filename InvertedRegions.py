@@ -100,7 +100,7 @@ def create_inverted_regions(world, player):
         create_lw_region(player, 'Lake Hylia Island', ['Lake Hylia Island']),
         create_cave_region(player, 'Capacity Upgrade', 'the queen of fairies', ['Capacity Upgrade - Left', 'Capacity Upgrade - Right']),
         create_cave_region(player, 'Two Brothers House', 'a connector', None, ['Two Brothers House Exit (East)', 'Two Brothers House Exit (West)']),
-        create_lw_region(player, 'Maze Race Ledge', ['Maze Race', 'Maze Race Ledge Drop'], ['Two Brothers House (West)', 'Maze Race Mirror Spot']),
+        create_lw_region(player, 'Maze Race Ledge', ['Maze Race'], ['Two Brothers House (West)', 'Maze Race Mirror Spot', 'Maze Race Ledge Drop']),
         create_cave_region(player, '50 Rupee Cave', 'a cave with some cash'),
         create_lw_region(player, 'Desert Ledge', ['Desert Ledge'], ['Desert Palace Entrance (North) Rocks', 'Desert Palace Entrance (West)', 'Desert Ledge Drop']),
         create_lw_region(player, 'Desert Palace Stairs', None, ['Desert Palace Entrance (South)', 'Desert Palace Stairs Mirror Spot']),

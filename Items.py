@@ -14,8 +14,7 @@ def ItemFactory(items, player):
             advancement, priority, type, code, price, pedestal_hint, pedestal_credit, sickkid_credit, zora_credit, witch_credit, fluteboy_credit, hint_text = item_table[item]
             ret.append(Item(item, advancement, priority, type, code, price, pedestal_hint, pedestal_credit, sickkid_credit, zora_credit, witch_credit, fluteboy_credit, hint_text, player))
         else:
-            logging.getLogger('').warning('Unknown Item: %s', item)
-            return None
+            raise RuntimeError(f'Unknown Item: {item}')
 
     if singleton:
         return ret[0]
