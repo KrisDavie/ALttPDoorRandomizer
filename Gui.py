@@ -8,6 +8,7 @@ from DungeonRandomizer import parse_cli
 from source.gui.adjust.overview import adjust_page
 from source.gui.startinventory.overview import startinventory_page
 from source.gui.custom.overview import custom_page
+from source.gui.customizer.overview import customizer_page
 from source.gui.loadcliargs import loadcliargs, loadadjustargs
 from source.gui.randomize.item import item_page
 from source.gui.randomize.entrando import entrando_page
@@ -103,10 +104,12 @@ def guiMain(args=None):
     self.pages["adjust"] = ttk.Frame(self.notebook)
     self.pages["startinventory"] = ttk.Frame(self.notebook)
     self.pages["custom"] = ttk.Frame(self.notebook)
+    self.pages["customizer"] = ttk.Frame(self.notebook)
     self.notebook.add(self.pages["randomizer"], text='Randomize')
     self.notebook.add(self.pages["adjust"], text='Adjust/Patch')
     self.notebook.add(self.pages["startinventory"], text='Starting Inventory')
     self.notebook.add(self.pages["custom"], text='Custom Item Pool')
+    self.notebook.add(self.pages["customizer"], text='Customizer')
     self.notebook.pack()
 
     # randomizer controls
@@ -181,6 +184,9 @@ def guiMain(args=None):
     # Custom Controls
     self.pages["custom"].content = custom_page(self, self.pages["custom"])
     self.pages["custom"].content.pack(side=TOP, fill=BOTH, expand=True)
+
+    self.pages["customizer"].content = customizer_page(self, self.pages["customizer"])
+    self.pages["customizer"].content.pack(side=TOP, fill=BOTH, expand=True)
 
     def validation(P):
         if str.isdigit(P) or P == "":
