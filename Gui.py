@@ -8,13 +8,13 @@ from DungeonRandomizer import parse_cli
 from source.gui.adjust.overview import adjust_page
 from source.gui.startinventory.overview import startinventory_page
 from source.gui.custom.overview import custom_page
-from source.gui.customizer.overview import customizer_page
 from source.gui.loadcliargs import loadcliargs, loadadjustargs
 from source.gui.randomize.item import item_page
 from source.gui.randomize.entrando import entrando_page
 from source.gui.randomize.enemizer import enemizer_page
 from source.gui.randomize.dungeon import dungeon_page
-#from source.gui.randomize.multiworld import multiworld_page
+
+# from source.gui.randomize.multiworld import multiworld_page
 from source.gui.randomize.gameoptions import gameoptions_page
 from source.gui.randomize.generation import generation_page
 from source.gui.bottom import bottom_frame, create_guiargs
@@ -27,9 +27,12 @@ from source.classes.Empty import Empty
 
 def check_python_version(fish):
     import sys
+
     version = sys.version_info
     if version.major < 3 or version.minor < 7:
-        messagebox.showinfo("Door Shuffle " + ESVersion, fish.translate("cli","cli","old.python.version") % sys.version)
+        messagebox.showinfo(
+            "Door Shuffle " + ESVersion, fish.translate("cli", "cli", "old.python.version") % sys.version
+        )
 
 
 def guiMain(args=None):
@@ -43,15 +46,15 @@ def guiMain(args=None):
             args["adjust." + widget] = self.pages["adjust"].content.widgets[widget].storageVar.get()
         with open(os.path.join(settings_path, "settings.json"), "w+") as f:
             f.write(json.dumps(args, indent=2))
-        os.chmod(os.path.join(settings_path, "settings.json"),0o755)
+        os.chmod(os.path.join(settings_path, "settings.json"), 0o755)
 
     # Save settings from GUI
     def save_settings_from_gui(confirm):
         gui_args = vars(create_guiargs(self))
         if self.randomSprite.get():
-            gui_args['sprite'] = 'random'
-        elif gui_args['sprite']:
-            gui_args['sprite'] = gui_args['sprite'].name
+            gui_args["sprite"] = "random"
+        elif gui_args["sprite"]:
+            gui_args["sprite"] = gui_args["sprite"].name
         save_settings(gui_args)
         if confirm:
             messagebox.showinfo("Door Shuffle " + ESVersion, "Settings saved from GUI.")
@@ -59,13 +62,13 @@ def guiMain(args=None):
     # routine for exiting the app
     def guiExit():
         skip_exit = False
-        if self.settings['saveonexit'] == 'ask':
+        if self.settings["saveonexit"] == "ask":
             dosave = messagebox.askyesnocancel("Door Shuffle " + ESVersion, "Save settings before exit?")
             if dosave:
                 save_settings_from_gui(True)
             if dosave is None:
                 skip_exit = True
-        elif self.settings['saveonexit'] == 'always':
+        elif self.settings["saveonexit"] == "always":
             save_settings_from_gui(False)
         if not skip_exit:
             sys.exit(0)
@@ -104,12 +107,10 @@ def guiMain(args=None):
     self.pages["adjust"] = ttk.Frame(self.notebook)
     self.pages["startinventory"] = ttk.Frame(self.notebook)
     self.pages["custom"] = ttk.Frame(self.notebook)
-    self.pages["customizer"] = ttk.Frame(self.notebook)
-    self.notebook.add(self.pages["randomizer"], text='Randomize')
-    self.notebook.add(self.pages["adjust"], text='Adjust/Patch')
-    self.notebook.add(self.pages["startinventory"], text='Starting Inventory')
-    self.notebook.add(self.pages["custom"], text='Custom Item Pool')
-    self.notebook.add(self.pages["customizer"], text='Customizer')
+    self.notebook.add(self.pages["randomizer"], text="Randomize")
+    self.notebook.add(self.pages["adjust"], text="Adjust/Patch")
+    self.notebook.add(self.pages["startinventory"], text="Starting Inventory")
+    self.notebook.add(self.pages["custom"], text="Custom Item Pool")
     self.notebook.pack()
 
     # randomizer controls
@@ -137,7 +138,9 @@ def guiMain(args=None):
     self.pages["randomizer"].notebook.add(self.pages["randomizer"].pages["entrance"], text="Entrances")
 
     # Enemizer
-    self.pages["randomizer"].pages["enemizer"],self.settings = enemizer_page(self.pages["randomizer"].notebook,self.settings)
+    self.pages["randomizer"].pages["enemizer"], self.settings = enemizer_page(
+        self.pages["randomizer"].notebook, self.settings
+    )
     self.pages["randomizer"].notebook.add(self.pages["randomizer"].pages["enemizer"], text="Enemizer")
 
     # Dungeon Shuffle
@@ -145,15 +148,17 @@ def guiMain(args=None):
     self.pages["randomizer"].notebook.add(self.pages["randomizer"].pages["dungeon"], text="Dungeon Shuffle")
 
     # Multiworld
-#    self.pages["randomizer"].pages["multiworld"],self.settings = multiworld_page(self.pages["randomizer"].notebook,self.settings)
-#    self.pages["randomizer"].notebook.add(self.pages["randomizer"].pages["multiworld"], text="Multiworld")
+    #    self.pages["randomizer"].pages["multiworld"],self.settings = multiworld_page(self.pages["randomizer"].notebook,self.settings)
+    #    self.pages["randomizer"].notebook.add(self.pages["randomizer"].pages["multiworld"], text="Multiworld")
 
     # Game Options
     self.pages["randomizer"].pages["gameoptions"] = gameoptions_page(self, self.pages["randomizer"].notebook)
     self.pages["randomizer"].notebook.add(self.pages["randomizer"].pages["gameoptions"], text="Game Options")
 
     # Generation Setup
-    self.pages["randomizer"].pages["generation"],self.settings = generation_page(self.pages["randomizer"].notebook,self.settings)
+    self.pages["randomizer"].pages["generation"], self.settings = generation_page(
+        self.pages["randomizer"].notebook, self.settings
+    )
     self.pages["randomizer"].notebook.add(self.pages["randomizer"].pages["generation"], text="Generation Setup")
 
     # add randomizer notebook to main window
@@ -164,7 +169,11 @@ def guiMain(args=None):
     self.pages["bottom"].pages = {}
     self.pages["bottom"].pages["content"] = bottom_frame(self, self, None)
     ## Save Settings Button
-    savesettingsButton = Button(self.pages["bottom"].pages["content"], text='Save Settings to File', command=lambda: save_settings_from_gui(True))
+    savesettingsButton = Button(
+        self.pages["bottom"].pages["content"],
+        text="Save Settings to File",
+        command=lambda: save_settings_from_gui(True),
+    )
     savesettingsButton.pack(side=RIGHT)
 
     # set bottom frame to main window
@@ -174,7 +183,7 @@ def guiMain(args=None):
     self.randomSprite = BooleanVar()
 
     # Adjuster Controls
-    self.pages["adjust"].content,self.settings = adjust_page(self, self.pages["adjust"], self.settings)
+    self.pages["adjust"].content, self.settings = adjust_page(self, self.pages["adjust"], self.settings)
     self.pages["adjust"].content.pack(side=TOP, fill=BOTH, expand=True)
 
     # Starting Inventory Controls
@@ -185,15 +194,13 @@ def guiMain(args=None):
     self.pages["custom"].content = custom_page(self, self.pages["custom"])
     self.pages["custom"].content.pack(side=TOP, fill=BOTH, expand=True)
 
-    self.pages["customizer"].content = customizer_page(self, self.pages["customizer"])
-    self.pages["customizer"].content.pack(side=TOP, fill=BOTH, expand=True)
-
     def validation(P):
         if str.isdigit(P) or P == "":
             return True
         else:
             return False
-    vcmd=(self.pages["custom"].content.register(validation), '%P')
+
+    vcmd = (self.pages["custom"].content.register(validation), "%P")
 
     # load args
     loadcliargs(self, self.args["load"])
@@ -207,6 +214,6 @@ def guiMain(args=None):
     mainWindow.mainloop()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     args = parse_cli(None)
     guiMain(args)
