@@ -123,7 +123,7 @@ def entrance_customizer_page(top, parent):
 
     def get_loc_by_button(self, button):
         for name, loc in (
-            worlds_data[World.LightWorld]["locations"] | worlds_data[World.DarkWorld]["locations"]
+            {**worlds_data[World.LightWorld]["locations"], **worlds_data[World.DarkWorld]["locations"]}
         ).items():
             if loc["button"] == button[0]:
                 return name
@@ -166,7 +166,7 @@ def entrance_customizer_page(top, parent):
     def mask_locations(self, entrance_type):
         masked = []
         for name, loc in (
-            worlds_data[World.LightWorld]["locations"] | worlds_data[World.DarkWorld]["locations"]
+            {**worlds_data[World.LightWorld]["locations"], **worlds_data[World.DarkWorld]["locations"]}
         ).items():
             if is_dropdown(name) and entrance_type == "Dropdown":
                 self.canvas.itemconfigure(loc["button"], fill="#888", state="disabled")
