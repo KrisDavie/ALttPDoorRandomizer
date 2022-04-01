@@ -36,6 +36,7 @@ item_table = {
     "Arrows (5)": (3, 8),
     "Arrows (10)": (4, 8),
     "Blue Mail": (4, 0),
+    "Progressive Armor": (4, 0),
     "Red Mail": (4, 1),
     "Pegasus Boots": (4, 2),
     "Power Glove": (4, 3),
