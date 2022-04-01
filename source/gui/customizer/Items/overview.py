@@ -60,8 +60,11 @@ def item_customizer_page(top, parent):
             )
 
     def get_loc_by_button(self, button):
-        for name, loc in (worlds_data[World.UnderWorld]["locations"]).items():
+        for name, loc in worlds_data[World.UnderWorld]["locations"].items():
             if loc["button"] == button[0]:
+                return name
+        for name, data in self.placed_items.items():
+            if data["image"] == button[0]:
                 return name
 
     def select_location(self, event):
@@ -74,6 +77,7 @@ def item_customizer_page(top, parent):
         loc_name = get_loc_by_button(self, item)
         print("Selected location:", loc_name)
         self.currently_selected = loc_name
+        self.canvas.itemconfigure(item, fill="orange")
 
         # Show the sprite sheet
         show_sprites(self)
@@ -104,20 +108,22 @@ def item_customizer_page(top, parent):
             lambda event: remove_item(self, event),
         )
 
-    # TODO: Actually remove items
     def remove_item(self, event):
         item = self.canvas.find_closest(event.x, event.y)
         if item in [w["canvas_image"] for w in worlds_data.values()]:
             return
         loc_name = get_loc_by_button(self, item)
-        print("Removed item:", loc_name)
         self.canvas.itemconfigure(item, state="hidden")
+        loc_ref = worlds_data[World.UnderWorld]["locations"][loc_name]["button"]
+        self.canvas.itemconfigure((loc_ref,), state="normal", fill="#0f0")
         del self.placed_items[loc_name]["image"]
         del self.placed_items[loc_name]["sprite"]
 
-    def print_all_items(defined_connections):
+    def print_all_items(placed_items):
         # TODO: Implement
-        bp = {}
+        bp = {"placements": {1: {}}}
+        for loc_name, item_data in placed_items.items():
+            bp["placements"][1][loc_name] = item_data["name"]
 
         print(yaml.dump(bp))
 
@@ -185,18 +191,13 @@ def item_customizer_page(top, parent):
     worlds_data[World.UnderWorld]["canvas_image"] = (
         self.canvas.create_image(BORDER_SIZE, BORDER_SIZE, anchor=NW, image=worlds_data[World.UnderWorld]["map_image"]),
     )
-    # Display locations (and map?)
 
+    # Display locations (and map?)
     for name, loc in worlds_data[World.UnderWorld]["locations"].items():
         worlds_data[World.UnderWorld]["locations"][name]["x"] *= 2
         worlds_data[World.UnderWorld]["locations"][name]["y"] *= 2
 
     display_world_locations(self, World.UnderWorld)
-
-    # change_world(self)
-    # Create a button below the image to change the world
-    # world_button = ttk.Button(self, text="Change World", command=lambda: change_world(self))
-    # world_button.pack()
 
     connections_button = ttk.Button(self, text="List Items", command=lambda: print_all_items(self.placed_items))
     connections_button.pack()

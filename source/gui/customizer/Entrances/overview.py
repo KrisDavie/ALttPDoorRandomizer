@@ -269,9 +269,7 @@ def entrance_customizer_page(top, parent):
     def print_all_connections(defined_connections):
         print_connections = {"entrances": {}, "exits": {}, "two-way": {}}
         for source, target in defined_connections.items():
-            print(source, target)
-            if source in single_entrance_map:
-                print_connections["entrances"][target] = single_entrance_map[source]
+            target = single_entrance_map[target] if target in single_entrance_map else target
             if target in entrance_map:
                 print_connections["two-way"][source] = entrance_map[target]
                 if target == "Links House":
@@ -279,10 +277,16 @@ def entrance_customizer_page(top, parent):
             elif target in default_connections and default_connections[target] != target and not is_dropdown(source):
                 print_connections["two-way"][source] = default_connections[target]
             elif is_dropdown(target):
-                print_connections["entrances"][source] = default_connections[target]
+                print_connections["entrances"][source] = drop_map[target]
             else:
                 print(f"Error finding entrance {source} -> {target}")
-                print_connections["entrances"][target] = source
+                print_connections["entrances"][source] = target
+        if (
+            "Links House" not in print_connections["two-way"]
+            and "Chris Houlihan Room Exit" not in print_connections["exits"].values()
+        ):
+            print_connections["exits"]["Links House"] = "Chris Houlihan Room"
+            print_connections["two-way"]["Links House"] = "Links House Exit"
 
         bp = boilerplate.copy()
         bp["entrances"][1] = print_connections
