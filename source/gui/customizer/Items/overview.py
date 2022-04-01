@@ -35,6 +35,15 @@ def item_customizer_page(top, parent):
         },
     }
 
+    def load_yaml(self, yaml_data):
+        for loc_name, placed_item in yaml_data.items():
+            if loc_name not in worlds_data[World.UnderWorld]["locations"]:
+                continue
+            item = worlds_data[World.UnderWorld]["locations"][loc_name]["button"]
+            if loc_name not in self.placed_items:
+                self.placed_items[loc_name] = {"name": placed_item, "sprite": None}
+            place_item(self, item, placed_item, loc_name)
+
     def display_world_locations(self, world):
         for name, loc in worlds_data[world]["locations"].items():
             if "target" in loc:
@@ -67,23 +76,7 @@ def item_customizer_page(top, parent):
             if data["image"] == button[0]:
                 return name
 
-    def select_location(self, event):
-        item = self.canvas.find_closest(event.x, event.y)
-
-        # Catch when the user clicks on the world rather than a location
-        if item in [w["canvas_image"] for w in worlds_data.values()]:
-            return
-        # Get the location name from the button
-        loc_name = get_loc_by_button(self, item)
-        print("Selected location:", loc_name)
-        self.currently_selected = loc_name
-        self.canvas.itemconfigure(item, fill="orange")
-
-        # Show the sprite sheet
-        show_sprites(self)
-
-        # Hide the circle
-        placed_item = self.placed_items[loc_name]["name"]
+    def place_item(self, item, placed_item, loc_name):
         self.canvas.itemconfigure(item, state="hidden")
 
         # Place a new sprite
@@ -108,6 +101,25 @@ def item_customizer_page(top, parent):
             lambda event: remove_item(self, event),
         )
 
+    def select_location(self, event):
+        item = self.canvas.find_closest(event.x, event.y)
+
+        # Catch when the user clicks on the world rather than a location
+        if item in [w["canvas_image"] for w in worlds_data.values()]:
+            return
+        # Get the location name from the button
+        loc_name = get_loc_by_button(self, item)
+        print("Selected location:", loc_name)
+        self.currently_selected = loc_name
+        self.canvas.itemconfigure(item, fill="orange")
+
+        # Show the sprite sheet
+        show_sprites(self)
+
+        # Hide the circle
+        placed_item = self.placed_items[loc_name]["name"]
+        place_item(self, item, placed_item, loc_name)
+
     def remove_item(self, event):
         item = self.canvas.find_closest(event.x, event.y)
         if item in [w["canvas_image"] for w in worlds_data.values()]:
@@ -118,6 +130,8 @@ def item_customizer_page(top, parent):
         self.canvas.itemconfigure((loc_ref,), state="normal", fill="#0f0")
         del self.placed_items[loc_name]["image"]
         del self.placed_items[loc_name]["sprite"]
+        self.placed_items[loc_name]["image"] = None
+        self.placed_items[loc_name]["sprite"] = None
 
     def print_all_items(placed_items):
         # TODO: Implement
@@ -201,6 +215,8 @@ def item_customizer_page(top, parent):
 
     connections_button = ttk.Button(self, text="List Items", command=lambda: print_all_items(self.placed_items))
     connections_button.pack()
+
+    self.load_yaml = load_yaml
 
     # TODO: Add a new button to store this info somwhere as JSON for the generation
     return self

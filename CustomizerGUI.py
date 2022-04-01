@@ -1,7 +1,9 @@
-from tkinter import Tk, Button, BOTTOM, TOP, StringVar, BooleanVar, X, BOTH, RIGHT, ttk, messagebox
+from tkinter import Tk, Button, BOTTOM, TOP, StringVar, BooleanVar, X, BOTH, RIGHT, ttk, messagebox, filedialog
 from source.gui.customizer.Entrances.overview import entrance_customizer_page
 from source.gui.customizer.Items.overview import item_customizer_page
 from Main import __version__ as ESVersion
+import os
+import yaml
 
 
 def guiMain(args=None):
@@ -10,6 +12,16 @@ def guiMain(args=None):
 
     mainWindow.wm_title("Door Shuffle %s" % ESVersion)
     # mainWindow.protocol("WM_DELETE_WINDOW", guiExit)  # intercept when user clicks the X
+
+    def load_yaml(self):
+        file = filedialog.askopenfilename(
+            filetypes=[("Yaml Files", (".yaml", ".yml")), ("All Files", "*")], initialdir=os.path.join(".")
+        )
+        with open(file, mode="r") as fh:
+            yaml_data = yaml.safe_load(fh)
+        self.pages["underworld_items"].content.load_yaml(
+            self.pages["underworld_items"].content, yaml_data["placements"][1]
+        )
 
     self.notebook = ttk.Notebook(self)
 
@@ -30,6 +42,9 @@ def guiMain(args=None):
 
     self.pages["underworld_items"].content = item_customizer_page(self, self.pages["underworld_items"])
     self.pages["underworld_items"].content.pack(side=TOP, fill=BOTH, expand=True)
+
+    load_data_button = ttk.Button(self, text="Load Customizer Data", command=lambda: load_yaml(self))
+    load_data_button.pack()
 
     mainWindow.mainloop()
 
