@@ -142,6 +142,11 @@ def entrance_customizer_page(top, parent):
                 source_world = get_location_world(source)
                 target_world = get_location_world(target)
                 return source, source_world, target, target_world
+        for source, target in self.defined_connections.items():
+            if source == location:
+                source_world = get_location_world(source)
+                target_world = get_location_world(target)
+                return source, source_world, target, target_world
         return None, None, None, None
 
     def hide_all_connections(self):
@@ -181,17 +186,16 @@ def entrance_customizer_page(top, parent):
             return
         for name in self.masked_locations:
             loc = worlds_data[get_location_world(name)]["locations"][name]
-            if name not in self.defined_connections and name not in self.defined_connections.values():
-                self.canvas.itemconfigure(loc["button"], fill="#0f0", state="normal")
-            else:
-                self.canvas.itemconfigure(loc["button"], fill="#00f", state="normal")
+            colour_node(self, name)
+            self.canvas.itemconfigure(loc["button"], state="normal")
+
         self.masked_locations = []
 
     def select_location(self, event):
         item = self.canvas.find_closest(event.x, event.y)
 
         # Catch when the user clicks on the world rather than a location
-        if item in [w["canvas_image"] for w in worlds_data.values()] or item[0] in self.displayed_connections.values():
+        if item in [w["canvas_image"] for w in worlds_data.values()]:
             return
 
         # Get the location name from the button
@@ -199,6 +203,8 @@ def entrance_customizer_page(top, parent):
 
         if self.select_state == SelectState.NoneSelected:
             if has_source(self, loc_name):
+                draw_connection(self, loc_name)
+                draw_connection(self, self.defined_connections[loc_name])
                 return
             self.masked_locations = mask_locations(self, "Dropdown" if not is_dropdown(loc_name) else "Regular")
             self.canvas.itemconfigure(item, fill="orange")
@@ -208,8 +214,7 @@ def entrance_customizer_page(top, parent):
             if has_target(self, loc_name):
                 return
             unmask_locations(self)
-            self.canvas.itemconfigure(self.source_location, fill="blue")
-            self.canvas.itemconfigure(item, fill="blue")
+
             self.defined_connections[get_loc_by_button(self, self.source_location)] = loc_name
             draw_connection(self, loc_name)
             self.select_state = SelectState.NoneSelected
@@ -221,24 +226,30 @@ def entrance_customizer_page(top, parent):
         idx = list(self.displayed_connections.values()).index(item[0])
         current_source, current_target = list(self.displayed_connections.keys())[idx]
 
-        source_world = (
-            World.LightWorld if current_source in worlds_data[World.LightWorld]["locations"] else World.DarkWorld
-        )
-        target_world = (
-            World.LightWorld if current_target in worlds_data[World.LightWorld]["locations"] else World.DarkWorld
-        )
-
         del self.defined_connections[current_source]
         del self.displayed_connections[(current_source, current_target)]
-        if current_source not in self.defined_connections.values():
-            self.canvas.itemconfigure(worlds_data[source_world]["locations"][current_source]["button"], fill="#0f0")
-        if current_target not in self.defined_connections:
-            self.canvas.itemconfigure(worlds_data[target_world]["locations"][current_target]["button"], fill="#0f0")
+        colour_node(self, current_source)
+        colour_node(self, current_target)
         self.canvas.itemconfigure(item, state="hidden")
+
+    def colour_node(self, loc_name):
+        current_source, source_world, current_target, target_world = get_existing_connection(self, loc_name)
+        for node, world in [(current_source, source_world), (current_target, target_world)]:
+            if node is None:
+                self.canvas.itemconfigure(
+                    worlds_data[get_location_world(loc_name)]["locations"][loc_name]["button"], fill="#0f0"
+                )
+            elif node in self.defined_connections.values() and node in self.defined_connections.keys():
+                self.canvas.itemconfigure(worlds_data[world]["locations"][node]["button"], fill="#00f")
+            elif node in self.defined_connections.values():
+                self.canvas.itemconfigure(worlds_data[world]["locations"][node]["button"], fill="#0ff")
+            elif node in self.defined_connections.keys():
+                self.canvas.itemconfigure(worlds_data[world]["locations"][node]["button"], fill="#ff0")
 
     def draw_connection(self, loc_name):
         current_source, source_world, current_target, target_world = get_existing_connection(self, loc_name)
-
+        if (current_source, current_target) in self.displayed_connections or current_source is None:
+            return
         if current_source == current_target:
             connection_line = self.canvas.create_oval(
                 worlds_data[source_world]["locations"][current_source]["x"] + BORDER_SIZE - 3,
@@ -256,14 +267,17 @@ def entrance_customizer_page(top, parent):
                 fill="red",
                 arrow=LAST,
                 dash=(4, 4) if source_world != target_world else None,
+                activefill="black",
+                activewidth=3,
+                activedash=None,
             )
         self.canvas.tag_bind(
             connection_line,
             "<Button-3>",
             lambda event: remove_connection(self, event),
         )
+        colour_node(self, loc_name)
 
-        # TODO: Make this a tuple of course and target
         self.displayed_connections[(current_source, current_target)] = connection_line
 
     def print_all_connections(defined_connections):
