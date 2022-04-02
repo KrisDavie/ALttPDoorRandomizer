@@ -65,6 +65,30 @@ def entrance_customizer_page(top, parent):
         },
     }
 
+    def load_yaml(self, yaml_data):
+        self.select_state = SelectState.NoneSelected
+        for source, target in list(self.defined_connections.items()):
+            if (source, target) in self.displayed_connections:
+                self.canvas.itemconfig(self.displayed_connections[(source, target)], state="hidden")
+                del self.displayed_connections[(source, target)]
+            del self.defined_connections[source]
+
+        for source, target in yaml_data.items():
+            if target in single_entrance_map:
+                target = single_entrance_map[target]
+            else:
+                for name, loc_map in {
+                    "single_entrance_map": single_entrance_map,
+                    "drop_map": drop_map,
+                    "default_connections": default_connections,
+                    "entrance_map": entrance_map,
+                }.items():
+                    if target in loc_map.values():
+                        idx = list(loc_map.values()).index(target)
+                        target = list(loc_map.keys())[idx]
+            self.defined_connections[source] = target
+            draw_connection(self, target)
+
     def display_world_locations(self, world):
         for name, loc in worlds_data[world]["locations"].items():
             if "target" in loc:
@@ -356,5 +380,6 @@ def entrance_customizer_page(top, parent):
     show_connections_button = ttk.Button(self, text="Show All Connections", command=lambda: show_all_connections(self))
     show_connections_button.pack()
 
+    self.load_yaml = load_yaml
     # TODO: Add a new button to store this info somwhere as JSON for the generation
     return self

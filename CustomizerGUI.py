@@ -22,6 +22,9 @@ def guiMain(args=None):
         self.pages["underworld_items"].content.load_yaml(
             self.pages["underworld_items"].content, yaml_data["placements"][1]
         )
+        all_entrances = {**yaml_data["entrances"][1]["entrances"], **yaml_data["entrances"][1]["two-way"]}
+        self.pages["entrances"].content.load_yaml(self.pages["entrances"].content, all_entrances)
+
 
     self.notebook = ttk.Notebook(self)
 
