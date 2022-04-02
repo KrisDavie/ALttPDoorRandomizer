@@ -3,7 +3,6 @@ from tkinter import ttk, NW, Canvas, LAST
 from PIL import ImageTk, Image
 import source.gui.customizer.location_data as location_data
 from source.overworld.EntranceShuffle2 import entrance_map, default_connections, drop_map, single_entrance_map
-import yaml
 
 # TODO: Do I add underworld? This will be needed for decoupled shuffles
 
@@ -112,38 +111,6 @@ def entrance_customizer_page(top, parent):
                 "<Button-1>",
                 lambda event: select_location(self, event),
             )
-
-    # def change_world(self):
-    # if self.current_world == 'Underworld':
-    #     self.old_world = self.current_world
-    #     self.current_world = 'Overworld'
-    # else:
-    #     self.old_world = World.DarkWorld
-    #     self.current_world = World.LightWorld
-
-    # # Display only the current world, create if needed, hide the old world if it exists
-    # if not sidebyside:
-    #     if worlds_data[self.old_world]["canvas_image"]:
-    #         self.canvas.itemconfigure(worlds_data[self.old_world]["canvas_image"], state="hidden")
-    #     if worlds_data[self.current_world]["canvas_image"]:
-    #         self.canvas.itemconfigure(worlds_data[self.current_world]["canvas_image"], state="normal")
-    #     else:
-    #         worlds_data[self.current_world]["canvas_image"] = (
-    #             self.canvas.create_image(
-    #                 BORDER_SIZE, BORDER_SIZE, anchor=NW, image=worlds_data[self.current_world]["map_image"]
-    #             ),
-    #         )
-    # # Hide the old world's locations
-    # if not sidebyside:
-    #     for name, loc in worlds_data[self.old_world]["locations"].items():
-    #         if "button" in loc:
-    #             location_oval = loc["button"]
-    #             self.canvas.itemconfigure((location_oval,), state="hidden")
-
-    #     self.displayed_connections = hide_all_connections(self)
-
-    # # Create or show the current world's locations
-    # worlds_to_show = [self.current_world] if not sidebyside else [World.LightWorld, World.DarkWorld]
 
     def get_loc_by_button(self, button):
         for name, loc in (
@@ -304,31 +271,29 @@ def entrance_customizer_page(top, parent):
 
         self.displayed_connections[(current_source, current_target)] = connection_line
 
-    def print_all_connections(defined_connections):
-        print_connections = {"entrances": {}, "exits": {}, "two-way": {}}
+    def return_connections(defined_connections):
+        final_connections = {"entrances": {}, "exits": {}, "two-way": {}}
         for source, target in defined_connections.items():
             target = single_entrance_map[target] if target in single_entrance_map else target
+            if source == "Tavern North" or target == "Tavern North":
+                final_connections["entrances"]["Tavern North"] = "Tavern"
+                continue
             if target in entrance_map:
-                print_connections["two-way"][source] = entrance_map[target]
+                final_connections["two-way"][source] = entrance_map[target]
                 if target == "Links House":
-                    print_connections["exits"][source] = "Chris Houlihan Room Exit"
+                    final_connections["exits"][source] = "Chris Houlihan Room Exit"
             elif target in default_connections and default_connections[target] != target and not is_dropdown(source):
-                print_connections["two-way"][source] = default_connections[target]
+                final_connections["two-way"][source] = default_connections[target]
             elif is_dropdown(target):
-                print_connections["entrances"][source] = drop_map[target]
+                final_connections["entrances"][source] = drop_map[target]
             else:
-                print(f"Error finding entrance {source} -> {target}")
-                print_connections["entrances"][source] = target
-        if (
-            "Links House" not in print_connections["two-way"]
-            and "Chris Houlihan Room Exit" not in print_connections["exits"].values()
-        ):
-            print_connections["exits"]["Links House"] = "Chris Houlihan Room"
-            print_connections["two-way"]["Links House"] = "Links House Exit"
+                final_connections["entrances"][source] = target
+        # if "Links House" not in final_connections["two-way"]:
+        #     final_connections["two-way"]["Links House"] = "Links House Exit"
+        if "Chris Houlihan Room Exit" not in final_connections["two-way"].values():
+            final_connections["exits"]["Links House"] = "Chris Houlihan Room Exit"
 
-        bp = boilerplate.copy()
-        bp["entrances"][1] = print_connections
-        print(yaml.dump(bp))
+        return final_connections
 
     # Custom Item Pool
     self = ttk.Frame(parent)
@@ -366,20 +331,13 @@ def entrance_customizer_page(top, parent):
     for world in [World.LightWorld, World.DarkWorld]:
         display_world_locations(self, world)
 
-    # change_world(self)
-    # Create a button below the image to change the world
-    # world_button = ttk.Button(self, text="Change World", command=lambda: change_world(self))
-    # world_button.pack()
-
-    connections_button = ttk.Button(
-        self, text="List Connections", command=lambda: print_all_connections(self.defined_connections)
-    )
-    connections_button.pack()
     hide_connections_button = ttk.Button(self, text="Hide All Connections", command=lambda: hide_all_connections(self))
     hide_connections_button.pack()
     show_connections_button = ttk.Button(self, text="Show All Connections", command=lambda: show_all_connections(self))
     show_connections_button.pack()
 
     self.load_yaml = load_yaml
+    self.return_connections = return_connections
+
     # TODO: Add a new button to store this info somwhere as JSON for the generation
     return self

@@ -25,6 +25,24 @@ def guiMain(args=None):
         all_entrances = {**yaml_data["entrances"][1]["entrances"], **yaml_data["entrances"][1]["two-way"]}
         self.pages["entrances"].content.load_yaml(self.pages["entrances"].content, all_entrances)
 
+    def save_yaml(self):
+        file = filedialog.asksaveasfilename(
+            filetypes=[("Yaml Files", (".yaml", ".yml")), ("All Files", "*")], initialdir=os.path.join(".")
+        )
+        with open(file, mode="w") as fh:
+            yaml_data = {
+                "entrances": {
+                    1: self.pages["entrances"].content.return_connections(
+                        self.pages["entrances"].content.defined_connections
+                    )
+                },
+                "placements": {
+                    1: self.pages["underworld_items"].content.return_placements(
+                        self.pages["underworld_items"].content.placed_items
+                    )
+                },
+            }
+            yaml.dump(yaml_data, fh)
 
     self.notebook = ttk.Notebook(self)
 
@@ -46,6 +64,8 @@ def guiMain(args=None):
     self.pages["underworld_items"].content = item_customizer_page(self, self.pages["underworld_items"])
     self.pages["underworld_items"].content.pack(side=TOP, fill=BOTH, expand=True)
 
+    save_data_button = ttk.Button(self, text="Save Customizer Data", command=lambda: save_yaml(self))
+    save_data_button.pack()
     load_data_button = ttk.Button(self, text="Load Customizer Data", command=lambda: load_yaml(self))
     load_data_button.pack()
 

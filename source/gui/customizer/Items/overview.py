@@ -109,7 +109,6 @@ def item_customizer_page(top, parent):
             return
         # Get the location name from the button
         loc_name = get_loc_by_button(self, item)
-        print("Selected location:", loc_name)
         self.currently_selected = loc_name
         self.canvas.itemconfigure(item, fill="orange")
 
@@ -133,13 +132,11 @@ def item_customizer_page(top, parent):
         self.placed_items[loc_name]["image"] = None
         self.placed_items[loc_name]["sprite"] = None
 
-    def print_all_items(placed_items):
-        # TODO: Implement
-        bp = {"placements": {1: {}}}
+    def return_placements(placed_items):
+        final_placements = {}
         for loc_name, item_data in placed_items.items():
-            bp["placements"][1][loc_name] = item_data["name"]
-
-        print(yaml.dump(bp))
+            final_placements[loc_name] = item_data["name"]
+        return final_placements
 
     # TODO: Refactor this out, will be reused in other places
     def show_sprites(self):
@@ -149,7 +146,6 @@ def item_customizer_page(top, parent):
                 return
             item_name = get_sprite_by_button(self, item)
             parent.placed_items[parent.currently_selected] = {"name": item_name, "sprite": None}
-            print(f"Placed sprite: {item_name} at {parent.currently_selected}")
             self.destroy()
 
         def get_sprite_by_button(self, button):
@@ -213,10 +209,8 @@ def item_customizer_page(top, parent):
 
     display_world_locations(self, World.UnderWorld)
 
-    connections_button = ttk.Button(self, text="List Items", command=lambda: print_all_items(self.placed_items))
-    connections_button.pack()
-
     self.load_yaml = load_yaml
+    self.return_placements = return_placements
 
     # TODO: Add a new button to store this info somwhere as JSON for the generation
     return self
