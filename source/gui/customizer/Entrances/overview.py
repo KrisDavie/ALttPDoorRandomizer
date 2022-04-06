@@ -1,8 +1,8 @@
 from enum import Enum
 from tkinter import ttk, NW, Canvas, LAST
 from PIL import ImageTk, Image
-import source.gui.customizer.location_data as location_data
 from source.overworld.EntranceShuffle2 import entrance_map, default_connections, drop_map, single_entrance_map
+from source.gui.customizer.worlds_data import worlds_data, World
 
 # TODO: Do I add underworld? This will be needed for decoupled shuffles
 
@@ -10,12 +10,6 @@ from source.overworld.EntranceShuffle2 import entrance_map, default_connections,
 class SelectState(Enum):
     NoneSelected = 0
     SourceSelected = 1
-
-
-class World(Enum):
-    LightWorld = 0
-    DarkWorld = 1
-    UnderWorld = 2
 
 
 BORDER_SIZE = 20
@@ -46,24 +40,6 @@ def entrance_customizer_page(top, parent):
         },
     }
 
-    worlds_data = {
-        World.LightWorld: {
-            "locations": location_data.lightworld_coordinates,
-            "map_image": None,
-            "canvas_image": None,
-        },
-        World.DarkWorld: {
-            "locations": location_data.darkworld_coordinates,
-            "map_image": None,
-            "canvas_image": None,
-        },
-        World.UnderWorld: {
-            "locations": {},
-            "map_image": None,
-            "canvas_image": None,
-        },
-    }
-
     def load_yaml(self, yaml_data):
         self.select_state = SelectState.NoneSelected
         for source, target in list(self.defined_connections.items()):
@@ -89,7 +65,7 @@ def entrance_customizer_page(top, parent):
             draw_connection(self, target)
 
     def display_world_locations(self, world):
-        for name, loc in worlds_data[world]["locations"].items():
+        for name, loc in worlds_data[world]["entrances"].items():
             if "target" in loc:
                 fill_col = "blue"
             else:
@@ -102,7 +78,7 @@ def entrance_customizer_page(top, parent):
                     loc["y"] + BORDER_SIZE + 5,
                     fill=fill_col,
                 )
-                worlds_data[world]["locations"][name]["button"] = location_oval
+                worlds_data[world]["entrances"][name]["button"] = location_oval
             else:
                 location_oval = loc["button"]
                 self.canvas.itemconfigure((location_oval,), state="normal")
@@ -114,15 +90,15 @@ def entrance_customizer_page(top, parent):
 
     def get_loc_by_button(self, button):
         for name, loc in (
-            {**worlds_data[World.LightWorld]["locations"], **worlds_data[World.DarkWorld]["locations"]}
+            {**worlds_data[World.LightWorld]["entrances"], **worlds_data[World.DarkWorld]["entrances"]}
         ).items():
             if loc["button"] == button[0]:
                 return name
 
     def get_location_world(loc_name):
-        if loc_name in worlds_data[World.LightWorld]["locations"]:
+        if loc_name in worlds_data[World.LightWorld]["entrances"]:
             return World.LightWorld
-        elif loc_name in worlds_data[World.DarkWorld]["locations"]:
+        elif loc_name in worlds_data[World.DarkWorld]["entrances"]:
             return World.DarkWorld
         else:
             return World.UnderWorld
@@ -162,7 +138,7 @@ def entrance_customizer_page(top, parent):
     def mask_locations(self, entrance_type):
         masked = []
         for name, loc in (
-            {**worlds_data[World.LightWorld]["locations"], **worlds_data[World.DarkWorld]["locations"]}
+            {**worlds_data[World.LightWorld]["entrances"], **worlds_data[World.DarkWorld]["entrances"]}
         ).items():
             if is_dropdown(name) and entrance_type == "Dropdown":
                 self.canvas.itemconfigure(loc["button"], fill="#888", state="disabled")
@@ -176,7 +152,7 @@ def entrance_customizer_page(top, parent):
         if not self.masked_locations:
             return
         for name in self.masked_locations:
-            loc = worlds_data[get_location_world(name)]["locations"][name]
+            loc = worlds_data[get_location_world(name)]["entrances"][name]
             colour_node(self, name)
             self.canvas.itemconfigure(loc["button"], state="normal")
 
@@ -228,14 +204,14 @@ def entrance_customizer_page(top, parent):
         for node, world in [(current_source, source_world), (current_target, target_world)]:
             if node is None:
                 self.canvas.itemconfigure(
-                    worlds_data[get_location_world(loc_name)]["locations"][loc_name]["button"], fill="#0f0"
+                    worlds_data[get_location_world(loc_name)]["entrances"][loc_name]["button"], fill="#0f0"
                 )
             elif node in self.defined_connections.values() and node in self.defined_connections.keys():
-                self.canvas.itemconfigure(worlds_data[world]["locations"][node]["button"], fill="#00f")
+                self.canvas.itemconfigure(worlds_data[world]["entrances"][node]["button"], fill="#00f")
             elif node in self.defined_connections.values():
-                self.canvas.itemconfigure(worlds_data[world]["locations"][node]["button"], fill="#0ff")
+                self.canvas.itemconfigure(worlds_data[world]["entrances"][node]["button"], fill="#0ff")
             elif node in self.defined_connections.keys():
-                self.canvas.itemconfigure(worlds_data[world]["locations"][node]["button"], fill="#ff0")
+                self.canvas.itemconfigure(worlds_data[world]["entrances"][node]["button"], fill="#ff0")
 
     def draw_connection(self, loc_name):
         current_source, source_world, current_target, target_world = get_existing_connection(self, loc_name)
@@ -243,18 +219,18 @@ def entrance_customizer_page(top, parent):
             return
         if current_source == current_target:
             connection_line = self.canvas.create_oval(
-                worlds_data[source_world]["locations"][current_source]["x"] + BORDER_SIZE - 3,
-                worlds_data[source_world]["locations"][current_source]["y"] + BORDER_SIZE - 3,
-                worlds_data[source_world]["locations"][current_source]["x"] + BORDER_SIZE + 3,
-                worlds_data[source_world]["locations"][current_source]["y"] + BORDER_SIZE + 3,
+                worlds_data[source_world]["entrances"][current_source]["x"] + BORDER_SIZE - 3,
+                worlds_data[source_world]["entrances"][current_source]["y"] + BORDER_SIZE - 3,
+                worlds_data[source_world]["entrances"][current_source]["x"] + BORDER_SIZE + 3,
+                worlds_data[source_world]["entrances"][current_source]["y"] + BORDER_SIZE + 3,
                 fill="red",
             )
         else:
             connection_line = self.canvas.create_line(
-                worlds_data[source_world]["locations"][current_source]["x"] + BORDER_SIZE,
-                worlds_data[source_world]["locations"][current_source]["y"] + BORDER_SIZE,
-                worlds_data[target_world]["locations"][current_target]["x"] + BORDER_SIZE,
-                worlds_data[target_world]["locations"][current_target]["y"] + BORDER_SIZE,
+                worlds_data[source_world]["entrances"][current_source]["x"] + BORDER_SIZE,
+                worlds_data[source_world]["entrances"][current_source]["y"] + BORDER_SIZE,
+                worlds_data[target_world]["entrances"][current_target]["x"] + BORDER_SIZE,
+                worlds_data[target_world]["entrances"][current_target]["y"] + BORDER_SIZE,
                 fill="red",
                 arrow=LAST,
                 dash=(4, 4) if source_world != target_world else None,
@@ -307,11 +283,9 @@ def entrance_customizer_page(top, parent):
 
     # Load in the world images
     worlds_data[World.LightWorld]["map_image"] = ImageTk.PhotoImage(
-        Image.open("source\gui\customizer\Entrances\lightworld512.png")
+        Image.open(worlds_data[World.LightWorld]["map_file"])
     )
-    worlds_data[World.DarkWorld]["map_image"] = ImageTk.PhotoImage(
-        Image.open("source\gui\customizer\Entrances\darkworld512.png")
-    )
+    worlds_data[World.DarkWorld]["map_image"] = ImageTk.PhotoImage(Image.open(worlds_data[World.DarkWorld]["map_file"]))
 
     worlds_data[World.LightWorld]["canvas_image"] = (
         self.canvas.create_image(BORDER_SIZE, BORDER_SIZE, anchor=NW, image=worlds_data[World.LightWorld]["map_image"]),
@@ -324,8 +298,8 @@ def entrance_customizer_page(top, parent):
     )
 
     # Offset darkworld locations
-    for name, loc in worlds_data[World.DarkWorld]["locations"].items():
-        worlds_data[World.DarkWorld]["locations"][name]["x"] += self.cwidth
+    for name, loc in worlds_data[World.DarkWorld]["entrances"].items():
+        worlds_data[World.DarkWorld]["entrances"][name]["x"] += self.cwidth
 
     # Display locations (and map?)
     for world in [World.LightWorld, World.DarkWorld]:

@@ -1,9 +1,30 @@
-from tkinter import Tk, Button, BOTTOM, TOP, StringVar, BooleanVar, X, BOTH, RIGHT, ttk, messagebox, filedialog
+from tkinter import Tk, TOP, BOTH, ttk, filedialog
 from source.gui.customizer.Entrances.overview import entrance_customizer_page
 from source.gui.customizer.Items.overview import item_customizer_page
+from source.gui.customizer.worlds_data import World
+
 from Main import __version__ as ESVersion
 import os
 import yaml
+
+# This should be made better
+dungeon_worlds = {
+    "Overworld": World.OverWorld,
+    "Underworld": World.UnderWorld,
+    "Hyrule_Castle": World.HyruleCastle,
+    "Eastern_Palace": World.EasternPalace,
+    "Desert_Palace": World.DesertPalace,
+    "Tower_of_Hera": World.TowerOfHera,
+    "Castle_Tower": World.CastleTower,
+    "Palace_of_Darkness": World.PalaceOfDarkness,
+    "Swamp_Palace": World.SwampPalace,
+    "Skull_Woods": World.SkullWoods,
+    "Thieves_Town": World.ThievesTown,
+    "Ice_Palace": World.IcePalace,
+    "Misery_Mire": World.MiseryMire,
+    "Turtle_Rock": World.TurtleRock,
+    "Ganons_Tower": World.GanonsTower,
+}
 
 
 def guiMain(args=None):
@@ -19,9 +40,12 @@ def guiMain(args=None):
         )
         with open(file, mode="r") as fh:
             yaml_data = yaml.safe_load(fh)
-        self.pages["underworld_items"].content.load_yaml(
-            self.pages["underworld_items"].content, yaml_data["placements"][1]
-        )
+
+        for dungeon in dungeon_worlds.keys():
+            self.pages["items"].pages[dungeon].content.load_yaml(
+                self.pages["items"].pages[dungeon].content, yaml_data["placements"][1]
+            )
+
         all_entrances = {**yaml_data["entrances"][1]["entrances"], **yaml_data["entrances"][1]["two-way"]}
         self.pages["entrances"].content.load_yaml(self.pages["entrances"].content, all_entrances)
 
@@ -36,12 +60,17 @@ def guiMain(args=None):
                         self.pages["entrances"].content.defined_connections
                     )
                 },
-                "placements": {
-                    1: self.pages["underworld_items"].content.return_placements(
-                        self.pages["underworld_items"].content.placed_items
-                    )
-                },
+                "placements": {1: {}},
             }
+            for item_world in self.pages["items"].pages:
+                for loc, item in (
+                    self.pages["items"]
+                    .pages[item_world]
+                    .content.return_placements(self.pages["items"].pages[item_world].content.placed_items)
+                    .items()
+                ):
+
+                    yaml_data["placements"][1].update({loc: item})
             yaml.dump(yaml_data, fh)
 
     self.notebook = ttk.Notebook(self)
@@ -53,17 +82,25 @@ def guiMain(args=None):
     self.frames = {}
 
     self.pages["entrances"] = ttk.Frame(self.notebook)
-    self.pages["underworld_items"] = ttk.Frame(self.notebook)
+    self.pages["items"] = ttk.Frame(self.notebook)
     self.notebook.add(self.pages["entrances"], text="Entrances")
-    self.notebook.add(self.pages["underworld_items"], text="Items (Underworld)")
+    self.notebook.add(self.pages["items"], text="Items")
     self.notebook.pack()
+
+    self.pages["items"].notebook = ttk.Notebook(self.pages["items"])
+    self.pages["items"].pages = {}
 
     self.pages["entrances"].content = entrance_customizer_page(self, self.pages["entrances"])
     self.pages["entrances"].content.pack(side=TOP, fill=BOTH, expand=True)
 
-    self.pages["underworld_items"].content = item_customizer_page(self, self.pages["underworld_items"])
-    self.pages["underworld_items"].content.pack(side=TOP, fill=BOTH, expand=True)
-
+    for dungeon, world in dungeon_worlds.items():
+        self.pages["items"].pages[dungeon] = ttk.Frame(self.pages["items"].notebook)
+        self.pages["items"].notebook.add(self.pages["items"].pages[dungeon], text=dungeon.replace("_", " "))
+        self.pages["items"].pages[dungeon].content = item_customizer_page(
+            self, self.pages["items"].pages[dungeon], world
+        )
+        self.pages["items"].pages[dungeon].content.pack(side=TOP, fill=BOTH, expand=True)
+    self.pages["items"].notebook.pack()
     save_data_button = ttk.Button(self, text="Save Customizer Data", command=lambda: save_yaml(self))
     save_data_button.pack()
     load_data_button = ttk.Button(self, text="Load Customizer Data", command=lambda: load_yaml(self))
