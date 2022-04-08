@@ -3,6 +3,7 @@ from tkinter import Toplevel, ttk, NW, Canvas
 from PIL import ImageTk, Image, ImageOps
 import source.gui.customizer.item_sprite_data as item_sprite_data
 from source.gui.customizer.worlds_data import worlds_data
+from pathlib import Path
 
 
 class SelectState(Enum):
@@ -11,6 +12,8 @@ class SelectState(Enum):
 
 
 BORDER_SIZE = 20
+
+item_sheet_path = Path("resources") / "app" / "gui" / "plandomizer" / "maps" / "Item_Sheet.png"
 
 
 def item_customizer_page(top, parent, tab_world):
@@ -68,7 +71,7 @@ def item_customizer_page(top, parent, tab_world):
         sprite_y, sprite_x = item_sprite_data.item_table[placed_item]
         self.placed_items[loc_name]["sprite"] = ImageTk.PhotoImage(
             ImageOps.expand(
-                Image.open("source\\gui\\customizer\\Item_Sheet.png").crop(
+                Image.open(item_sheet_path).crop(
                     (sprite_x * 16, sprite_y * 16, sprite_x * 16 + 16, sprite_y * 16 + 16)
                 ),
                 1,
@@ -175,9 +178,7 @@ def item_customizer_page(top, parent, tab_world):
             sprite_window, width=544 + (BORDER_SIZE * 2), height=288 + (BORDER_SIZE * 2), background="black"
         )
         sprite_window.canvas.pack()
-        sprite_window.spritesheet = ImageTk.PhotoImage(
-            Image.open("source\\gui\\customizer\\Item_Sheet.png").resize((544, 288))
-        )
+        sprite_window.spritesheet = ImageTk.PhotoImage(Image.open(item_sheet_path).resize((544, 288)))
         sprite_window.image = sprite_window.canvas.create_image(
             0 + BORDER_SIZE, 0 + BORDER_SIZE, anchor=NW, image=sprite_window.spritesheet
         )
