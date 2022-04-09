@@ -167,8 +167,8 @@ def item_customizer_page(top, parent, tab_world):
         sprite_window = Toplevel(self)
         w = top.winfo_x()
         h = top.winfo_y()
-        x = w + parent_event.x - 272
-        y = h + parent_event.y - 144
+        x = max(0, min(w + parent_event.x - 544, self.winfo_screenwidth() - 544))
+        y = max(0, min(h + parent_event.y - 288, self.winfo_screenheight() - 288))
         sprite_window.geometry(f"{544 + (BORDER_SIZE * 2)}x{288 + (BORDER_SIZE * 2)}+{int(x)}+{int(y)}")
         sprite_window.title("Sprites Window")
         sprite_window.focus_set()
