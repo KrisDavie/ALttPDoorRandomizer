@@ -328,6 +328,8 @@ def load_yaml(path):
                 return yaml.load(f, Loader=yaml.SafeLoader)
         elif urllib.parse.urlparse(path).scheme:
             return yaml.load(urllib.request.urlopen(path), Loader=yaml.FullLoader)
+        else:
+            raise exc
     except Exception as e:
         raise Exception(f'Failed to read customizer file: {e}')
 

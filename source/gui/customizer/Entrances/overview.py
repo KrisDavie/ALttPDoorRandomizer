@@ -250,7 +250,15 @@ def entrance_customizer_page(top, parent):
 
     def return_connections(defined_connections):
         final_connections = {"entrances": {}, "exits": {}, "two-way": {}}
+        er_type = 'vanilla'
+        if len(defined_connections) == 0:
+            return final_connections, False
         for source, target in defined_connections.items():
+            if er_type != 'crossed':
+                er_type = 'full'
+                _, source_world, _, target_world = get_existing_connection(self, source)
+                if source_world != target_world:
+                    er_type = 'crossed'
             target = single_entrance_map[target] if target in single_entrance_map else target
             if source == "Tavern North" or target == "Tavern North":
                 final_connections["entrances"]["Tavern North"] = "Tavern"
@@ -265,12 +273,12 @@ def entrance_customizer_page(top, parent):
                 final_connections["entrances"][source] = drop_map[target]
             else:
                 final_connections["entrances"][source] = target
-        # if "Links House" not in final_connections["two-way"]:
-        #     final_connections["two-way"]["Links House"] = "Links House Exit"
+        if "Links House" not in final_connections["two-way"]:
+            final_connections["two-way"]["Links House"] = "Links House Exit"
         if "Chris Houlihan Room Exit" not in final_connections["two-way"].values():
             final_connections["exits"]["Links House"] = "Chris Houlihan Room Exit"
 
-        return final_connections
+        return final_connections, er_type
 
     # Custom Item Pool
     self = ttk.Frame(parent)

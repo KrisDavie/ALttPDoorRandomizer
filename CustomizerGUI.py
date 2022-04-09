@@ -53,14 +53,17 @@ def customizerGUI(top=None):
         self.pages["entrances"].content.load_yaml(self.pages["entrances"].content, all_entrances)
 
     def save_yaml(self, save=True):
-        yaml_data = {
-            "entrances": {
-                1: self.pages["entrances"].content.return_connections(
-                    self.pages["entrances"].content.defined_connections
-                )
-            },
-            "placements": {1: {}},
-        }
+        yaml_data = {}
+        entrances, er_type = self.pages["entrances"].content.return_connections(
+            self.pages["entrances"].content.defined_connections
+        )
+        if er_type:
+            yaml_data["settings"] = {1: {"shuffle": er_type}}
+        if len(entrances["entrances"]) + len(entrances["two-way"]) + len(entrances["exits"]) > 0:
+            yaml_data["entrances"] = {1: entrances}
+
+        yaml_data["placements"] = {1: {}}
+
         for item_world in self.pages["items"].pages:
             for loc, item in (
                 self.pages["items"]
@@ -70,8 +73,13 @@ def customizerGUI(top=None):
             ):
 
                 yaml_data["placements"][1].update({loc: item})
+        if len(yaml_data["placements"][1]) == 0:
+            del yaml_data["placements"]
         if not save:
-            return yaml_data
+            if len(yaml_data) == 0:
+                return None
+            else:
+                return yaml_data
         file = filedialog.asksaveasfilename(
             filetypes=[("Yaml Files", (".yaml", ".yml")), ("All Files", "*")], initialdir=os.path.join(".")
         )
@@ -114,9 +122,10 @@ def customizerGUI(top=None):
     def close_window():
         if top:
             self.withdraw()
+            yaml_data = save_yaml(self, save=False)
             top.widgets["plandomizer"].window = self
-            top.widgets["plandomizer"].storageVar.set(save_yaml(self, False))
-            top.widgets["customizer"].storageVar.set(save_yaml(self, False))
+            top.widgets["plandomizer"].storageVar.set(yaml_data)
+            top.widgets["customizer"].storageVar.set(yaml_data)
         else:
             self.destroy()
 
