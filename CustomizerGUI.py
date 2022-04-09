@@ -1,4 +1,4 @@
-from tkinter import Tk, TOP, BOTH, ttk, filedialog
+from tkinter import Tk, TOP, BOTH, Toplevel, ttk, filedialog
 from source.gui.customizer.Entrances.overview import entrance_customizer_page
 from source.gui.customizer.Items.overview import item_customizer_page
 from source.gui.customizer.worlds_data import World
@@ -27,12 +27,15 @@ dungeon_worlds = {
 }
 
 
-def guiMain(args=None):
-    mainWindow = Tk()
+def customizerGUI(top=None):
+    if top is None:
+        mainWindow = Tk()
+    else:
+        mainWindow = Toplevel(top)
+
     self = mainWindow
 
     mainWindow.wm_title("Door Shuffle %s" % ESVersion)
-    # mainWindow.protocol("WM_DELETE_WINDOW", guiExit)  # intercept when user clicks the X
 
     def load_yaml(self):
         file = filedialog.askopenfilename(
@@ -49,28 +52,30 @@ def guiMain(args=None):
         all_entrances = {**yaml_data["entrances"][1]["entrances"], **yaml_data["entrances"][1]["two-way"]}
         self.pages["entrances"].content.load_yaml(self.pages["entrances"].content, all_entrances)
 
-    def save_yaml(self):
+    def save_yaml(self, save=True):
+        yaml_data = {
+            "entrances": {
+                1: self.pages["entrances"].content.return_connections(
+                    self.pages["entrances"].content.defined_connections
+                )
+            },
+            "placements": {1: {}},
+        }
+        for item_world in self.pages["items"].pages:
+            for loc, item in (
+                self.pages["items"]
+                .pages[item_world]
+                .content.return_placements(self.pages["items"].pages[item_world].content.placed_items)
+                .items()
+            ):
+
+                yaml_data["placements"][1].update({loc: item})
+        if not save:
+            return yaml_data
         file = filedialog.asksaveasfilename(
             filetypes=[("Yaml Files", (".yaml", ".yml")), ("All Files", "*")], initialdir=os.path.join(".")
         )
         with open(file, mode="w") as fh:
-            yaml_data = {
-                "entrances": {
-                    1: self.pages["entrances"].content.return_connections(
-                        self.pages["entrances"].content.defined_connections
-                    )
-                },
-                "placements": {1: {}},
-            }
-            for item_world in self.pages["items"].pages:
-                for loc, item in (
-                    self.pages["items"]
-                    .pages[item_world]
-                    .content.return_placements(self.pages["items"].pages[item_world].content.placed_items)
-                    .items()
-                ):
-
-                    yaml_data["placements"][1].update({loc: item})
             yaml.dump(yaml_data, fh)
 
     self.notebook = ttk.Notebook(self)
@@ -106,8 +111,19 @@ def guiMain(args=None):
     load_data_button = ttk.Button(self, text="Load Customizer Data", command=lambda: load_yaml(self))
     load_data_button.pack()
 
+    def close_window():
+        if top:
+            self.withdraw()
+            top.widgets["plandomizer"].window = self
+            top.widgets["plandomizer"].storageVar.set(save_yaml(self, False))
+            top.widgets["customizer"].storageVar.set(save_yaml(self, False))
+        else:
+            self.destroy()
+
+    mainWindow.protocol("WM_DELETE_WINDOW", close_window)
+
     mainWindow.mainloop()
 
 
 if __name__ == "__main__":
-    guiMain()
+    customizerGUI()

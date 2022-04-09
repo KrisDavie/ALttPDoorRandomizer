@@ -13,7 +13,7 @@ class SelectState(Enum):
 
 BORDER_SIZE = 20
 
-item_sheet_path = Path("resources") / "app" / "gui" / "plandomizer" / "maps" / "Item_Sheet.png"
+item_sheet_path = Path("resources") / "app" / "gui" / "plandomizer" / "Item_Sheet.png"
 
 
 def item_customizer_page(top, parent, tab_world):
@@ -33,12 +33,13 @@ def item_customizer_page(top, parent, tab_world):
             place_item(self, item, placed_item, loc_name)
 
     def display_world_locations(self, world):
+        objects = self.canvas.find_all()
         for name, loc in worlds_data[world]["locations"].items():
             if "target" in loc:
                 fill_col = "blue"
             else:
                 fill_col = "#0f0"
-            if "button" not in loc:
+            if "button" not in loc or loc["button"] not in objects:
                 location_oval = self.canvas.create_oval(
                     loc["x"] + BORDER_SIZE - 5,
                     loc["y"] + BORDER_SIZE - 5,

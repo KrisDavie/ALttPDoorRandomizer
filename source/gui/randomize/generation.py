@@ -1,6 +1,7 @@
 from tkinter import ttk, filedialog, StringVar, Button, Entry, Frame, Label, E, W, LEFT, X, Text, Tk, INSERT
 import source.classes.diags as diagnostics
 import source.gui.widgets as widgets
+from CustomizerGUI import customizerGUI
 import json
 import os
 from functools import partial
@@ -120,6 +121,37 @@ def generation_page(parent,settings):
     self.widgets[widget].pieces["button"].pack(side=LEFT)
     # frame: pack
     self.widgets[widget].pieces["frame"].pack(fill=X)
+
+    widget = "plandomizer"
+
+    # Empty object
+    self.widgets[widget] = Empty()
+    # pieces
+    self.widgets[widget].pieces = {}
+
+    self.widgets[widget].window = None
+    self.widgets[widget].storageVar = StringVar()
+
+    # frame
+    self.frames[widget] = Frame(self)
+    self.frames[widget].pack()
+    self.widgets[widget].pieces["frame"] = Frame(self.frames[widget])
+
+    def openCustomizer():
+        if self.widgets["plandomizer"].window != None:
+            self.widgets["plandomizer"].window.deiconify()
+        else:
+            customizerGUI(top=self)
+
+    self.widgets[widget].pieces["button"] = Button(
+        self.widgets[widget].pieces["frame"], text="Open Plandomizer", command=openCustomizer
+    )
+
+    # button: pack
+    self.widgets[widget].pieces["button"].pack(side=LEFT)
+    # frame: pack
+    self.widgets[widget].pieces["frame"].pack(fill=X)
+
 
     ## Run Diagnostics
     # This one's more-complicated, build it and stuff it

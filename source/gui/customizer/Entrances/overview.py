@@ -65,12 +65,13 @@ def entrance_customizer_page(top, parent):
             draw_connection(self, target)
 
     def display_world_locations(self, world):
+        objects = self.canvas.find_all()
         for name, loc in worlds_data[world]["entrances"].items():
             if "target" in loc:
                 fill_col = "blue"
             else:
                 fill_col = "#0f0"
-            if "button" not in loc:
+            if "button" not in loc or loc["button"] not in objects:
                 location_oval = self.canvas.create_oval(
                     loc["x"] + BORDER_SIZE - 5,
                     loc["y"] + BORDER_SIZE - 5,
@@ -256,8 +257,8 @@ def entrance_customizer_page(top, parent):
                 continue
             if target in entrance_map:
                 final_connections["two-way"][source] = entrance_map[target]
-                if target == "Links House":
-                    final_connections["exits"][source] = "Chris Houlihan Room Exit"
+                # if target == "Links House":
+                #     final_connections["exits"][source] = "Chris Houlihan Room Exit"
             elif target in default_connections and default_connections[target] != target and not is_dropdown(source):
                 final_connections["two-way"][source] = default_connections[target]
             elif is_dropdown(target):
