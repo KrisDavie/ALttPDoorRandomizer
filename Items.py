@@ -187,6 +187,7 @@ item_table = {'Bow': (True, False, None, 0x0B, 200, 'You have\nchosen the\narche
               'Maiden Rescued': (True, False, 'Event', 999, None, None, None, None, None, None, None, None),
               'Maiden Unmasked': (True, False, 'Event', 999, None, None, None, None, None, None, None, None),
               'Convenient Block': (True, False, 'Event', 999, None, None, None, None, None, None, None, None),
+              'Hidden Pits': (True, False, 'Event', 999, None, None, None, None, None, None, None, None),
               'Zelda Herself': (True, False, 'Event', 999, None, None, None, None, None, None, None, None),
               'Zelda Delivered': (True, False, 'Event', 999, None, None, None, None, None, None, None, None),
               }

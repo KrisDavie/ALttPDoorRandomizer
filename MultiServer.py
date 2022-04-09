@@ -6,6 +6,7 @@ import json
 import logging
 import re
 import shlex
+import ssl
 import urllib.request
 import websockets
 import zlib
@@ -159,8 +160,7 @@ def send_new_items(ctx : Context):
             client.send_index = len(items)
 
 def forfeit_player(ctx : Context, team, slot):
-    all_locations = {values[0] for values in Regions.location_table.values() if type(values[0]) is int}
-    all_locations.update({values[1] for values in Regions.key_drop_data.values()})
+    all_locations = set(ctx.lookup_id_to_name.keys())
     notify_all(ctx, "%s (Team #%d) has forfeited" % (ctx.player_names[(team, slot)], team + 1))
     register_location_checks(ctx, team, slot, all_locations)
 
@@ -347,8 +347,8 @@ async def console(ctx : Context):
 
 
 def init_lookups(ctx):
-    ctx.lookup_id_to_name = {x: y for  x, y in Regions.lookup_id_to_name.items()}
-    ctx.lookup_name_to_id = {x: y for  x, y in Regions.lookup_name_to_id.items()}
+    ctx.lookup_id_to_name = {x: y for x, y in Regions.lookup_id_to_name.items()}
+    ctx.lookup_name_to_id = {x: y for x, y in Regions.lookup_name_to_id.items()}
     for location, datum in PotShuffle.key_drop_data.items():
         type = datum[0]
         if type == 'Drop':
@@ -406,7 +406,7 @@ async def main():
         logging.error('Failed to read multiworld data (%s)' % e)
         return
 
-    ip = urllib.request.urlopen('https://v4.ident.me').read().decode('utf8') if not ctx.host else ctx.host
+    ip = urllib.request.urlopen('https://v4.ident.me', context=ssl._create_unverified_context()).read().decode('utf8') if not ctx.host else ctx.host
     logging.info('Hosting game at %s:%d (%s)' % (ip, ctx.port, 'No password' if not ctx.password else 'Password: %s' % ctx.password))
 
     ctx.disable_save = args.disable_save

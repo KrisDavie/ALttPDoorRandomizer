@@ -2,6 +2,7 @@ import RaceRandom as random
 import collections
 import itertools
 import logging
+import math
 
 from BaseClasses import CollectionState, FillError, LocationType
 from Items import ItemFactory
@@ -380,12 +381,21 @@ def distribute_items_restrictive(world, gftower_trash=False, fill_locations=None
 
     # fill in gtower locations with trash first
     for player in range(1, world.players + 1):
-        if not gftower_trash or not world.ganonstower_vanilla[player] or world.doorShuffle[player] == 'crossed' or world.logic[player] in ['owglitches', 'nologic']:
+        if (not gftower_trash or not world.ganonstower_vanilla[player]
+           or world.logic[player] in ['owglitches', 'nologic']):
             continue
-        max_trash = 8 if world.algorithm == 'dungeon_only' else 15
-        gftower_trash_count = (random.randint(15, 50) if world.goal[player] == 'triforcehunt' else random.randint(0, max_trash))
+        gt_count, total_count = calc_trash_locations(world, player)
+        scale_factor = .75 * (world.crystals_needed_for_gt[player] / 7)
+        if world.algorithm == 'dungeon_only':
+            reserved_space = sum(1 for i in progitempool+prioitempool if i.player == player)
+            max_trash = max(0, min(gt_count, total_count - reserved_space))
+        else:
+            max_trash = gt_count
+        scaled_trash = math.floor(max_trash * scale_factor)
+        gftower_trash_count = (random.randint(scaled_trash, max_trash) if world.goal[player] == 'triforcehunt' else random.randint(0, scaled_trash))
 
-        gtower_locations = [location for location in fill_locations if 'Ganons Tower' in location.name and location.player == player]
+        gtower_locations = [location for location in fill_locations if location.parent_region.dungeon
+                            and location.parent_region.dungeon.name == 'Ganons Tower' and location.player == player]
         random.shuffle(gtower_locations)
         trashcnt = 0
         while gtower_locations and restitempool and trashcnt < gftower_trash_count:
@@ -449,6 +459,19 @@ def distribute_items_restrictive(world, gftower_trash=False, fill_locations=None
     ensure_good_pots(world)
 
 
+def calc_trash_locations(world, player):
+    total_count, gt_count = 0, 0
+    for loc in world.get_locations():
+        if (loc.player == player and loc.item is None
+           and (loc.type not in {LocationType.Pot, LocationType.Drop, LocationType.Normal} or not loc.forced_item)
+           and (loc.type != LocationType.Shop or world.shopsanity[player])
+           and loc.parent_region.dungeon):
+                total_count += 1
+                if loc.parent_region.dungeon.name == 'Ganons Tower':
+                    gt_count += 1
+    return gt_count, total_count
+
+
 def ensure_good_pots(world, write_skips=False):
     for loc in world.get_locations():
         if loc.item is None:
@@ -457,13 +480,22 @@ def ensure_good_pots(world, write_skips=False):
         if (loc.item.name in {'Arrows (5)', 'Nothing'}
            and (loc.type != LocationType.Pot or loc.item.player != loc.player)):
             loc.item = ItemFactory(invalid_location_replacement[loc.item.name], loc.item.player)
+        # can be placed here by multiworld balancing or shop balancing
+        # change it to something normal for the player it got swapped to
+        elif (loc.item.name in {'Chicken', 'Big Magic'}
+              and (loc.type != LocationType.Pot or loc.item.player != loc.player)):
+                if loc.type == LocationType.Pot:
+                    loc.item.player = loc.player
+                else:
+                    loc.item = ItemFactory(invalid_location_replacement[loc.item.name], loc.player)
         # don't write out all pots to spoiler
         if write_skips:
             if loc.type == LocationType.Pot and loc.item.name in valid_pot_items:
                 loc.skip = True
 
 
-invalid_location_replacement = {'Arrows (5)': 'Arrows (10)', 'Nothing':  'Rupees (5)'}
+invalid_location_replacement = {'Arrows (5)': 'Arrows (10)', 'Nothing':  'Rupees (5)',
+                                'Chicken': 'Rupees (5)', 'Big Magic': 'Small Magic'}
 
 
 def fast_fill_helper(world, item_pool, fill_locations):

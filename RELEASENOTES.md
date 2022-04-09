@@ -157,9 +157,18 @@ Same as above but both small keys and bigs keys of the dungeon are not allowed o
 #### Volatile
 
 * 1.0.1.12
+	* Fix for Multiworld forfeits, shops and pot items now included
+	* Reworked GT Trash Fill. Base rate is 0-75% of locations fill with 7 crystals entrance requirements. Triforce hunt is 75%-100% of locations. The 75% number will decrease based on the crystal entrance requirement. Dungeon_only algorithm caps it based on how many items need to be placed in dungeons. Cross dungeon shuffle will now work with the trash fill.
+	* MultiServer fix for ssl certs and python
 	* Inverted bug
-	* Fix for hammerdashing pots, if sprite limit is reached, items won't spawn, error beep won't play either because of other SFX
-	* Killing enemies freeze + hammer results in the droppable item instead of the freeze prize
+	* Fix for hammerdashing pots, if sprite limit is reached, items won't spawn, but error beep won't play either because of other SFX
+	* Arrghus splash no longer used for pottery sprites (used apple instead)
+	* Killing enemies via freeze + hammer properly results in the droppable item instead of the freeze prize
+	* Forbid certain doors from being dashable when you either can't dash them open (but bombs would work) or you'd fall into a pit from the bonk recoil in OHKO
+	* Logic refinements
+		* Skull X Room requires Boots or access to Skull Back Drop
+		* GT Falling Torches requires Boots to get over the falling tile gap (this is a stop-gap measure until more sophisticated crystal switch traversal is possible)
+	* Fixed a couple rain state issues 
 * 1.0.1.11
 	* Separated Collection Rate counter from experimental
 	* Added MSU Resume option

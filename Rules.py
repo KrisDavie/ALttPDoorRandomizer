@@ -273,6 +273,8 @@ def global_rules(world, player):
     set_rule(world.get_entrance('Skull Big Chest Hookpath', player), lambda state: state.has('Hookshot', player))
     set_rule(world.get_entrance('Skull Torch Room WN', player), lambda state: state.has('Fire Rod', player))
     set_rule(world.get_entrance('Skull Vines NW', player), lambda state: state.has_sword(player))
+    set_rule(world.get_entrance('Skull 2 West Lobby Pits', player), lambda state: state.has_Boots(player) or state.has('Hidden Pits', player))
+    set_rule(world.get_entrance('Skull 2 West Lobby Ledge Pits', player), lambda state: state.has('Hidden Pits', player))
     set_defeat_dungeon_boss_rule(world.get_location('Skull Woods - Boss', player))
     set_defeat_dungeon_boss_rule(world.get_location('Skull Woods - Prize', player))
 
@@ -398,6 +400,9 @@ def global_rules(world, player):
     set_rule(world.get_entrance('GT Lanmolas 2 NW', player), lambda state: world.get_region('GT Lanmolas 2', player).dungeon.bosses['middle'].can_defeat(state))
     set_rule(world.get_entrance('GT Torch Cross ES', player), lambda state: state.has_fire_source(player))
     set_rule(world.get_entrance('GT Falling Torches NE', player), lambda state: state.has_fire_source(player))
+    # todo: the following only applies to crystal state propagation from this supertile
+    # you can also reset the supertile, but I'm not sure how to model that
+    set_rule(world.get_entrance('GT Falling Torches Down Ladder', player), lambda state: state.has_Boots(player))
     set_rule(world.get_entrance('GT Moldorm Gap', player), lambda state: state.has('Hookshot', player) and world.get_region('GT Moldorm', player).dungeon.bosses['top'].can_defeat(state))
     set_defeat_dungeon_boss_rule(world.get_location('Agahnim 2', player))
 
@@ -736,9 +741,10 @@ def pot_rules(world, player):
         for l in world.get_region('Palace of Darkness Hint', player).locations:
             if l.type == LocationType.Pot:
                 add_rule(l, lambda state: state.can_use_bombs(player) or state.has_Boots(player))
-        for l in world.get_region('Dark Lake Hylia Ledge Spike Cave', player).locations:
-            if l.type == LocationType.Pot:
-                add_rule(l, lambda state: state.world.can_take_damage or state.has('Hookshot', player)
+        for number in ['1', '2']:
+            loc = world.get_location_unsafe(f'Dark Lake Hylia Ledge Spike Cave Pot #{number}', player)
+            if loc and loc.type == LocationType.Pot:
+                add_rule(loc, lambda state: state.world.can_take_damage or state.has('Hookshot', player)
                          or state.has('Cape', player)
                          or (state.has('Cane of Byrna', player)
                              and state.world.difficulty_adjustments[player] == 'normal'))

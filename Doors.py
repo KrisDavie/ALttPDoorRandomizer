@@ -614,6 +614,8 @@ def create_doors(world, player):
         create_door(player, 'Skull 2 West Lobby S', Nrml).dir(So, 0x56, Left, High).pos(1).portal(Z, 0x00),
         create_door(player, 'Skull 2 West Lobby ES', Intr).dir(Ea, 0x56, Bot, High).pos(2),
         create_door(player, 'Skull 2 West Lobby NW', Intr).dir(No, 0x56, Left, High).small_key().pos(0),
+        create_door(player, 'Skull 2 West Lobby Pits', Lgcl),
+        create_door(player, 'Skull 2 West Lobby Ledge Pits', Lgcl),
         create_door(player, 'Skull X Room SW', Intr).dir(So, 0x56, Left, High).small_key().pos(0),
         create_door(player, 'Skull Back Drop Star Path', Lgcl),
         create_door(player, 'Skull 3 Lobby SW', Nrml).dir(So, 0x59, Left, High).pos(1).portal(Z, 0x02),

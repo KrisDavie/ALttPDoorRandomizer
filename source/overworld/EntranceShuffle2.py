@@ -946,9 +946,9 @@ def find_entrances_and_exits(avail_pool, entrance_pool):
     for item in entrance_pool:
         if item in avail_pool.entrances:
             entrances.append(item)
-            if 'Links House' in item:
-                targets.append('Chris Houlihan Room Exit')
         if item in entrance_map and entrance_map[item] in avail_pool.exits:
+            if item in ['Links House Exit', 'Inverted Links House Exit']:
+                targets.append('Chris Houlihan Room Exit')
             targets.append(entrance_map[item])
         elif item in single_entrance_map and single_entrance_map[item] in avail_pool.exits:
             targets.append(single_entrance_map[item])

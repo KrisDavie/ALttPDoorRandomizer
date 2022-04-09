@@ -523,8 +523,9 @@ def create_dungeon_regions(world, player):
         create_dungeon_region(player, 'Skull Big Key', 'Skull Woods', ['Skull Woods - Big Key Chest'], ['Skull Big Key SW', 'Skull Big Key EN']),
         create_dungeon_region(player, 'Skull Lone Pot', 'Skull Woods', None, ['Skull Lone Pot WN']),
         create_dungeon_region(player, 'Skull Small Hall', 'Skull Woods', None, ['Skull Small Hall ES', 'Skull Small Hall WS']),
-        create_dungeon_region(player, 'Skull Back Drop', 'Skull Woods', None, ['Skull Back Drop Star Path']),
-        create_dungeon_region(player, 'Skull 2 West Lobby', 'Skull Woods', ['Skull Woods - West Lobby Pot Key'], ['Skull 2 West Lobby ES', 'Skull 2 West Lobby NW', 'Skull 2 West Lobby S']),
+        create_dungeon_region(player, 'Skull Back Drop', 'Skull Woods', ['Skull Star Tile'], ['Skull Back Drop Star Path']),
+        create_dungeon_region(player, 'Skull 2 West Lobby', 'Skull Woods', ['Skull Woods - West Lobby Pot Key'], ['Skull 2 West Lobby ES', 'Skull 2 West Lobby Pits', 'Skull 2 West Lobby S']),
+        create_dungeon_region(player, 'Skull 2 West Lobby Ledge', 'Skull Woods', None, ['Skull 2 West Lobby NW', 'Skull 2 West Lobby Ledge Pits']),
         create_dungeon_region(player, 'Skull X Room', 'Skull Woods', None, ['Skull X Room SW']),
         create_dungeon_region(player, 'Skull 3 Lobby', 'Skull Woods', None, ['Skull 3 Lobby NW', 'Skull 3 Lobby EN', 'Skull 3 Lobby SW']),
         create_dungeon_region(player, 'Skull East Bridge', 'Skull Woods', None, ['Skull East Bridge WN', 'Skull East Bridge WS']),
@@ -1045,7 +1046,7 @@ def adjust_locations(world, player):
     # unreal events:
     for l in ['Ganon', 'Agahnim 1', 'Agahnim 2', 'Dark Blacksmith Ruins', 'Frog', 'Missing Smith', 'Floodgate',
               'Trench 1 Switch', 'Trench 2 Switch', 'Swamp Drain', 'Attic Cracked Floor', 'Suspicious Maiden',
-              'Revealing Light', 'Ice Block Drop', 'Zelda Pickup', 'Zelda Drop Off']:
+              'Revealing Light', 'Ice Block Drop', 'Zelda Pickup', 'Zelda Drop Off', 'Skull Star Tile']:
         location = world.get_location_unsafe(l, player)
         if location:
             location.type = LocationType.Logical
@@ -1150,6 +1151,7 @@ dungeon_events = [
     'Suspicious Maiden',
     'Revealing Light',
     'Ice Block Drop',
+    'Skull Star Tile',
     'Zelda Pickup',
     'Zelda Drop Off'
 ]
@@ -1388,6 +1390,7 @@ location_table = {'Mushroom': (0x180013, 0x186338, False, 'in the woods'),
                   'Suspicious Maiden': (None, None, False, None),
                   'Revealing Light': (None, None, False, None),
                   'Ice Block Drop': (None, None, False, None),
+                  'Skull Star Tile': (None, None, False, None),
                   'Zelda Pickup': (None, None, False, None),
                   'Zelda Drop Off': (None, None, False, None),
                   'Eastern Palace - Prize': ([0x1209D, 0x53E76, 0x53E77, 0x180052, 0x180070, 0xC6FE, 0x186FE2], None, True, 'Eastern Palace'),

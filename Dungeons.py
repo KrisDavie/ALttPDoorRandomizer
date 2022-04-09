@@ -124,10 +124,10 @@ swamp_regions = [
 skull_regions = [
     'Skull 1 Lobby', 'Skull Map Room', 'Skull Pot Circle', 'Skull Pull Switch', 'Skull Big Chest', 'Skull Pinball',
     'Skull Pot Prison', 'Skull Compass Room', 'Skull Left Drop', 'Skull 2 East Lobby', 'Skull Big Key',
-    'Skull Lone Pot', 'Skull Small Hall', 'Skull Back Drop', 'Skull 2 West Lobby', 'Skull X Room', 'Skull 3 Lobby',
-    'Skull East Bridge', 'Skull West Bridge Nook', 'Skull Star Pits', 'Skull Torch Room', 'Skull Vines',
-    'Skull Spike Corner', 'Skull Final Drop', 'Skull Boss', 'Skull 1 Portal', 'Skull 2 East Portal',
-    'Skull 2 West Portal', 'Skull 3 Portal'
+    'Skull Lone Pot', 'Skull Small Hall', 'Skull Back Drop', 'Skull 2 West Lobby', 'Skull 2 West Lobby Ledge',
+    'Skull X Room', 'Skull 3 Lobby', 'Skull East Bridge', 'Skull West Bridge Nook', 'Skull Star Pits',
+    'Skull Torch Room', 'Skull Vines', 'Skull Spike Corner', 'Skull Final Drop', 'Skull Boss',
+    'Skull 1 Portal', 'Skull 2 East Portal', 'Skull 2 West Portal', 'Skull 3 Portal'
 ]
 
 thieves_regions = [
