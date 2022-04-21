@@ -224,7 +224,7 @@ def entrance_customizer_page(top, parent):
                 worlds_data[source_world]["entrances"][current_source]["y"] + BORDER_SIZE - 3,
                 worlds_data[source_world]["entrances"][current_source]["x"] + BORDER_SIZE + 3,
                 worlds_data[source_world]["entrances"][current_source]["y"] + BORDER_SIZE + 3,
-                fill="red",
+                fill="white",
             )
         else:
             connection_line = self.canvas.create_line(
@@ -232,11 +232,13 @@ def entrance_customizer_page(top, parent):
                 worlds_data[source_world]["entrances"][current_source]["y"] + BORDER_SIZE,
                 worlds_data[target_world]["entrances"][current_target]["x"] + BORDER_SIZE,
                 worlds_data[target_world]["entrances"][current_target]["y"] + BORDER_SIZE,
-                fill="red",
+                fill='black' if source_world != target_world else 'white',
+                # fill="black",
                 arrow=LAST,
-                dash=(4, 4) if source_world != target_world else None,
+                width=2,
+                # dash=(4, 4) if source_world != target_world else None,
                 activefill="black",
-                activewidth=3,
+                activewidth=4,
                 activedash=None,
             )
         self.canvas.tag_bind(

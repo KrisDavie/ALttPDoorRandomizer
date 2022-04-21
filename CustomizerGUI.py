@@ -1,7 +1,8 @@
 from tkinter import Tk, TOP, BOTH, Toplevel, ttk, filedialog
+from PIL import Image
 from source.gui.customizer.Entrances.overview import entrance_customizer_page
 from source.gui.customizer.Items.overview import item_customizer_page
-from source.gui.customizer.worlds_data import World
+from source.gui.customizer.worlds_data import World, worlds_data
 
 from Main import __version__ as ESVersion
 import os
@@ -47,6 +48,11 @@ def customizerGUI(top=None):
         for dungeon in dungeon_worlds.keys():
             self.pages["items"].pages[dungeon].content.load_yaml(
                 self.pages["items"].pages[dungeon].content, yaml_data["placements"][1]
+            )
+            if dungeon == 'Overworld':
+                continue
+            self.pages["pots"].pages[dungeon].content.load_yaml(
+                self.pages["pots"].pages[dungeon].content, yaml_data["placements"][1]
             )
 
         all_entrances = {**yaml_data["entrances"][1]["entrances"], **yaml_data["entrances"][1]["two-way"]}
@@ -96,24 +102,45 @@ def customizerGUI(top=None):
 
     self.pages["entrances"] = ttk.Frame(self.notebook)
     self.pages["items"] = ttk.Frame(self.notebook)
+    self.pages["pots"] = ttk.Frame(self.notebook)
     self.notebook.add(self.pages["entrances"], text="Entrances")
     self.notebook.add(self.pages["items"], text="Items")
+    self.notebook.add(self.pages["pots"], text="Pots")
     self.notebook.pack()
 
     self.pages["items"].notebook = ttk.Notebook(self.pages["items"])
     self.pages["items"].pages = {}
 
+    self.pages["pots"].notebook = ttk.Notebook(self.pages["pots"])
+    self.pages["pots"].pages = {}
+
     self.pages["entrances"].content = entrance_customizer_page(self, self.pages["entrances"])
     self.pages["entrances"].content.pack(side=TOP, fill=BOTH, expand=True)
+
+    eg_map = f"C:\\Users\\Muffins\\Downloads\\ZScreamPNGExport\\MapTest.png"
+    eg_img = Image.open(eg_map)
 
     for dungeon, world in dungeon_worlds.items():
         self.pages["items"].pages[dungeon] = ttk.Frame(self.pages["items"].notebook)
         self.pages["items"].notebook.add(self.pages["items"].pages[dungeon], text=dungeon.replace("_", " "))
         self.pages["items"].pages[dungeon].content = item_customizer_page(
-            self, self.pages["items"].pages[dungeon], world
+            self, self.pages["items"].pages[dungeon], world, tab_item_type='standard', eg_img=eg_img
         )
         self.pages["items"].pages[dungeon].content.pack(side=TOP, fill=BOTH, expand=True)
+
+        if dungeon == 'Overworld':
+            continue
+
+        self.pages["pots"].pages[dungeon] = ttk.Frame(self.pages["pots"].notebook)
+        self.pages["pots"].notebook.add(self.pages["pots"].pages[dungeon], text=dungeon.replace("_", " "))
+        self.pages["pots"].pages[dungeon].content = item_customizer_page(
+            self, self.pages["pots"].pages[dungeon], world, tab_item_type='pot', eg_img=eg_img
+        )
+        self.pages["pots"].pages[dungeon].content.pack(side=TOP, fill=BOTH, expand=True)
+
+
     self.pages["items"].notebook.pack()
+    self.pages["pots"].notebook.pack()
     save_data_button = ttk.Button(self, text="Save Customizer Data", command=lambda: save_yaml(self))
     save_data_button.pack()
     load_data_button = ttk.Button(self, text="Load Customizer Data", command=lambda: load_yaml(self))
