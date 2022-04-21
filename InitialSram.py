@@ -211,8 +211,8 @@ class InitialSram:
         self._initial_sram_bytes[0x46E] = self._initial_sram_bytes[0x35B]
 
         if world.swords[player] == "swordless":
-            self.__initial_sram_bytes[0x359] = 0xFF
-            self.__initial_sram_bytes[0x417] = 0x00
+            self._initial_sram_bytes[0x359] = 0xFF
+            self._initial_sram_bytes[0x417] = 0x00
 
     def set_starting_rupees(self, rupees: int):
         if not (-1 < rupees < 10000):
