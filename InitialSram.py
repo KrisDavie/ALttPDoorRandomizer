@@ -194,8 +194,8 @@ class InitialSram:
             else:
                 raise RuntimeError(f'Unsupported item in starting equipment: {item.name}')
 
-        equip[0x370] = max(starting_bomb_cap_upgrades, 50)
-        equip[0x371] = max(starting_arrow_cap_upgrades, 70)
+        equip[0x370] = min(starting_bomb_cap_upgrades, 50)
+        equip[0x371] = min(starting_arrow_cap_upgrades, 70)
         equip[0x343] = min(equip[0x343], 10)
         equip[0x377] = min(equip[0x377], 30)
         
