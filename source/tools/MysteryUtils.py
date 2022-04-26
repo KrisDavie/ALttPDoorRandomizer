@@ -49,7 +49,7 @@ def roll_settings(weights):
     ret.mystery = get_choice_default('mystery', default=True)
 
     glitch_map = {'none': 'noglitches', 'no_logic': 'nologic', 'owglitches': 'owglitches',
-                  'minorglitches': 'minorglitches'}
+                  'owg': 'owglitches', 'minorglitches': 'minorglitches'}
     glitches_required = get_choice('glitches_required')
     if glitches_required is not None:
         if glitches_required not in glitch_map.keys():
@@ -92,6 +92,7 @@ def roll_settings(weights):
     ret.dropshuffle = get_choice('dropshuffle') == 'on' or keydropshuffle
     ret.pottery = get_choice('pottery') if 'pottery' in weights else 'none'
     ret.pottery = 'keys' if ret.pottery == 'none' and keydropshuffle else ret.pottery
+    ret.colorizepots = get_choice('colorizepots') == 'on'
     ret.shufflepots = get_choice('pot_shuffle') == 'on'
     ret.mixed_travel = get_choice('mixed_travel') if 'mixed_travel' in weights else 'prevent'
     ret.standardize_palettes = (get_choice('standardize_palettes') if 'standardize_palettes' in weights
@@ -103,9 +104,10 @@ def roll_settings(weights):
                     'fast_ganon': 'crystals',
                     'dungeons': 'dungeons',
                     'pedestal': 'pedestal',
-                    'triforce-hunt': 'triforcehunt'
+                    'triforce-hunt': 'triforcehunt',
+                    'trinity': 'trinity'
                     }[goal]
-    ret.openpyramid = goal == 'fast_ganon' if ret.shuffle in ['vanilla', 'dungeonsfull', 'dungeonssimple'] else False
+    ret.openpyramid = goal in ['fast_ganon', 'trinity'] if ret.shuffle in ['vanilla', 'dungeonsfull', 'dungeonssimple'] else False
 
     ret.crystals_gt = get_choice('tower_open')
 

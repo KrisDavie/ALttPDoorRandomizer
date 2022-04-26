@@ -104,7 +104,9 @@
       "All Dungeons:   Collect all crystals, pendants, beat both",
       "                Agahnim fights and then defeat Ganon.",
       "Triforce Hunt:  Places 30 Triforce Pieces in the world, collect",
-      "                20 of them to beat the game."
+      "                20 of them to beat the game.",
+      "Trinity:        Can beat the game by defeating Ganon, pulling",
+      "                Pedestal, or delivering Triforce Pieces."
     ],
     "difficulty": [
       "Select game difficulty. Affects available itempool. (default: %(default)s)",
@@ -258,9 +260,15 @@
       "None:      No pots are changed",
       "Keys:      Key pots are included in the location pool and other items can take their place",
       "Cave:      Only pots in houses and caves are included in the location pool",
+      "CaveKeys:  Both pots in houses and caves and keys pots are included in the location pool",
+      "Reduced:   Same as KeyCaves + 25% of Pots in dungeons (dynamic mode)",
+      "Clustered: Same as KeyCaves + 50% of Pots in dungeons, chosen by logical group (dynamic mode)",
+      "NonEmpty:  All pots that are not originally empty are included in the location pool",
       "Dungeon:   Only pots in dungeons are included in the location pool",
       "Lottery:   All pots are part of the location pool"
     ],
+    "colorizepots": ["All pots chosen to be in location pool by the pottery setting are different.",
+                     "Forced on in dynamic modes. Forced off in lottery"],
     "shufflepots": [ "Pots and switches are shuffled on the supertile (legacy potshuffle) (default: %(default)s)"],
     "mixed_travel": [
       "How to handle potential traversal between dungeon in Crossed door shuffle",

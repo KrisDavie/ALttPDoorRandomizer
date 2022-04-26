@@ -1967,7 +1967,7 @@ ohko_forbidden = {
 
 
 def filter_dashable_candidates(candidates, world):
-    forbidden_set = dashable_forbidden if world.can_take_damage else ohko_forbidden
+    forbidden_set = dashable_forbidden if world.timer in ['ohko', 'timed-ohko'] else ohko_forbidden
     return [x for x in candidates if x not in forbidden_set and x.dest not in forbidden_set]
 
 

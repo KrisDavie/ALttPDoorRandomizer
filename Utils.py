@@ -679,9 +679,22 @@ def extract_data_from_jp_rom(rom):
 #        print()
 
 
+def check_pots():
+    from PotShuffle import vanilla_pots
+    for supertile, pot_list in vanilla_pots.items():
+        for i,pot in enumerate(pot_list):
+            if pot.obj_ref:
+                r = pot.obj_ref
+                secret_vram = pot.x | (pot.y << 8)
+                tile_vram = ((r.data[1] & 0xFC) << 5) | ((r.data[0] & 0xFC) >> 1)
+                if secret_vram != tile_vram:
+                    print(f'{pot.room}#{i+1} secret: {hex(secret_vram)} tile: {hex(tile_vram)}')
+
+
 if __name__ == '__main__':
     # make_new_base2current()
     # read_entrance_data(old_rom=sys.argv[1])
     # room_palette_data(old_rom=sys.argv[1])
     # extract_data_from_us_rom(sys.argv[1])
-    extract_data_from_jp_rom(sys.argv[1])
+    # extract_data_from_jp_rom(sys.argv[1])
+    check_pots()

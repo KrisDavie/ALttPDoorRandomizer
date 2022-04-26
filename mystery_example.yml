@@ -1,4 +1,10 @@
   description: Example door rando weights
+  algorithm:
+    balanced: 12
+    vanilla_fill: 1
+    major_only: 1
+    dungeon_only: 1
+    district: 1
   door_shuffle:
     vanilla: 0
     basic: 2
@@ -52,6 +58,7 @@
     dungeons: 1
     pedestal: 2
     triforce-hunt: 2
+    trinity: 2
   triforce_goal_min: 10
   triforce_goal_max: 30
   triforce_pool_min: 20

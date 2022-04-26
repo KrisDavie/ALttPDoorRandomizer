@@ -61,8 +61,13 @@
     "randomizer.dungeon.pottery.none": "None",
     "randomizer.dungeon.pottery.keys": "Key Pots",
     "randomizer.dungeon.pottery.cave": "Cave Pots",
+    "randomizer.dungeon.pottery.cavekeys": "Cave+Key Pots",
+    "randomizer.dungeon.pottery.reduced": "Reduced Dungeon Pots (Dynamic)",
+    "randomizer.dungeon.pottery.clustered": "Clustered Dungeon Pots (Dynamic)",
+    "randomizer.dungeon.pottery.nonempty": "Excludes Empty Pots",
     "randomizer.dungeon.pottery.dungeon": "Dungeon Pots",
     "randomizer.dungeon.pottery.lottery": "Lottery (All Pots and Large Blocks)",
+    "randomizer.dungeon.colorizepots": "Colorize Randomized Pots",
 
     "randomizer.dungeon.dungeondoorshuffle": "Dungeon Door Shuffle",
     "randomizer.dungeon.dungeondoorshuffle.vanilla": "Vanilla",
@@ -226,6 +231,7 @@
     "randomizer.item.goal.pedestal": "Master Sword Pedestal",
     "randomizer.item.goal.dungeons": "All Dungeons",
     "randomizer.item.goal.triforcehunt": "Triforce Hunt",
+    "randomizer.item.goal.trinity": "Trinity",
     "randomizer.item.goal.crystals": "Crystals",
 
     "randomizer.item.crystals_gt": "Crystals to open GT",

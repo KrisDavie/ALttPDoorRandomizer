@@ -50,20 +50,14 @@ Rom/Adjust flags like sprite, quickswap are not outputing with the print_custom_
 
 This must be defined by player. Each player number should be listed with the appropriate pool.
 
-Then each player can have the entire item pool defined. The name of item should be followed by the number of that item in the pool. All key items need to be listed here for now.
+Then each player can have the entire item pool defined. The name of item should be followed by the number of that item in the pool. Many key items will be added to the pool if not detected.
 
 `Bottle (Random)` is supported to randomize bottle contents according to those allowed by difficulty. Pendants and crystals are supported here.
 
 
-##### Known Issues
+##### Caveat 
  
-1. Dungeon items amount can be increased but not eliminated (as the amount of each dungeon item is either pre-determined or calculated by door rando) and these extra items may not be confined to the dungeon
-2. Door rando removes Red Rupees from the pool to make room for extra dungeon items as needed.
-3. Shopsanity appends extra shop items to the pool.
-4. Beemizer runs after pool creation changing junk items into bees
-5. Retro + Shopsanity adds more items to the pool
-6. Retro + either of dropshuffle or pottery adds keys to the pool
-7. Most pottery settings add a large amount of junk items to the pool
+Dungeon items amount can be increased (but not decreased as the minimum of each dungeon item is either pre-determined or calculated by door rando) if the type of dungeon item is not shuffled then it is attempted to be placed in the dungeon. Extra item beyond dungeon capacity not be confined to the dungeon.
 
 ### placements
 

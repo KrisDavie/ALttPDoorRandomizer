@@ -58,7 +58,7 @@ def set_rules(world, player):
     elif world.goal[player] == 'ganon':
         # require aga2 to beat ganon
         add_rule(world.get_location('Ganon', player), lambda state: state.has('Beat Agahnim 2', player))
-    elif world.goal[player] == 'triforcehunt':
+    elif world.goal[player] in ['triforcehunt', 'trinity']:
         add_rule(world.get_location('Murahdahla', player), lambda state: state.item_count('Triforce Piece', player) + state.item_count('Power Star', player) >= int(state.world.treasure_hunt_count[player]))
 
     if world.mode[player] != 'inverted':
@@ -721,7 +721,7 @@ def bomb_rules(world, player):
 
 
 def pot_rules(world, player):
-    if world.pottery[player] in ['lottery', 'cave']:
+    if world.pottery[player] != 'none':
         blocks = [l for l in world.get_locations() if l.type == LocationType.Pot and l.pot.flags & PotFlags.Block]
         for block_pot in blocks:
             add_rule(block_pot, lambda state: state.can_lift_rocks(player))
@@ -748,8 +748,6 @@ def pot_rules(world, player):
                          or state.has('Cape', player)
                          or (state.has('Cane of Byrna', player)
                              and state.world.difficulty_adjustments[player] == 'normal'))
-
-    if world.pottery[player] in ['lottery', 'dungeon']:
         for l in world.get_region('Ice Hammer Block', player).locations:
             if l.type == LocationType.Pot:
                 add_rule(l, lambda state: state.has('Hammer', player) and state.can_lift_rocks(player))
@@ -873,7 +871,7 @@ def default_rules(world, player):
     set_rule(world.get_entrance('Floating Island Mirror Spot', player), lambda state: state.has_Mirror(player))
     set_rule(world.get_entrance('Turtle Rock', player), lambda state: state.has_Pearl(player) and state.has_sword(player) and state.has_turtle_rock_medallion(player) and state.can_reach('Turtle Rock (Top)', 'Region', player))  # sword required to cast magic (!)
 
-    set_rule(world.get_entrance('Pyramid Hole', player), lambda state: state.has('Beat Agahnim 2', player) or world.open_pyramid[player])
+    set_rule(world.get_entrance('Pyramid Hole', player), lambda state: world.open_pyramid[player] or world.goal[player] == 'trinity' or state.has('Beat Agahnim 2', player))
     if world.swords[player] == 'swordless':
         swordless_rules(world, player)
 
@@ -1025,7 +1023,7 @@ def inverted_rules(world, player):
     set_rule(world.get_entrance('Dark Grassy Lawn Flute', player), lambda state: state.can_flute(player))
     set_rule(world.get_entrance('Hammer Peg Area Flute', player), lambda state: state.can_flute(player))
 
-    set_rule(world.get_entrance('Inverted Pyramid Hole', player), lambda state: state.has('Beat Agahnim 2', player) or world.open_pyramid[player])
+    set_rule(world.get_entrance('Inverted Pyramid Hole', player), lambda state: world.open_pyramid[player] or world.goal[player] == 'trinity' or state.has('Beat Agahnim 2', player))
     if world.swords[player] == 'swordless':
         swordless_rules(world, player)
 

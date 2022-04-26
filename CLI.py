@@ -125,7 +125,7 @@ def parse_cli(argv, no_defaults=False):
                          'ow_palettes', 'uw_palettes', 'sprite', 'disablemusic', 'quickswap', 'fastmenu', 'heartcolor',
                          'heartbeep', 'remote_items', 'shopsanity', 'dropshuffle', 'pottery', 'keydropshuffle',
                          'mixed_travel', 'standardize_palettes', 'code', 'reduce_flashing', 'shuffle_sfx',
-                         'msu_resume', 'collection_rate']:
+                         'msu_resume', 'collection_rate', 'colorizepots']:
                 value = getattr(defaults, name) if getattr(playerargs, name) is None else getattr(playerargs, name)
                 if player == 1:
                     setattr(ret, name, {1: value})
@@ -162,6 +162,7 @@ def parse_settings():
         "progressive": "on",
         "accessibility": "items",
         "algorithm": "balanced",
+        'mystery': False,
         "restrict_boss_items": "none",
 
         # Shuffle Ganon defaults to TRUE
@@ -182,6 +183,7 @@ def parse_settings():
         'keydropshuffle': False,
         'dropshuffle': False,
         'pottery': 'none',
+        'colorizepots': False,
         'shufflepots': False,
         "mapshuffle": False,
         "compassshuffle": False,
@@ -195,8 +197,8 @@ def parse_settings():
         "mixed_travel": "prevent",
         "standardize_palettes": "standardize",
         
-        "triforce_pool": 30,
-        "triforce_goal": 20,
+        "triforce_pool": 0,
+        "triforce_goal": 0,
         "triforce_pool_min": 0,
         "triforce_pool_max": 0,
         "triforce_goal_min": 0,

@@ -10,14 +10,24 @@ New pottery option that control which pots (and large blocks) are in the locatio
 * Key Pots: The pots that have keys are in the pool. This is about half of the old keydropshuffle option
 * Cave Pots: The pots that are not found in dungeons are in the pool. (Includes the large block in Spike Cave). Does
 not include key pots. 
+* CaveKeys: Both non-dungeon pots and pots that used to have keys are in the pool.
+* Reduced: Same as CaveKeys but also roughly a quarter of dungeon pots are added to the location pool picked at random. This is a dynamic mode so pots in the pool will be colored. Pots out of the pool will have vanilla contents.
+* Clustered: LIke reduced but pot are grouped by logical sets and roughly 50% of pots are chosen from those group. This is a dynamic mode like the above.
+* Nonempty: All pots that had some sort of objects under them are chosen to be in the location pool. This excludes most large blocks and some pots out of dungeons. 
 * Dungeon Pots: The pots that are in dungeons are in the pool. (Includes serveral large blocks) 
 * Lottery: All pots and large blocks are in the pool
 
 By default, switches remain in their vanilla location (unless you turn on the legacy option below)
 
-CLI `--pottery <option>` from `none, keys, lottery`
+CLI `--pottery <option>` from `none, keys, cave, cavekeys, reduced, clustered, nonempty, dungeon, lottery`
 
 Note for multiworld: due to the design of the pottery lottery, only 256 items for other players can be under pots in your world.
+
+### Colorize Pots
+
+If the pottery mode is dynamic, this option is forced to be on (clustered and reduced). It is allowed to be on in all other pottery modes. Exception "none" where no pots would be colored, and "lottery" where all pots would be. This option colors the pots differently that have been chosen to be part of the location pool. If not specified, you are expected to remember the pottery setting you chose.
+
+CLI `--colorizepots`
 
 ### Shuffle key drops
 
@@ -154,8 +164,19 @@ Same as above but both small keys and bigs keys of the dungeon are not allowed o
 
 ## Notes and Bug Fixes
 
+#### Customizer
+
+* Fixed up the item_pool section to skip a lot of pool manipulations. Key item will be added to the bow if not detected. Extra dungeon items can be added to the pool and will be confined to the dungeon if possible (and not shuffled). If the pool isn't full, junk items are added to the pool to fill it out.
+
 #### Volatile
 
+* 1.0.1.13
+	* New pottery modes
+	* Trinity goal added
+	* Potential fix for pottery hera key
+	* Fix for arrows sneaking into item pool with rupee bow
+	* Fixed msu resume bug on patcher
+	* Bonk Recoil OHKO fix (again)
 * 1.0.1.12
 	* Fix for Multiworld forfeits, shops and pot items now included
 	* Reworked GT Trash Fill. Base rate is 0-75% of locations fill with 7 crystals entrance requirements. Triforce hunt is 75%-100% of locations. The 75% number will decrease based on the crystal entrance requirement. Dungeon_only algorithm caps it based on how many items need to be placed in dungeons. Cross dungeon shuffle will now work with the trash fill.

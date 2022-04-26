@@ -32,10 +32,11 @@ from EntranceShuffle import door_addresses, exit_ids, ow_prize_table
 
 from source.classes.SFX import randomize_sfx
 from source.item.FillUtil import valid_pot_items
+from source.dungeon.RoomList import Room0127
 
 
 JAP10HASH = '03a63945398191337e896e5771f77173'
-RANDOMIZERBASEHASH = '8d196e8024faebbbbe1304032158ccea'
+RANDOMIZERBASEHASH = 'd143684aa6a8e4560eb3ac912d600525'
 
 
 class JsonRom(object):
@@ -650,10 +651,18 @@ def patch_rom(world, rom, player, team, enemized, is_mystery=False):
     if world.mapshuffle[player]:
         rom.write_byte(0x155C9, random.choice([0x11, 0x16]))  # Randomize GT music too with map shuffle
 
+    if world.pottery[player] not in ['none']:
+        rom.write_bytes(snes_to_pc(0x1F8375), int32_as_bytes(0x2A8000))
+        # make hammer pegs use different tiles
+        Room0127.write_to_rom(snes_to_pc(0x2A8000), rom)
+
     if world.pot_contents[player]:
+        colorize_pots = is_mystery or (world.pottery[player] not in ['vanilla', 'lottery']
+                                       and (world.colorizepots[player]
+                                            or world.pottery[player] in ['reduced', 'clustered']))
         if world.pot_contents[player].size() > 0x2800:
             raise Exception('Pot table is too big for current area')
-        world.pot_contents[player].write_pot_data_to_rom(rom)
+        world.pot_contents[player].write_pot_data_to_rom(rom, colorize_pots)
     # fix for swamp drains if necessary
     swamp1location = world.get_location('Swamp Palace - Trench 1 Pot Key', player)
     if not swamp1location.pot.indicator:
@@ -719,7 +728,7 @@ def patch_rom(world, rom, player, team, enemized, is_mystery=False):
     dr_flags = DROptions.Eternal_Mini_Bosses if world.doorShuffle[player] == 'vanilla' else DROptions.Town_Portal
     if world.doorShuffle[player] == 'crossed':
         dr_flags |= DROptions.Map_Info
-    if world.collection_rate[player] and world.goal[player] != 'triforcehunt':
+    if world.collection_rate[player] and world.goal[player] not in ['triforcehunt', 'trinity']:
         dr_flags |= DROptions.Debug
     if world.doorShuffle[player] == 'crossed' and world.logic[player] != 'nologic'\
        and world.mixed_travel[player] == 'prevent':
@@ -893,14 +902,7 @@ def patch_rom(world, rom, player, team, enemized, is_mystery=False):
     if world.pottery[player] not in ['none', 'keys']:
         # Cuccos should not prevent kill rooms from opening
         rom.write_byte(snes_to_pc(0x0DB457), 0x40)
-    if world.pottery[player] in ['none', 'keys']:
-        rom.write_byte(snes_to_pc(0x28AA56), 0)
-    elif world.pottery[player] == 'cave':
-        rom.write_byte(snes_to_pc(0x28AA56), 1)
-    elif world.pottery[player] == 'dungeon':
-        rom.write_byte(snes_to_pc(0x28AA56), 2)
-    elif world.pottery[player] == 'lottery':
-        rom.write_byte(snes_to_pc(0x28AA56), 3)
+    rom.write_byte(snes_to_pc(0x28AA56), 0 if world.pottery[player] == 'none' else 1)
 
     write_int16(rom, 0x187010, credits_total)  # dynamic credits
     if credits_total != 216:
@@ -1234,7 +1236,7 @@ def patch_rom(world, rom, player, team, enemized, is_mystery=False):
 
     # set up goals for treasure hunt
     rom.write_bytes(0x180165, [0x0E, 0x28] if world.treasure_hunt_icon[player] == 'Triforce Piece' else [0x0D, 0x28])
-    if world.goal[player] == 'triforcehunt':
+    if world.goal[player] in ['triforcehunt', 'trinity']:
         rom.write_byte(0x180167, int(world.treasure_hunt_count[player]) % 256)
     rom.write_byte(0x180194, 1)  # Must turn in triforced pieces (instant win not enabled)
 
@@ -1261,7 +1263,7 @@ def patch_rom(world, rom, player, team, enemized, is_mystery=False):
     rom.write_bytes(0x50563, [0x3F, 0x14]) # disable below ganon chest
     rom.write_byte(0x50599, 0x00) # disable below ganon chest
     rom.write_bytes(0xE9A5, [0x7E, 0x00, 0x24]) # disable below ganon chest
-    rom.write_byte(0x18008B, 0x01 if world.open_pyramid[player] else 0x00) # pre-open Pyramid Hole
+    rom.write_byte(0x18008B, 0x01 if world.open_pyramid[player] or world.goal[player] == 'trinity' else 0x00)  # pre-open Pyramid Hole
     rom.write_byte(0x18008C, 0x01 if world.crystals_needed_for_gt[player] == 0 else 0x00) # GT pre-opened if crystal requirement is 0
     rom.write_byte(0xF5D73, 0xF0) # bees are catchable
     rom.write_byte(0xF5F10, 0xF0) # bees are catchable
@@ -1447,7 +1449,7 @@ def patch_rom(world, rom, player, team, enemized, is_mystery=False):
         rom.write_byte(0x18003E, 0x01)  # make ganon invincible
     elif world.goal[player] in ['dungeons']:
         rom.write_byte(0x18003E, 0x02)  # make ganon invincible until all dungeons are beat
-    elif world.goal[player] in ['crystals']:
+    elif world.goal[player] in ['crystals', 'trinity']:
         rom.write_byte(0x18003E, 0x04)  # make ganon invincible until all crystals
     else:
         rom.write_byte(0x18003E, 0x03)  # make ganon invincible until all crystals and aga 2 are collected
@@ -2414,6 +2416,10 @@ def write_strings(rom, world, player, team):
         tt['ganon_phase_3_alt'] = 'Seriously? Go Away, I will not Die.'
         tt['sign_ganon'] = 'You need to get to the pedestal... Ganon is invincible!'
     else:
+        if world.goal[player] == 'trinity':
+            trinity_crystal_text = ('%d crystal to beat Ganon.' if world.crystals_needed_for_ganon[player] == 1 else '%d crystals to beat Ganon.') % world.crystals_needed_for_ganon[player]
+            tt['sign_ganon'] = 'Three ways to victory! %s Get to it!' % trinity_crystal_text
+            tt['murahdahla'] = "Hello @. I\nam Murahdahla, brother of\nSahasrahla and Aginah. Behold the power of\ninvisibility.\n\n\n\n… … …\n\nWait! you can see me? I knew I should have\nhidden in  a hollow tree. If you bring\n%d triforce pieces, I can reassemble it." % int(world.treasure_hunt_count[player])
         tt['ganon_fall_in'] = Ganon1_texts[random.randint(0, len(Ganon1_texts) - 1)]
         tt['ganon_fall_in_alt'] = 'You cannot defeat me until you finish your goal!'
         tt['ganon_phase_3_alt'] = 'Got wax in\nyour ears?\nI can not die!'

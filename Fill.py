@@ -392,7 +392,10 @@ def distribute_items_restrictive(world, gftower_trash=False, fill_locations=None
         else:
             max_trash = gt_count
         scaled_trash = math.floor(max_trash * scale_factor)
-        gftower_trash_count = (random.randint(scaled_trash, max_trash) if world.goal[player] == 'triforcehunt' else random.randint(0, scaled_trash))
+        if world.goal[player] in ['triforcehunt', 'trinity']:
+            gftower_trash_count = random.randint(scaled_trash, max_trash)
+        else:
+            gftower_trash_count = random.randint(0, scaled_trash)
 
         gtower_locations = [location for location in fill_locations if location.parent_region.dungeon
                             and location.parent_region.dungeon.name == 'Ganons Tower' and location.player == player]
@@ -488,6 +491,9 @@ def ensure_good_pots(world, write_skips=False):
                     loc.item.player = loc.player
                 else:
                     loc.item = ItemFactory(invalid_location_replacement[loc.item.name], loc.player)
+        # do the arrow retro check
+        if world.retro[loc.item.player] and loc.item.name in {'Arrows (5)', 'Arrows (10)'}:
+            loc.item = ItemFactory('Rupees (5)', loc.item.player)
         # don't write out all pots to spoiler
         if write_skips:
             if loc.type == LocationType.Pot and loc.item.name in valid_pot_items:

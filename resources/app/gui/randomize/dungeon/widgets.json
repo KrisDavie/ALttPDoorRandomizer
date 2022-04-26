@@ -30,6 +30,10 @@
         "none",
         "keys",
         "cave",
+        "cavekeys",
+        "reduced",
+        "clustered",
+        "nonempty",
         "dungeon",
         "lottery"
       ],
@@ -37,6 +41,7 @@
         "width": 35
       }
     },
+    "colorizepots": { "type": "checkbox" },
     "dropshuffle": { "type": "checkbox" },
     "potshuffle": { "type": "checkbox" },
     "experimental": { "type": "checkbox" },

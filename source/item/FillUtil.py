@@ -70,7 +70,7 @@ def create_item_pool_config(world):
             if world.dropshuffle[player]:
                 for item, locs in keydrop_vanilla_mapping.items():
                     config.static_placement[player][item].extend(locs)
-            if world.pottery[player] != 'none':
+            if world.pottery[player] not in ['none', 'cave']:
                 for item, locs in potkeys_vanilla_mapping.items():
                     config.static_placement[player][item].extend(locs)
             if world.pottery[player] in ['lottery', 'cave', 'dungeon']:
