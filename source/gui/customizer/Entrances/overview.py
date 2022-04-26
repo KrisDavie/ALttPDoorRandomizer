@@ -275,7 +275,7 @@ def entrance_customizer_page(top, parent):
                 final_connections["entrances"][source] = drop_map[target]
             else:
                 final_connections["entrances"][source] = target
-        if "Links House" not in final_connections["two-way"]:
+        if "Links House Exit" not in final_connections["two-way"].values():
             final_connections["two-way"]["Links House"] = "Links House Exit"
         if "Chris Houlihan Room Exit" not in final_connections["two-way"].values():
             final_connections["exits"]["Links House"] = "Chris Houlihan Room Exit"
