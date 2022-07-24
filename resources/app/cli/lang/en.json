@@ -38,6 +38,7 @@
     "cannot.reach.required": "Not all required items reachable. Something went terribly wrong here.",
     "patching.rom": "Patching ROM",
     "patching.spoiler": "Creating Spoiler",
+    "create.meta": "Creating Meta Info",
     "calc.playthrough": "Calculating Playthrough",
     "made.rom": "Patched ROM:         %s",
     "made.playthrough": "Printed Playthrough: %s",
@@ -261,8 +262,8 @@
       "Keys:      Key pots are included in the location pool and other items can take their place",
       "Cave:      Only pots in houses and caves are included in the location pool",
       "CaveKeys:  Both pots in houses and caves and keys pots are included in the location pool",
-      "Reduced:   Same as KeyCaves + 25% of Pots in dungeons (dynamic mode)",
-      "Clustered: Same as KeyCaves + 50% of Pots in dungeons, chosen by logical group (dynamic mode)",
+      "Reduced:   Same as KeyCaves + 25%% of Pots in dungeons (dynamic mode)",
+      "Clustered: Same as KeyCaves + 50%% of Pots in dungeons, chosen by logical group (dynamic mode)",
       "NonEmpty:  All pots that are not originally empty are included in the location pool",
       "Dungeon:   Only pots in dungeons are included in the location pool",
       "Lottery:   All pots are part of the location pool"

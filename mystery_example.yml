@@ -5,6 +5,10 @@
     major_only: 1
     dungeon_only: 1
     district: 1
+  restrict_boss_items:
+      none: 1
+#      mapcompass: 1 Bug exists, not recommended
+      dungeon: 1
   door_shuffle:
     vanilla: 0
     basic: 2
@@ -17,11 +21,15 @@
     on: 1
     off: 1
   pottery:
-    none: 4
+    none: 8
     keys: 1
     cave: 1
     dungeon: 1
     lottery: 1
+    cavekeys: 1
+    reduced: 1
+    clustered: 1
+    nonempty: 1
   shopsanity:
     on: 1
     off: 1

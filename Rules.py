@@ -792,7 +792,10 @@ def default_rules(world, player):
     set_rule(world.get_location('Flute Spot', player), lambda state: state.has('Shovel', player))
 
     set_rule(world.get_location('Zora\'s Ledge', player), lambda state: state.has('Flippers', player))
-    set_rule(world.get_entrance('Waterfall of Wishing', player), lambda state: state.has('Flippers', player))  # can be fake flippered into, but is in weird state inside that might prevent you from doing things. Can be improved in future Todo
+    # can be fake flippered into, but is in weird state inside that might prevent you from doing things.
+    set_rule(world.get_entrance('Waterfall of Wishing', player), lambda state: state.has('Flippers', player))
+    # to leave via fake flippers, you'd need pearl and have waterwalk or swimming state, so just require flippers
+    set_rule(world.get_entrance('Zora Waterfall Water Drop', player), lambda state: state.has('Flippers', player))
     set_rule(world.get_location('Frog', player), lambda state: state.can_lift_heavy_rocks(player)) # will get automatic moon pearl requirement
     set_rule(world.get_location('Potion Shop', player), lambda state: state.has('Mushroom', player))
     set_rule(world.get_entrance('Desert Palace Entrance (North) Rocks', player), lambda state: state.can_lift_rocks(player))
@@ -1029,9 +1032,12 @@ def inverted_rules(world, player):
 
     set_rule(world.get_entrance('Inverted Ganons Tower', player), lambda state: state.has_crystals(world.crystals_needed_for_gt[player], player))
 
+
 def no_glitches_rules(world, player):
     if world.mode[player] != 'inverted':
         add_rule(world.get_entrance('Zoras River', player), lambda state: state.has('Flippers', player) or state.can_lift_rocks(player))
+        set_rule(world.get_entrance('Zora Waterfall Entryway', player), lambda state: state.has('Flippers', player))
+        set_rule(world.get_entrance('Zora Waterfall Water Drop', player), lambda state: state.has('Flippers', player))
         add_rule(world.get_entrance('Lake Hylia Central Island Pier', player), lambda state: state.has('Flippers', player))  # can be fake flippered to
         add_rule(world.get_entrance('Hobo Bridge', player), lambda state: state.has('Flippers', player))
         add_rule(world.get_entrance('Dark Lake Hylia Drop (East)', player), lambda state: state.has_Pearl(player) and state.has('Flippers', player))

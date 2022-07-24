@@ -1,5 +1,7 @@
 import argparse
 import RaceRandom as random
+import os
+from pathlib import Path
 
 import urllib.request
 import urllib.parse
@@ -7,13 +9,11 @@ import yaml
 
 
 def get_weights(path):
-    try:
-        if urllib.parse.urlparse(path).scheme:
-            return yaml.load(urllib.request.urlopen(path), Loader=yaml.FullLoader)
-        with open(path, 'r', encoding='utf-8') as f:
+    if os.path.exists(Path(path)):
+        with open(path, "r", encoding="utf-8") as f:
             return yaml.load(f, Loader=yaml.SafeLoader)
-    except Exception as e:
-        raise Exception(f'Failed to read weights file: {e}')
+    elif urllib.parse.urlparse(path).scheme in ['http', 'https']:
+        return yaml.load(urllib.request.urlopen(path), Loader=yaml.FullLoader)
 
 
 def roll_settings(weights):
@@ -46,7 +46,6 @@ def roll_settings(weights):
     ret = argparse.Namespace()
 
     ret.algorithm = get_choice('algorithm')
-    ret.mystery = get_choice_default('mystery', default=True)
 
     glitch_map = {'none': 'noglitches', 'no_logic': 'nologic', 'owglitches': 'owglitches',
                   'owg': 'owglitches', 'minorglitches': 'minorglitches'}

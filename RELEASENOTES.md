@@ -12,7 +12,7 @@ New pottery option that control which pots (and large blocks) are in the locatio
 not include key pots. 
 * CaveKeys: Both non-dungeon pots and pots that used to have keys are in the pool.
 * Reduced: Same as CaveKeys but also roughly a quarter of dungeon pots are added to the location pool picked at random. This is a dynamic mode so pots in the pool will be colored. Pots out of the pool will have vanilla contents.
-* Clustered: LIke reduced but pot are grouped by logical sets and roughly 50% of pots are chosen from those group. This is a dynamic mode like the above.
+* Clustered: Like reduced but pots are grouped by logical sets and roughly 50% of pots are chosen from those group. This is a dynamic mode like the above.
 * Nonempty: All pots that had some sort of objects under them are chosen to be in the location pool. This excludes most large blocks and some pots out of dungeons. 
 * Dungeon Pots: The pots that are in dungeons are in the pool. (Includes serveral large blocks) 
 * Lottery: All pots and large blocks are in the pool
@@ -107,7 +107,7 @@ These districts are chosen at random and then filled with major items. If a loca
 
 In entrance shuffle, what is shuffled to the entrances is considered instead of where the interior was originally. For example, if Blind's Hut is shuffled to the Dam, then the 5 chests in Blind's Hut are part of Central Hyrule instead of Kakariko.
 
-Bombos Table, Lake Hylia Island, Bumper Cave Ledge, the Floating Island, Cave 45, the Graveyard Cave, Checkerboard Cave and Mimic Cave are considered part of the dark world region that you mirror from to get there (except in inverted where these are only accessible in the Light World). Note that Spectacle Rock is always part of light Death Mountain.
+Note: Bombos Tablet, Lake Hylia Island, Bumper Cave Ledge, the Floating Island, Cave 45, the Graveyard Cave, Checkerboard Cave and Mimic Cave are considered part of the light world region rather than the dark world region you mirror from.
 
 In multiworld, the districts chosen apply to all players.  
 
@@ -166,10 +166,46 @@ Same as above but both small keys and bigs keys of the dungeon are not allowed o
 
 #### Customizer
 
-* Fixed up the item_pool section to skip a lot of pool manipulations. Key item will be added to the bow if not detected. Extra dungeon items can be added to the pool and will be confined to the dungeon if possible (and not shuffled). If the pool isn't full, junk items are added to the pool to fill it out.
+* Fixed an issue with lite/lean ER not generating
+* Fixed up the GUI selection of the customizer file.
+* Fixed up the item_pool section to skip a lot of pool manipulations. Key items will be added (like the bow) if not detected. Extra dungeon items can be added to the pool and will be confined to the dungeon if possible (and not shuffled). If the pool isn't full, junk items are added to the pool to fill it out.
 
 #### Volatile
 
+* 1.0.2.7
+    * Revised: Fix for Waterfall of Wishing logic in open. You must have flippers to exit the Waterfall (flippers also required in glitched modes as well)
+* 1.0.2.6
+	* Fix for Zelda (or any follower) going to the maiden cell supertile and the boss is not Blind. The follower will not despawn unless the boss is Blind, then the maiden will spawn as normal.
+	* Added a check for package requirements before running code. GUI and console both for better error messages. Thanks to mtrethewey for the idea.
+	* Refactored spoiler to generate in stages for better error collection. A meta file will be generated additionally for mystery seeds. Some random settings moved later in the spoiler to have the meta section at the top not spoil certain things. (GT/Ganon requirements.) Thanks to codemann and OWR for most of this work.
+	* Fix for Waterfall of Wishing logic in open. You must have flippers to exit the Waterfall (or moon pearl in glitched modes that allow minor glitches in logic)
+* 1.0.2.5
+	* Some textual changes for hints (capitalization standardization)
+		* Item will be highlighted in red if experimental is on
+	* Bug with 0 GT crystals not opening GT
+	* Settings code fix
+	* Fix for pottery not counting items in certain caves that share a supertile with shops
+* 1.0.2.4
+	* Updated tourney winners (included Doors Async League winners)
+	* Fixed a couple issues with dungeon counters and the DungeonCompletion field for autotracking
+* 1.0.2.3
+	* Fix MultiClient for new shop data location in SRAM
+	* Some minor text updates
+* 1.0.2.2
+	* Change to all key pots and enemy key drops: always use the same address
+	* Don't colorize key pots in mystery if the item is "forced"
+* 1.0.2.1
+	* Fix for paired doors
+	* Fix for forbidding certain dashable doors (it actually does something this time)
+* 1.0.2.0
+	* Updated baserom to bleeding edge
+		* Pottery and enemy SRAM re-located to final destination
+		* Bulk of work on new font
+		* Updated TFH to support up to 850 pieces
+	* Fix for major item algorithm and pottery
+	* Updated map display on keysanity menu to work better with overworld_amp option
+	* Minor bug in crossed doors
+	* Minor bug in MultiClient which would count switches
 * 1.0.1.13
 	* New pottery modes
 	* Trinity goal added
@@ -260,6 +296,10 @@ Same as above but both small keys and bigs keys of the dungeon are not allowed o
 	
 #### Unstable
 
+* 1.0.0.3
+	* overworld_map=map mode fixed. Location of dungeons with maps are not shown until map is retrieved. (Dungeon that do not have map like Castle Tower are simply never shown)
+	* Aga2 completion on overworld_map now tied to boss defeat flag instead of pyramid hole being opened (fast ganon fix)
+	* Minor issue in dungeon_only algorithm fixed (minorly affected major_only keyshuffle and vanilla fallbacks)
 * 1.0.0.2
 	* Include 1.0.1 fixes
 	* District hint rework

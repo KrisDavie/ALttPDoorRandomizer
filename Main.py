@@ -33,7 +33,7 @@ from source.overworld.EntranceShuffle2 import link_entrances_new
 from source.tools.BPS import create_bps_from_data
 from source.classes.CustomSettings import CustomSettings
 
-__version__ = '1.0.1.13w'
+__version__ = '1.0.2.7-w'
 
 from source.classes.BabelFish import BabelFish
 
@@ -115,8 +115,8 @@ def main(args, seed=None, fish=None):
     world.potshuffle = args.shufflepots.copy()
     world.mixed_travel = args.mixed_travel.copy()
     world.standardize_palettes = args.standardize_palettes.copy()
-    world.treasure_hunt_count = args.triforce_goal.copy()
-    world.treasure_hunt_total = args.triforce_pool.copy()
+    world.treasure_hunt_count = {k: int(v) for k, v in args.triforce_goal.items()}
+    world.treasure_hunt_total = {k: int(v) for k, v in args.triforce_pool.items()}
     world.shufflelinks = args.shufflelinks.copy()
     world.pseudoboots = args.pseudoboots.copy()
     world.overworld_map = args.overworld_map.copy()
@@ -144,6 +144,8 @@ def main(args, seed=None, fish=None):
     world.settings = CustomSettings()
     world.settings.create_from_world(world)
 
+    outfilebase = f'DR_{args.outputname if args.outputname else world.seed}'
+
     for player in range(1, world.players + 1):
         world.difficulty_requirements[player] = difficulties[world.difficulty[player]]
 
@@ -157,6 +159,13 @@ def main(args, seed=None, fish=None):
                 if item:
                     world.push_precollected(item)
 
+    if args.create_spoiler and not args.jsonout:
+        logger.info(world.fish.translate("cli", "cli", "create.meta"))
+        world.spoiler.meta_to_file(output_path(f'{outfilebase}_Spoiler.txt'))
+    if args.mystery:
+        world.spoiler.mystery_meta_to_file(output_path(f'{outfilebase}_meta.txt'))
+
+    for player in range(1, world.players + 1):
         if world.mode[player] != 'inverted':
             create_regions(world, player)
         else:
@@ -288,7 +297,6 @@ def main(args, seed=None, fish=None):
         balance_money_progression(world)
     ensure_good_pots(world, True)
 
-    outfilebase = f'DR_{args.outputname if args.outputname else world.seed}'
     if args.print_custom_yaml:
         world.settings.record_item_placements(world)
         world.settings.write_to_file(output_path(f'{outfilebase}_custom.yaml'))
@@ -367,6 +375,14 @@ def main(args, seed=None, fish=None):
                 with open(output_path('%s_multidata' % outfilebase), 'wb') as f:
                     f.write(multidata)
 
+    if args.mystery:
+        world.spoiler.hashes_to_file(output_path(f'{outfilebase}_meta.txt'))
+    elif args.create_spoiler and not args.jsonout:
+        world.spoiler.hashes_to_file(output_path(f'{outfilebase}_Spoiler.txt'))
+    if args.create_spoiler and not args.jsonout:
+        logger.info(world.fish.translate("cli", "cli", "patching.spoiler"))
+        world.spoiler.to_file(output_path(f'{outfilebase}_Spoiler.txt'))
+
     if not args.skip_playthrough:
         logger.info(world.fish.translate("cli","cli","calc.playthrough"))
         create_playthrough(world)
@@ -379,7 +395,7 @@ def main(args, seed=None, fish=None):
             with open(output_path('%s_Spoiler.json' % outfilebase), 'w') as outfile:
               outfile.write(world.spoiler.to_json())
         else:
-            world.spoiler.to_file(output_path('%s_Spoiler.txt' % outfilebase))
+            world.spoiler.playthrough_to_file(output_path(f'{outfilebase}_Spoiler.txt'))
 
     YES = world.fish.translate("cli","cli","yes")
     NO = world.fish.translate("cli","cli","no")

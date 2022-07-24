@@ -29,7 +29,6 @@ class LocationGroup(object):
 
         # flags
         self.keyshuffle = False
-        self.keydropshuffle = False
         self.shopsanity = False
         self.retro = False
 
@@ -37,9 +36,8 @@ class LocationGroup(object):
         self.locations = list(locs)
         return self
 
-    def flags(self, k, d=False, s=False, r=False):
+    def flags(self, k, s=False, r=False):
         self.keyshuffle = k
-        self.keydropshuffle = d
         self.shopsanity = s
         self.retro = r
         return self
@@ -124,12 +122,14 @@ def create_item_pool_config(world):
             groups = LocationGroup('Major').locs(init_set)
             if world.bigkeyshuffle[player]:
                 groups.locations.extend(mode_grouping['Big Keys'])
-                if world.keydropshuffle[player] != 'none':
+                if world.dropshuffle[player] != 'none':
                     groups.locations.extend(mode_grouping['Big Key Drops'])
             if world.keyshuffle[player]:
                 groups.locations.extend(mode_grouping['Small Keys'])
-                if world.keydropshuffle[player] != 'none':
+                if world.dropshuffle[player] != 'none':
                     groups.locations.extend(mode_grouping['Key Drops'])
+                if world.pottery[player] not in ['none', 'cave']:
+                    groups.locations.extend(mode_grouping['Pot Keys'])
             if world.compassshuffle[player]:
                 groups.locations.extend(mode_grouping['Compasses'])
             if world.mapshuffle[player]:
@@ -275,7 +275,7 @@ def massage_item_pool(world):
                 world.itempool.remove(deleted)
                 discrepancy -= 1
             if discrepancy > 0:
-                logging.getLogger('').warning(f'Too many good items in pool, something will be removed at random')
+                raise Exception(f'Too many required items in pool, {discrepancy} items cannot be placed')
     if world.item_pool_config.placeholders is not None:
         removed = 0
         single_rupees = [item for item in world.itempool if item.name == 'Rupee (1)']
@@ -327,49 +327,6 @@ def validate_reservation(location, dungeon, world, player):
 
 def count_major_items(config, world, player):
     return sum(1 for x in world.itempool if x.name in config.item_pool[player] and x.player == player)
-
-
-def calc_dungeon_limits(world, player):
-    b, s, c, m, k, r, bi = (world.bigkeyshuffle[player], world.keyshuffle[player], world.compassshuffle[player],
-                            world.mapshuffle[player], world.keydropshuffle[player], world.retro[player],
-                            world.restrict_boss_items[player])
-    if world.doorShuffle[player] in ['vanilla', 'basic']:
-        limits = {}
-        for dungeon, info in dungeon_table.items():
-            val = info.free_items
-            if bi != 'none' and info.prize:
-                if bi == 'mapcompass' and (not c or not m):
-                    val -= 1
-                if bi == 'dungeon' and (not c or not m or not (s or r) or not b):
-                    val -= 1
-            if b:
-                val += 1 if info.bk_present else 0
-                if k != 'none':
-                    val += 1 if info.bk_drops else 0
-            if s or r:
-                val += info.key_num
-                if k != 'none':
-                    val += info.key_drops
-            if c:
-                val += 1 if info.compass_present else 0
-            if m:
-                val += 1 if info.map_present else 0
-            limits[dungeon] = val
-    else:
-        limits = 60
-        if world.bigkeyshuffle[player]:
-            limits += 11
-            if world.keydropshuffle[player] != 'none':
-                limits += 1
-        if world.keyshuffle[player] or world.retro[player]:
-            limits += 29
-            if world.keydropshuffle[player] != 'none':
-                limits += 32
-        if world.compassshuffle[player]:
-            limits += 11
-        if world.mapshuffle[player]:
-            limits += 12
-    return limits
 
 
 def determine_major_items(world, player):
@@ -731,7 +688,7 @@ mode_grouping = {
         'Sewers - Dark Cross', 'Desert Palace - Torch', 'Tower of Hera - Basement Cage',
         'Castle Tower - Room 03', 'Castle Tower - Dark Maze',
         'Palace of Darkness - Stalfos Basement',  'Palace of Darkness - Dark Basement - Right',
-        'Palace of Darkness - Dark Maze - Bottom', 'Palace of Darkness - Shooter Room',
+        'Palace of Darkness - Harmless Hellway', 'Palace of Darkness - Shooter Room',
         'Palace of Darkness - The Arena - Bridge',  'Palace of Darkness - The Arena - Ledge',
         "Thieves' Town - Blind's Cell",  'Skull Woods - Bridge Room', 'Ice Palace - Spike Room',
         'Skull Woods - Pot Prison', 'Skull Woods - Pinball Room', 'Misery Mire - Spike Chest',
@@ -776,19 +733,22 @@ mode_grouping = {
     ],
     'Key Drops': [
         'Hyrule Castle - Map Guard Key Drop', 'Hyrule Castle - Boomerang Guard Key Drop',
-        'Hyrule Castle - Key Rat Key Drop', 'Eastern Palace - Dark Square Pot Key',
-        'Eastern Palace - Dark Eyegore Key Drop', 'Desert Palace - Desert Tiles 1 Pot Key',
-        'Desert Palace - Beamos Hall Pot Key', 'Desert Palace - Desert Tiles 2 Pot Key',
+        'Hyrule Castle - Key Rat Key Drop', 'Eastern Palace - Dark Eyegore Key Drop',
         'Castle Tower - Dark Archer Key Drop', 'Castle Tower - Circle of Pots Key Drop',
+        'Skull Woods - Spike Corner Key Drop',  'Ice Palace - Jelly Key Drop', 'Ice Palace - Conveyor Key Drop',
+        'Misery Mire - Conveyor Crystal Key Drop', 'Turtle Rock - Pokey 1 Key Drop',
+        'Turtle Rock - Pokey 2 Key Drop', 'Ganons Tower - Mini Helmasuar Key Drop',
+    ],
+    'Pot Keys': [
+        'Eastern Palace - Dark Square Pot Key', 'Desert Palace - Desert Tiles 1 Pot Key',
+        'Desert Palace - Beamos Hall Pot Key', 'Desert Palace - Desert Tiles 2 Pot Key',
         'Swamp Palace - Pot Row Pot Key', 'Swamp Palace - Trench 1 Pot Key', 'Swamp Palace - Hookshot Pot Key',
         'Swamp Palace - Trench 2 Pot Key', 'Swamp Palace - Waterway Pot Key', 'Skull Woods - West Lobby Pot Key',
-        'Skull Woods - Spike Corner Key Drop', "Thieves' Town - Hallway Pot Key",
-        "Thieves' Town - Spike Switch Pot Key", 'Ice Palace - Jelly Key Drop', 'Ice Palace - Conveyor Key Drop',
+        "Thieves' Town - Hallway Pot Key", "Thieves' Town - Spike Switch Pot Key",
         'Ice Palace - Hammer Block Key Drop', 'Ice Palace - Many Pots Pot Key', 'Misery Mire - Spikes Pot Key',
-        'Misery Mire - Fishbone Pot Key', 'Misery Mire - Conveyor Crystal Key Drop', 'Turtle Rock - Pokey 1 Key Drop',
-        'Turtle Rock - Pokey 2 Key Drop', 'Ganons Tower - Conveyor Cross Pot Key',
+        'Misery Mire - Fishbone Pot Key', 'Ganons Tower - Conveyor Cross Pot Key',
         'Ganons Tower - Double Switch Pot Key', 'Ganons Tower - Conveyor Star Pits Pot Key',
-        'Ganons Tower - Mini Helmasuar Key Drop',
+
     ],
     'Big Key Drops': ['Hyrule Castle - Big Key Drop'],
     'Shops': [
