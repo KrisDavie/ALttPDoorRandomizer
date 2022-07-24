@@ -220,6 +220,11 @@ def create_guiargs(parent):
     # Get baserom path
     guiargs.rom = parent.pages["randomizer"].pages["generation"].widgets["rom"].storageVar.get()
 
+    # Get customizer path
+    customizer_value = parent.pages["randomizer"].pages["generation"].widgets["customizer"].storageVar.get()
+    if customizer_value and customizer_value != 'None':
+        guiargs.customizer = customizer_value
+
     # Get if we're using the Custom Item Pool
     guiargs.custom = bool(parent.pages["randomizer"].pages["generation"].widgets["usecustompool"].storageVar.get())
 

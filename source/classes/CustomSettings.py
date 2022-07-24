@@ -5,6 +5,7 @@ import urllib.parse
 import yaml
 from yaml.representer import Representer
 from collections import defaultdict
+from pathlib import Path
 
 import RaceRandom as random
 from BaseClasses import LocationType, DoorType
@@ -60,6 +61,7 @@ class CustomSettings(object):
                 if isinstance(player_setting, str):
                     weights = get_weights(os.path.join(self.relative_dir, player_setting))
                     settings = defaultdict(lambda: None, vars(roll_settings(weights)))
+                    args.mystery = True
                 else:
                     settings = defaultdict(lambda: None, player_setting)
                 args.shuffle[p] = get_setting(settings['shuffle'], args.shuffle[p])
@@ -339,10 +341,9 @@ def load_yaml(path):
         if os.path.exists(Path(path)):
             with open(path, "r", encoding="utf-8") as f:
                 return yaml.load(f, Loader=yaml.SafeLoader)
-        elif urllib.parse.urlparse(path).scheme:
+        elif urllib.parse.urlparse(path).scheme in ['http', 'https']:
             return yaml.load(urllib.request.urlopen(path), Loader=yaml.FullLoader)
         else:
             raise exc
     except Exception as e:
         raise Exception(f'Failed to read customizer file: {e}')
-

@@ -678,6 +678,11 @@ def extract_data_from_jp_rom(rom):
         # print_data_block(secretdata)
 #        print()
 
+def count_set_bits(val):
+    if val == 0:
+        return 0
+    else:
+        return (val & 1) + count_set_bits(val >> 1)
 
 def check_pots():
     from PotShuffle import vanilla_pots

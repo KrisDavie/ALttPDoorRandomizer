@@ -196,8 +196,8 @@ OldHudToNewHudTable:
 	dw 1, 2, 3, 10, 4, 6, 5, 8, 11, 9, 7, 12, 13
 
 IndicatorCharacters:
-    ;  check      G      P      R      C
-	dw $2426, $2590, $2599, $259B, $258C
+	;  check      1      2      3      4      5      6      7      G      B      R
+	dw $2426, $2817, $2818, $2819, $281A, $281B, $281C, $281D, $2590, $258B, $259B
 
 MapIndicator:
 	LDA.l CrystalPendantFlags_3, X : AND #$00FF
@@ -223,7 +223,7 @@ ConvertToDisplay:
 ConvertToDisplay2:
     and.w #$00ff : beq ++
         cmp #$000a : !blt +
-            !add #$2553 : rts
+            !add #$2553 : rts ; todo: use 2580 with 258A as "A" for non transparent digits
         + !add #$2816 : rts
     ++ lda #$2827 : rts ; 0/O for 0 or placeholder digit ;2483
 

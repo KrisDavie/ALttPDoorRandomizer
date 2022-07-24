@@ -1,3 +1,7 @@
+if __name__ == '__main__':
+    from source.meta.check_requirements import check_requirements
+    check_requirements()
+
 import json
 import os
 import sys

@@ -947,7 +947,7 @@ def find_entrances_and_exits(avail_pool, entrance_pool):
         if item in avail_pool.entrances:
             entrances.append(item)
         if item in entrance_map and entrance_map[item] in avail_pool.exits:
-            if item in ['Links House Exit', 'Inverted Links House Exit']:
+            if entrance_map[item] in ['Links House Exit', 'Inverted Links House Exit']:
                 targets.append('Chris Houlihan Room Exit')
             targets.append(entrance_map[item])
         elif item in single_entrance_map and single_entrance_map[item] in avail_pool.exits:
@@ -1837,6 +1837,8 @@ mandatory_connections = [('Links House S&Q', 'Links House'),
                          ('Lake Hylia Central Island Pier', 'Lake Hylia Central Island'),
                          ('Lake Hylia Central Island Teleporter', 'Dark Lake Hylia Central Island'),
                          ('Zoras River', 'Zoras River'),
+                         ('Zora Waterfall Entryway', 'Zora Waterfall Entryway'),
+                         ('Zora Waterfall Water Drop', 'Light World'),
                          ('Kings Grave Outer Rocks', 'Kings Grave Area'),
                          ('Kings Grave Inner Rocks', 'Light World'),
                          ('Kings Grave Mirror Spot', 'Kings Grave Area'),

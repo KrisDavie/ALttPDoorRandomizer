@@ -90,9 +90,11 @@ INGAME_MODES = {0x07, 0x09, 0x0b}
 SAVEDATA_START = WRAM_START + 0xF000
 SAVEDATA_SIZE = 0x500
 
-POT_ITEMS_SRAM_START = WRAM_START + 0x016600
-SPRITE_ITEMS_SRAM_START = WRAM_START + 0x016850
+POT_ITEMS_SRAM_START = WRAM_START + 0x016018        # 2 bytes per room
+SPRITE_ITEMS_SRAM_START = WRAM_START + 0x016268     # 2 bytes per room
+SHOP_SRAM_START = WRAM_START + 0x0164B8             # 2 bytes?
 ITEM_SRAM_SIZE = 0x250
+SHOP_SRAM_LEN = 0x29  # 41 tracked items
 
 RECV_PROGRESS_ADDR = SAVEDATA_START + 0x4D0         # 2 bytes
 RECV_ITEM_ADDR = SAVEDATA_START + 0x4D2             # 1 byte
@@ -103,11 +105,9 @@ SCOUT_LOCATION_ADDR = SAVEDATA_START + 0x4D7        # 1 byte
 SCOUTREPLY_LOCATION_ADDR = SAVEDATA_START + 0x4D8   # 1 byte
 SCOUTREPLY_ITEM_ADDR = SAVEDATA_START + 0x4D9       # 1 byte
 SCOUTREPLY_PLAYER_ADDR = SAVEDATA_START + 0x4DA     # 1 byte
-SHOP_ADDR = SAVEDATA_START + 0x302                  # 2 bytes?
 DYNAMIC_TOTAL_ADDR = SAVEDATA_START + 0x33E         # 2 bytes
 MODE_FLAGS = SAVEDATA_START + 0x33D         # 1 byte
 
-SHOP_SRAM_LEN = 0x29  # 41 tracked items
 location_shop_order = [Regions.shop_to_location_table.keys()] + [Regions.retro_shops.keys()]
 location_shop_ids = {0x0112, 0x0110, 0x010F, 0x00FF, 0x011F, 0x0109, 0x0115}
 
@@ -894,7 +894,7 @@ async def track_locations(ctx : Context, roomid, roomdata):
 
     try:
         if ctx.shop_mode or ctx.retro_mode:
-            misc_data = await snes_read(ctx, SHOP_ADDR, SHOP_SRAM_LEN)
+            misc_data = await snes_read(ctx, SHOP_SRAM_START, SHOP_SRAM_LEN)
             for cnt, b in enumerate(misc_data):
                 my_check = Regions.shop_table_by_location_id[0x400000 + cnt]
                 if int(b) > 0 and my_check not in ctx.locations_checked:

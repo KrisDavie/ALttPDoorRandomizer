@@ -1967,8 +1967,10 @@ ohko_forbidden = {
 
 
 def filter_dashable_candidates(candidates, world):
-    forbidden_set = dashable_forbidden if world.timer in ['ohko', 'timed-ohko'] else ohko_forbidden
-    return [x for x in candidates if x not in forbidden_set and x.dest not in forbidden_set]
+    forbidden_set = dashable_forbidden
+    if world.timer in ['ohko', 'timed-ohko']:
+        forbidden_set = ohko_forbidden.union(dashable_forbidden)
+    return [x for x in candidates if x.name not in forbidden_set and x.dest.name not in forbidden_set]
 
 
 def shuffle_bombable_dashable(bd_candidates, world, player):

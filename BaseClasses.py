@@ -2359,6 +2359,62 @@ class Spoiler(object):
         else:
             self.doorTypes[(doorNames, player)] = OrderedDict([('player', player), ('doorNames', doorNames), ('type', type)])
 
+    def parse_meta(self):
+        from Main import __version__ as ERVersion
+
+        self.startinventory = list(map(str, self.world.precollected_items))
+        self.metadata = {'version': ERVersion,
+                         'logic': self.world.logic,
+                         'mode': self.world.mode,
+                         'retro': self.world.retro,
+                         'bombbag': self.world.bombbag,
+                         'weapons': self.world.swords,
+                         'goal': self.world.goal,
+                         'shuffle': self.world.shuffle,
+                         'shuffleganon': self.world.shuffle_ganon,
+                         'shufflelinks': self.world.shufflelinks,
+                         'overworld_map': self.world.overworld_map,
+                         'door_shuffle': self.world.doorShuffle,
+                         'intensity': self.world.intensity,
+                         'dungeon_counters': self.world.dungeon_counters,
+                         'item_pool': self.world.difficulty,
+                         'item_functionality': self.world.difficulty_adjustments,
+                         'gt_crystals': self.world.crystals_needed_for_gt,
+                         'ganon_crystals': self.world.crystals_needed_for_ganon,
+                         'open_pyramid': self.world.open_pyramid,
+                         'accessibility': self.world.accessibility,
+                         'restricted_boss_items': self.world.restrict_boss_items,
+                         'hints': self.world.hints,
+                         'mapshuffle': self.world.mapshuffle,
+                         'compassshuffle': self.world.compassshuffle,
+                         'keyshuffle': self.world.keyshuffle,
+                         'bigkeyshuffle': self.world.bigkeyshuffle,
+                         'boss_shuffle': self.world.boss_shuffle,
+                         'enemy_shuffle': self.world.enemy_shuffle,
+                         'enemy_health': self.world.enemy_health,
+                         'enemy_damage': self.world.enemy_damage,
+                         'players': self.world.players,
+                         'teams': self.world.teams,
+                         'experimental': self.world.experimental,
+                         'dropshuffle': self.world.dropshuffle,
+                         'pottery': self.world.pottery,
+                         'potshuffle': self.world.potshuffle,
+                         'shopsanity': self.world.shopsanity,
+                         'pseudoboots': self.world.pseudoboots,
+                         'triforcegoal': self.world.treasure_hunt_count,
+                         'triforcepool': self.world.treasure_hunt_total,
+                         'code': {p: Settings.make_code(self.world, p) for p in range(1, self.world.players + 1)}
+                         }
+
+        for p in range(1, self.world.players + 1):
+            from ItemList import set_default_triforce
+            if self.world.custom and p in self.world.customitemarray:
+                self.metadata['triforcegoal'][p], self.metadata['triforcepool'][p] = set_default_triforce(self.metadata['goal'][p], self.world.customitemarray[p]["triforcepiecesgoal"], self.world.customitemarray[p]["triforcepieces"])
+            else:
+                custom_goal = self.world.treasure_hunt_count[p] if isinstance(self.world.treasure_hunt_count, dict) else self.world.treasure_hunt_count
+                custom_total = self.world.treasure_hunt_total[p] if isinstance(self.world.treasure_hunt_total, dict) else self.world.treasure_hunt_total
+                self.metadata['triforcegoal'][p], self.metadata['triforcepool'][p] = set_default_triforce(self.metadata['goal'][p], custom_goal, custom_total)
+
     def parse_data(self):
         self.medallions = OrderedDict()
         if self.world.players == 1:
@@ -2377,8 +2433,6 @@ class Spoiler(object):
             for player in range(1, self.world.players + 1):
                 self.bottles[f'Waterfall Bottle ({self.world.get_player_names(player)})'] = self.world.bottle_refills[player][0]
                 self.bottles[f'Pyramid Bottle ({self.world.get_player_names(player)})'] = self.world.bottle_refills[player][1]
-
-        self.startinventory = list(map(str, self.world.precollected_items))
 
         self.locations = OrderedDict()
         listed_locations = set()
@@ -2450,47 +2504,6 @@ class Spoiler(object):
                 for portal in self.world.dungeon_portals[player]:
                     self.set_lobby(portal.name, portal.door.name, player)
 
-        from Main import __version__ as ERVersion
-        self.metadata = {'version': ERVersion,
-                         'logic': self.world.logic,
-                         'mode': self.world.mode,
-                         'retro': self.world.retro,
-                         'bombbag': self.world.bombbag,
-                         'weapons': self.world.swords,
-                         'goal': self.world.goal,
-                         'shuffle': self.world.shuffle,
-                         'shufflelinks': self.world.shufflelinks,
-                         'door_shuffle': self.world.doorShuffle,
-                         'intensity': self.world.intensity,
-                         'item_pool': self.world.difficulty,
-                         'item_functionality': self.world.difficulty_adjustments,
-                         'gt_crystals': self.world.crystals_needed_for_gt,
-                         'ganon_crystals': self.world.crystals_needed_for_ganon,
-                         'open_pyramid': self.world.open_pyramid,
-                         'accessibility': self.world.accessibility,
-                         'restricted_boss_items': self.world.restrict_boss_items,
-                         'hints': self.world.hints,
-                         'mapshuffle': self.world.mapshuffle,
-                         'compassshuffle': self.world.compassshuffle,
-                         'keyshuffle': self.world.keyshuffle,
-                         'bigkeyshuffle': self.world.bigkeyshuffle,
-                         'boss_shuffle': self.world.boss_shuffle,
-                         'enemy_shuffle': self.world.enemy_shuffle,
-                         'enemy_health': self.world.enemy_health,
-                         'enemy_damage': self.world.enemy_damage,
-                         'players': self.world.players,
-                         'teams': self.world.teams,
-                         'experimental': self.world.experimental,
-                         'dropshuffle': self.world.dropshuffle,
-                         'pottery': self.world.pottery,
-                         'potshuffle': self.world.potshuffle,
-                         'shopsanity': self.world.shopsanity,
-                         'pseudoboots': self.world.pseudoboots,
-						 'triforcegoal': self.world.treasure_hunt_count,
-						 'triforcepool': self.world.treasure_hunt_total,
-                         'code': {p: Settings.make_code(self.world, p) for p in range(1, self.world.players + 1)}
-                         }
-
     def to_json(self):
         self.parse_data()
         out = OrderedDict()
@@ -2513,22 +2526,29 @@ class Spoiler(object):
 
         return json.dumps(out)
 
-    def to_file(self, filename):
+    def mystery_meta_to_file(self, filename):
+        self.parse_meta()
+        with open(filename, 'w') as outfile:
+            outfile.write('ALttP Dungeon Randomizer Version %s  -  Seed: %s\n\n' % (self.metadata['version'], self.world.seed))
+            for player in range(1, self.world.players + 1):
+                if self.world.players > 1:
+                    outfile.write('\nPlayer %d: %s\n' % (player, self.world.get_player_names(player)))
+                outfile.write('Logic:                           %s\n' % self.metadata['logic'][player])
+
+    def meta_to_file(self, filename):
         def yn(flag):
             return 'Yes' if flag else 'No'
 
-        self.parse_data()
+        line_width = 35
+        self.parse_meta()
         with open(filename, 'w') as outfile:
-            outfile.write('ALttP Entrance Randomizer Version %s  -  Seed: %s\n\n' % (self.metadata['version'], self.world.seed))
+            outfile.write('ALttP Dungeon Randomizer Version %s  -  Seed: %s\n\n' % (self.metadata['version'], self.world.seed))
             outfile.write('Filling Algorithm:               %s\n' % self.world.algorithm)
             outfile.write('Players:                         %d\n' % self.world.players)
             outfile.write('Teams:                           %d\n' % self.world.teams)
             for player in range(1, self.world.players + 1):
                 if self.world.players > 1:
                     outfile.write('\nPlayer %d: %s\n' % (player, self.world.get_player_names(player)))
-                if len(self.hashes) > 0:
-                    for team in range(self.world.teams):
-                        outfile.write('%s%s\n' % (f"Hash - {self.world.player_names[player][team]} (Team {team+1}): " if self.world.teams > 1 else 'Hash: ', self.hashes[player, team]))
                 outfile.write(f'Settings Code:                   {self.metadata["code"][player]}\n')
                 outfile.write('Logic:                           %s\n' % self.metadata['logic'][player])
                 outfile.write('Mode:                            %s\n' % self.metadata['mode'][player])
@@ -2538,23 +2558,30 @@ class Spoiler(object):
                 if self.metadata['goal'][player] in ['triforcehunt', 'trinity']:
                     outfile.write('Triforce Pieces Required:        %s\n' % self.metadata['triforcegoal'][player])
                     outfile.write('Triforce Pieces Total:           %s\n' % self.metadata['triforcepool'][player])
+                outfile.write('Crystals required for GT:        %s\n' % (str(self.world.crystals_gt_orig[player])))
+                outfile.write('Crystals required for Ganon:     %s\n' % (str(self.world.crystals_ganon_orig[player])))
+                outfile.write('Accessibility:                   %s\n' % self.metadata['accessibility'][player])
+                outfile.write(f"Restricted Boss Items:           {self.metadata['restricted_boss_items'][player]}\n")
                 outfile.write('Difficulty:                      %s\n' % self.metadata['item_pool'][player])
                 outfile.write('Item Functionality:              %s\n' % self.metadata['item_functionality'][player])
+                outfile.write(f"Shopsanity:                      {yn(self.metadata['shopsanity'][player])}\n")
+                outfile.write(f"Bombbag:                         {yn(self.metadata['bombbag'][player])}\n")
+                outfile.write(f"Pseudoboots:                     {yn(self.metadata['pseudoboots'][player])}\n")
                 outfile.write('Entrance Shuffle:                %s\n' % self.metadata['shuffle'][player])
-                outfile.write(f"Link's House Shuffled:           {yn(self.metadata['shufflelinks'])}\n")
+                if self.metadata['shuffle'][player] != 'vanilla':
+                    outfile.write(f"Link's House Shuffled:           {yn(self.metadata['shufflelinks'])}\n")
+                    outfile.write(f"GT/Ganon Shuffled:               {yn(self.metadata['shuffleganon'])}\n")
+                    outfile.write(f"Overworld Map:                   {self.metadata['overworld_map'][player]}\n")
+                if self.metadata['goal'][player] != 'trinity':
+                    outfile.write('Pyramid hole pre-opened:         %s\n' % ('Yes' if self.metadata['open_pyramid'][player] else 'No'))
                 outfile.write('Door Shuffle:                    %s\n' % self.metadata['door_shuffle'][player])
-                outfile.write('Intensity:                       %s\n' % self.metadata['intensity'][player])
+                if self.metadata['door_shuffle'][player] != 'vanilla':
+                    outfile.write(f"Intensity:                       {self.metadata['intensity'][player]}\n")
+                    outfile.write(f"Experimental:                    {yn(self.metadata['experimental'][player])}\n")
+                outfile.write(f"Dungeon Counters:                {self.metadata['dungeon_counters'][player]}\n")
                 outfile.write(f"Drop Shuffle:                    {yn(self.metadata['dropshuffle'][player])}\n")
                 outfile.write(f"Pottery Mode:                    {self.metadata['pottery'][player]}\n")
                 outfile.write(f"Pot Shuffle (Legacy):            {yn(self.metadata['potshuffle'][player])}\n")
-                addition = ' (Random)' if self.world.crystals_gt_orig[player] == 'random' else ''
-                outfile.write('Crystals required for GT:        %s\n' % (str(self.metadata['gt_crystals'][player]) + addition))
-                addition = ' (Random)' if self.world.crystals_ganon_orig[player] == 'random' else ''
-                outfile.write('Crystals required for Ganon:     %s\n' % (str(self.metadata['ganon_crystals'][player]) + addition))
-                if self.metadata['goal'][player] != 'trinity':
-                    outfile.write('Pyramid hole pre-opened:         %s\n' % ('Yes' if self.metadata['open_pyramid'][player] else 'No'))
-                outfile.write('Accessibility:                   %s\n' % self.metadata['accessibility'][player])
-                outfile.write(f"Restricted Boss Items:           {self.metadata['restricted_boss_items'][player]}\n")
                 outfile.write('Map shuffle:                     %s\n' % ('Yes' if self.metadata['mapshuffle'][player] else 'No'))
                 outfile.write('Compass shuffle:                 %s\n' % ('Yes' if self.metadata['compassshuffle'][player] else 'No'))
                 outfile.write('Small Key shuffle:               %s\n' % ('Yes' if self.metadata['keyshuffle'][player] else 'No'))
@@ -2564,10 +2591,62 @@ class Spoiler(object):
                 outfile.write('Enemy health:                    %s\n' % self.metadata['enemy_health'][player])
                 outfile.write('Enemy damage:                    %s\n' % self.metadata['enemy_damage'][player])
                 outfile.write(f"Hints:                           {yn(self.metadata['hints'][player])}\n")
-                outfile.write(f"Experimental:                    {yn(self.metadata['experimental'][player])}\n")
-                outfile.write(f"Shopsanity:                      {yn(self.metadata['shopsanity'][player])}\n")
-                outfile.write(f"Bombbag:                         {yn(self.metadata['bombbag'][player])}\n")
-                outfile.write(f"Pseudoboots:                     {yn(self.metadata['pseudoboots'][player])}\n")
+
+            if self.startinventory:
+                outfile.write('Starting Inventory:'.ljust(line_width))
+                outfile.write('\n'.ljust(line_width+1).join(self.startinventory) + '\n')
+
+    def hashes_to_file(self, filename):
+        with open(filename, 'r') as infile:
+            contents = infile.readlines()
+
+        def insert(lines, i, value):
+            lines.insert(i, value)
+            i += 1
+            return i
+
+        idx = 2
+        if self.world.players > 1:
+            idx = insert(contents, idx, 'Hashes:')
+        for player in range(1, self.world.players + 1):
+            if self.world.players > 1:
+                idx = insert(contents, idx, f'\nPlayer {player}: {self.world.get_player_names(player)}\n')
+            if len(self.hashes) > 0:
+                for team in range(self.world.teams):
+                    player_name = self.world.player_names[player][team]
+                    label = f"Hash - {player_name} (Team {team+1}): " if self.world.teams > 1 else 'Hash: '
+                    idx = insert(contents, idx, f'{label}{self.hashes[player, team]}\n')
+        if self.world.players > 1:
+            insert(contents, idx, '\n')  # return value ignored here, if you want to add more lines
+
+        with open(filename, "w") as f:
+            contents = "".join(contents)
+            f.write(contents)
+
+    def to_file(self, filename):
+        self.parse_data()
+        with open(filename, 'a') as outfile:
+            line_width = 35
+
+            outfile.write('\nRequirements:\n\n')
+            for dungeon, medallion in self.medallions.items():
+                outfile.write(f'{dungeon}: {medallion} Medallion\n')
+            for player in range(1, self.world.players + 1):
+                player_name = '' if self.world.players == 1 else str(' (Player ' + str(player) + ')')
+                if self.world.crystals_gt_orig[player] == 'random':
+                    outfile.write(str('Crystals Required for GT' + player_name + ':').ljust(line_width) + '%s\n' % (str(self.metadata['gt_crystals'][player])))
+                if self.world.crystals_ganon_orig[player] == 'random':
+                    outfile.write(str('Crystals Required for Ganon' + player_name + ':').ljust(line_width) + '%s\n' % (str(self.metadata['ganon_crystals'][player])))
+
+            outfile.write('\n\nBottle Refills:\n\n')
+            for fairy, bottle in self.bottles.items():
+                outfile.write(f'{fairy}: {bottle}\n')
+
+            if self.entrances:
+                # entrances: To/From overworld; Checking w/ & w/out "Exit" and translating accordingly
+                outfile.write('\nEntrances:\n\n')
+                outfile.write('\n'.join(['%s%s %s %s' % (f'{self.world.get_player_names(entry["player"])}: ' if self.world.players > 1 else '', self.world.fish.translate("meta","entrances",entry['entrance']), '<=>' if entry['direction'] == 'both' else '<=' if entry['direction'] == 'exit' else '=>', self.world.fish.translate("meta","entrances",entry['exit'])) for entry in self.entrances.values()]))
+
             if self.doors:
                 outfile.write('\n\nDoors:\n\n')
                 outfile.write('\n'.join(
@@ -2588,19 +2667,6 @@ class Spoiler(object):
                 # doorTypes: Small Key, Bombable, Bonkable
                 outfile.write('\n\nDoor Types:\n\n')
                 outfile.write('\n'.join(['%s%s %s' % ('Player {0}: '.format(entry['player']) if self.world.players > 1 else '', self.world.fish.translate("meta","doors",entry['doorNames']), self.world.fish.translate("meta","doorTypes",entry['type'])) for entry in self.doorTypes.values()]))
-            if self.entrances:
-                # entrances: To/From overworld; Checking w/ & w/out "Exit" and translating accordingly
-                outfile.write('\n\nEntrances:\n\n')
-                outfile.write('\n'.join(['%s%s %s %s' % (f'{self.world.get_player_names(entry["player"])}: ' if self.world.players > 1 else '', self.world.fish.translate("meta","entrances",entry['entrance']), '<=>' if entry['direction'] == 'both' else '<=' if entry['direction'] == 'exit' else '=>', self.world.fish.translate("meta","entrances",entry['exit'])) for entry in self.entrances.values()]))
-            outfile.write('\n\nMedallions:\n')
-            for dungeon, medallion in self.medallions.items():
-                outfile.write(f'\n{dungeon}: {medallion} Medallion')
-            outfile.write('\n\nBottle Refills:\n')
-            for fairy, bottle in self.bottles.items():
-                outfile.write(f'\n{fairy}: {bottle}')
-            if self.startinventory:
-                outfile.write('\n\nStarting Inventory:\n\n')
-                outfile.write('\n'.join(self.startinventory))
 
             # locations: Change up location names; in the instance of a location with multiple sections, it'll try to translate the room name
             # items: Item names
@@ -2618,6 +2684,8 @@ class Spoiler(object):
                     outfile.write(f'\n\nBosses ({self.world.get_player_names(player)}):\n\n')
                     outfile.write('\n'.join([f'{x}: {y}' for x, y in bossmap.items() if y not in ['Agahnim', 'Agahnim 2', 'Ganon']]))
 
+    def playthrough_to_file(self, filename):
+        with open(filename, 'a') as outfile:
             # locations: Change up location names; in the instance of a location with multiple sections, it'll try to translate the room name
             # items: Item names
             outfile.write('\n\nPlaythrough:\n\n')
@@ -2893,7 +2961,7 @@ class Settings(object):
         args.bombbag[p] = True if settings[8] & 0x2 else False
         args.shufflelinks[p] = True if settings[8] & 0x1 else False
         if len(settings) > 9:
-            args.restrict_boss_items[p] = r(rb_mode)[(settings[9] & 0x80) >> 6]
+            args.restrict_boss_items[p] = r(rb_mode)[(settings[9] & 0xC0) >> 6]
             args.algorithm = r(algo_mode)[(settings[9] & 0x38) >> 3]
             args.shufflebosses[p] = r(boss_mode)[(settings[9] & 0x07)]
 

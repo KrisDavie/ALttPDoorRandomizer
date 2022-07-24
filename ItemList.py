@@ -44,6 +44,7 @@ Difficulty = namedtuple('Difficulty',
                          'progressive_bow_limit', 'heart_piece_limit', 'boss_heart_container_limit'])
 
 total_items_to_place = 153
+max_goal = 850
 
 difficulties = {
     'normal': Difficulty(
@@ -203,6 +204,7 @@ def generate_itempool(world, player):
         world.push_item(loc, ItemFactory('Triforce', player), False)
         loc.event = True
         loc.locked = True
+        loc.forced_item = loc.item
 
     world.get_location('Ganon', player).event = True
     world.get_location('Ganon', player).locked = True
@@ -795,7 +797,8 @@ def get_pool_core(progressive, shuffle, difficulty, treasure_hunt_total, timer, 
     if goal in ['triforcehunt', 'trinity']:
         if treasure_hunt_total == 0:
             treasure_hunt_total = 30 if goal == 'triforcehunt' else 10
-    triforcepool = ['Triforce Piece'] * int(treasure_hunt_total)
+    # triforce pieces max out
+    triforcepool = ['Triforce Piece'] * min(treasure_hunt_total, max_goal)
 
     pool.extend(alwaysitems)
 
@@ -984,8 +987,8 @@ def make_custom_item_pool(progressive, shuffle, difficulty, timer, goal, mode, s
         pool.append(thisbottle)
 
     if customitemarray["triforcepieces"] > 0 or customitemarray["triforcepiecesgoal"] > 0:
-        # To display, count must be between 1 and 254 - larger values are not yet supported
-        treasure_hunt_count = max(min(customitemarray["triforcepiecesgoal"], 254), 1)
+        # Location pool doesn't support larger values
+        treasure_hunt_count = max(min(customitemarray["triforcepiecesgoal"], max_goal), 1)
         treasure_hunt_icon = 'Triforce Piece'
         # Ensure game is always possible to complete here, force sufficient pieces if the player is unwilling.
         if ((customitemarray["triforcepieces"] < treasure_hunt_count) and (goal in ['triforcehunt', 'trinity'])
@@ -1176,7 +1179,7 @@ def get_player_dungeon_item_pool(world, player):
             if dungeon.player == player and item.location is None]
 
 
-# To display, count must be between 1 and 254 - larger values are not yet supported
+# location pool doesn't support larger values at this time
 def set_default_triforce(goal, custom_goal, custom_total):
     triforce_goal, triforce_total = 0, 0
     if goal == 'triforcehunt':
@@ -1184,9 +1187,9 @@ def set_default_triforce(goal, custom_goal, custom_total):
     elif goal == 'trinity':
         triforce_goal, triforce_total = 8, 10
     if custom_goal > 0:
-        triforce_goal = max(min(custom_goal, 254), 1)
+        triforce_goal = max(min(custom_goal, max_goal), 1)
     if custom_total > 0:
-        triforce_total = max(min(custom_total, 254), triforce_goal)
+        triforce_total = max(min(custom_total, max_goal), triforce_goal)
     return triforce_goal, triforce_total
 
 

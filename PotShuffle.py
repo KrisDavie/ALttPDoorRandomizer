@@ -1015,8 +1015,8 @@ key_drop_data = {
     'Swamp Palace - Waterway Pot Key': ['Pot', 0x16, 'in a pot in Swamp Palace', 'Small Key (Swamp Palace)'],
     'Skull Woods - West Lobby Pot Key': ['Pot', 0x56, 'in a pot in Skull Woods', 'Small Key (Skull Woods)'],
     'Skull Woods - Spike Corner Key Drop': ['Drop', (0x09DD74, 0x39, 1), 'dropped near Mothula', 'Small Key (Skull Woods)'],
-    "Thieves' Town - Hallway Pot Key": ['Pot', 0xBC, "in a pot in Thieves' Town", 'Small Key (Thieves Town)'],
-    "Thieves' Town - Spike Switch Pot Key": ['Pot', 0xAB, "in a pot in Thieves' Town", 'Small Key (Thieves Town)'],
+    "Thieves' Town - Hallway Pot Key": ['Pot', 0xBC, "in a pot in Thieves Town", 'Small Key (Thieves Town)'],
+    "Thieves' Town - Spike Switch Pot Key": ['Pot', 0xAB, "in a pot in Thieves Town", 'Small Key (Thieves Town)'],
     'Ice Palace - Jelly Key Drop': ['Drop', (0x09DA21, 0xE, 3), 'dropped in Ice Palace', 'Small Key (Ice Palace)'],
     'Ice Palace - Conveyor Key Drop': ['Drop', (0x09DE08, 0x3E, 8), 'dropped in Ice Palace', 'Small Key (Ice Palace)'],
     'Ice Palace - Hammer Block Key Drop': ['Pot', 0x3F, 'under a block in Ice Palace', 'Small Key (Ice Palace)'],
@@ -1052,7 +1052,7 @@ class PotSecretTable(object):
                 rom.write_bytes(pointer_address + room * 2, int16_as_bytes(data_address))
                 for pot in self.room_map[room]:
                     rom.write_bytes(data_pointer + list_idx * 3, pot.pot_data())
-                    if pot.location is not None:
+                    if pot.location is not None and not pot.location.forced_item:
                         collection_rate_mask |= 1 << (15 - list_idx)
                         if colorize and pot.obj_ref:
                             pot.obj_ref.change_type(Shuffled_Pot)
