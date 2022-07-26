@@ -1,5 +1,6 @@
 from tkinter import Tk, TOP, BOTH, Toplevel, ttk, filedialog
 from PIL import Image
+from source.gui.customizer.Doors.overview import door_customizer_page
 from source.gui.customizer.Entrances.overview import entrance_customizer_page
 from source.gui.customizer.Items.overview import item_customizer_page
 from source.gui.customizer.worlds_data import World, worlds_data
@@ -54,6 +55,13 @@ def customizerGUI(top=None):
             self.pages["pots"].pages[dungeon].content.load_yaml(
                 self.pages["pots"].pages[dungeon].content, yaml_data["placements"][1]
             )
+            if dungeon == 'Underworld':
+                continue
+
+
+            self.pages["doors"].pages[dungeon].content.load_yaml(
+                self.pages["doors"].pages[dungeon].content, yaml_data["doors"][1]
+            )
 
         all_entrances = {**yaml_data["entrances"][1]["entrances"], **yaml_data["entrances"][1]["two-way"]}
         self.pages["entrances"].content.load_yaml(self.pages["entrances"].content, all_entrances)
@@ -103,9 +111,11 @@ def customizerGUI(top=None):
     self.pages["entrances"] = ttk.Frame(self.notebook)
     self.pages["items"] = ttk.Frame(self.notebook)
     self.pages["pots"] = ttk.Frame(self.notebook)
+    self.pages["doors"] = ttk.Frame(self.notebook)
     self.notebook.add(self.pages["entrances"], text="Entrances")
     self.notebook.add(self.pages["items"], text="Items")
     self.notebook.add(self.pages["pots"], text="Pots")
+    self.notebook.add(self.pages["doors"], text="Doors")
     self.notebook.pack()
 
     self.pages["items"].notebook = ttk.Notebook(self.pages["items"])
@@ -113,6 +123,9 @@ def customizerGUI(top=None):
 
     self.pages["pots"].notebook = ttk.Notebook(self.pages["pots"])
     self.pages["pots"].pages = {}
+
+    self.pages["doors"].notebook = ttk.Notebook(self.pages["doors"])
+    self.pages["doors"].pages = {}
 
     self.pages["entrances"].content = entrance_customizer_page(self, self.pages["entrances"])
     self.pages["entrances"].content.pack(side=TOP, fill=BOTH, expand=True)
@@ -139,8 +152,20 @@ def customizerGUI(top=None):
         self.pages["pots"].pages[dungeon].content.pack(side=TOP, fill=BOTH, expand=True)
 
 
+        if dungeon == 'Underworld':
+            continue
+
+        self.pages["doors"].pages[dungeon] = ttk.Frame(self.pages["doors"].notebook)
+        self.pages["doors"].notebook.add(self.pages["doors"].pages[dungeon], text=dungeon.replace("_", " "))
+        self.pages["doors"].pages[dungeon].content = door_customizer_page(
+            self, self.pages["doors"].pages[dungeon], world, eg_img=eg_img
+        )
+        self.pages["doors"].pages[dungeon].content.pack(side=TOP, fill=BOTH, expand=True)
+
+
     self.pages["items"].notebook.pack()
     self.pages["pots"].notebook.pack()
+    self.pages["doors"].notebook.pack()
     save_data_button = ttk.Button(self, text="Save Customizer Data", command=lambda: save_yaml(self))
     save_data_button.pack()
     load_data_button = ttk.Button(self, text="Load Customizer Data", command=lambda: load_yaml(self))
