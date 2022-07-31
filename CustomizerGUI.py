@@ -73,9 +73,26 @@ def customizerGUI(top=None):
         )
         if er_type:
             yaml_data["settings"] = {1: {"shuffle": er_type}}
+
         if len(entrances["entrances"]) + len(entrances["two-way"]) + len(entrances["exits"]) > 0:
             yaml_data["entrances"] = {1: entrances}
 
+        # Save doors
+        yaml_data["doors"] = {1: {}}
+
+        for item_world in self.pages["doors"].pages:
+            for door, linked_door in (
+                self.pages["doors"]
+                .pages[item_world]
+                .content.return_connections(self.pages["doors"].pages[item_world].content.door_links)[0]['doors']
+                .items()
+            ):
+                yaml_data["doors"][1].update({door: linked_door})
+        
+        if len(yaml_data["doors"][1]) == 0:
+            del(yaml_data["doors"])
+
+        # Save items
         yaml_data["placements"] = {1: {}}
 
         for item_world in self.pages["items"].pages:
@@ -89,6 +106,25 @@ def customizerGUI(top=None):
                 yaml_data["placements"][1].update({loc: item})
         if len(yaml_data["placements"][1]) == 0:
             del yaml_data["placements"]
+
+        # Save Pots
+        if 'placements' not in yaml_data:
+            yaml_data["placements"] = {1: {}}
+
+        for pot_world in self.pages["pots"].pages:
+            for loc, item in (
+                self.pages["pots"]
+                .pages[pot_world]
+                .content.return_placements(self.pages["pots"].pages[pot_world].content.placed_items)
+                .items()
+            ):
+
+                yaml_data["placements"][1].update({loc: item})
+        if len(yaml_data["placements"][1]) == 0:
+            del yaml_data["placements"]
+
+
+
         if not save:
             if len(yaml_data) == 0:
                 return None

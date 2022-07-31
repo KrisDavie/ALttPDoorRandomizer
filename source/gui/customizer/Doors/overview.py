@@ -52,7 +52,6 @@ def door_customizer_page(top, parent, tab_world, eg_img=None):
     def load_yaml(self, yaml_data):
         self.tiles = {}  # (eg_x, eg_y): (tile_x, tile_y)
         self.doors_processed = set()
-        self.door_links = []
         self.door_links_to_make = set()
         self.doors_to_process = deque()
         self.regions_processed = set()
@@ -68,9 +67,7 @@ def door_customizer_page(top, parent, tab_world, eg_img=None):
         self.inverse_doors = {v: k for k, v in self.doors.items()}
 
         for lobby in dungeon_lobbies[tab_world]:
-            print(f'Starting with {lobby}')
             lobby_door = yaml_data["lobbies"][lobby]
-
             add_lobby(self, lobby_door)
             queue_regions_doors(self, lobby_door)
 
@@ -108,7 +105,6 @@ def door_customizer_page(top, parent, tab_world, eg_img=None):
             
             # (Is this a door) or (have we already added the tile)?
             if not door_is_door or (door_tile_x, door_tile_y) in self.tiles:
-                print(next_door, door_is_door)
                 continue
 
             # PoD warp tile (Never seen but still linked, start from 0,0)
@@ -167,9 +163,7 @@ def door_customizer_page(top, parent, tab_world, eg_img=None):
             return
 
         region_doors = regions_to_doors[nd_region]
-
-        print(f'Adding {set(region_doors).difference(self.doors_to_process)} from {nd_region}')
-            
+           
         # Add doors to queue
         for future_door in region_doors:
             if not (future_door == door or 
@@ -222,8 +216,6 @@ def door_customizer_page(top, parent, tab_world, eg_img=None):
 
         self.map_dims = (self.map_dims[0] + 1, self.map_dims[1] + 2)
 
-        print(f'Map dims: {self.map_dims}')
-
         self.tile_size = (self.cwidth // (self.map_dims[1])) - (TILE_BORDER_SIZE * 2)
         self.tile_map = []
 
@@ -243,14 +235,12 @@ def door_customizer_page(top, parent, tab_world, eg_img=None):
                 )
                 self.canvas.tag_bind(tile, "<Button-1>", lambda event: select_tile(self, event))
                 self.tile_map[row].append({"button": tile, "tile": None})
-        print(self.tile_map)
 
         for tile in self.tiles:
             x, y = tile
             if x == None or y == None:
                 continue
             tile_x, tile_y = self.tiles[tile]
-            print(f"{tile} -> {tile_x, tile_y}")
             x1 = (tile_x * self.tile_size) + BORDER_SIZE + (((2 * tile_x + 1) - 1) * TILE_BORDER_SIZE)
             y1 = (tile_y * self.tile_size) + BORDER_SIZE + (((2 * tile_y + 1) - 1) * TILE_BORDER_SIZE)
             img = ImageTk.PhotoImage(
@@ -367,21 +357,18 @@ def door_customizer_page(top, parent, tab_world, eg_img=None):
             if data["image"] == button[0]:
                 return name
 
-    def return_placements(placed_items):
-        final_placements = {}
-        cystals_placed = 0
-        red_crystals_placed = 0
-        for loc_name, item_data in placed_items.items():
-            if item_data["name"] == "Crystal":
-                cystals_placed += 1
-                final_placements[loc_name] = f"Crystal {cystals_placed}"
-            elif item_data["name"] == "Red Crystal":
-                red_crystals_placed += 1
-                final_placements[loc_name] = f"Crystal {red_crystals_placed + 5}"
-            else:
-                final_placements[loc_name] = item_data["name"]
+    def return_connections(defined_connections):
 
-        return final_placements
+        # TODO: Add lobbies
+        final_connections = {"doors": {}}
+        doors_type = 'vanilla'
+        if len(defined_connections) == 0:
+            return final_connections, False
+        for data in defined_connections:
+            door = data['door']
+            linked_door = data['linked_door']
+            final_connections['doors'][door] = linked_door
+        return final_connections, doors_type
 
 
     # TODO: Refactor this out, will be reused in other places
@@ -466,16 +453,18 @@ def door_customizer_page(top, parent, tab_world, eg_img=None):
     self.cwidth = 2048
     self.cheight = 1024
     self.select_state = SelectState.NoneSelected
-    self.placed_items = {}
+    self.defined_connections = {}
     self.canvas = Canvas(self, width=self.cwidth + (BORDER_SIZE * 2), height=self.cheight + (BORDER_SIZE * 2))
     self.canvas.pack()
+    self.door_links = []
+
 
     self.tile_map = []
     self.doors = {}
     self.tiles_added = {}
 
     self.load_yaml = load_yaml
-    self.return_placements = return_placements
+    self.return_connections = return_connections
 
     # TODO: Add a new button to store this info somwhere as JSON for the generation
     return self
