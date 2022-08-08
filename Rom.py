@@ -19,7 +19,7 @@ from EntranceShuffle import door_addresses
 
 
 JAP10HASH = '03a63945398191337e896e5771f77173'
-RANDOMIZERBASEHASH = '2f55b2be3691b962cf609749263ee447'
+RANDOMIZERBASEHASH = 'bfd288a5301b0793aaa1f9dbad36257e'
 
 
 class JsonRom(object):
@@ -881,8 +881,6 @@ def patch_rom(world, player, rom):
     rom.write_byte(0x1800A1, 0x01)  # enable overworld screen transition draining for water level inside swamp
     rom.write_byte(0x180174, 0x01 if world.fix_fake_world else 0x00)
     rom.write_byte(0x18017E, 0x01) # Fairy fountains only trade in bottles
-    rom.write_byte(0x180034, 0x0A) # starting max bombs
-    rom.write_byte(0x180035, 30) # starting max arrows
     if world.pseudoboots[player]:
         rom.write_byte(0x18008E, 0x01)
     rom.initial_sram.set_starting_equipment(world, player)

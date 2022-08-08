@@ -29,6 +29,8 @@ normalthird10extra = ['Rupees (50)'] * 4 + ['Rupees (20)'] * 3 + ['Arrows (10)',
 normalfourth5extra = ['Arrows (10)'] * 2 + ['Rupees (20)'] * 2 + ['Rupees (5)']
 normalfinal25extra = ['Rupees (20)'] * 23 + ['Rupees (5)'] * 2
 
+basecapacity = ['Bomb Upgrade (+10)'] + ['Arrow Upgrade (+10)'] * 3
+
 Difficulty = namedtuple('Difficulty',
                         ['baseitems', 'bottles', 'bottle_count', 'same_bottle', 'progressiveshield',
                          'basicshield', 'progressivearmor', 'basicarmor', 'swordless',
@@ -354,6 +356,7 @@ def get_pool_core(progressive, shuffle, difficulty, timer, goal, mode, swords, r
     treasure_hunt_icon = None
 
     pool.extend(alwaysitems)
+    precollected_items.extend(basecapacity)
 
     def want_progressives():
         return random.choice([True, False]) if progressive == 'random' else progressive == 'on'
