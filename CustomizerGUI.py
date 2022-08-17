@@ -1,3 +1,4 @@
+from pathlib import Path
 from tkinter import Tk, TOP, BOTH, Toplevel, ttk, filedialog
 from PIL import Image
 from source.gui.customizer.Doors.overview import door_customizer_page
@@ -166,7 +167,7 @@ def customizerGUI(top=None):
     self.pages["entrances"].content = entrance_customizer_page(self, self.pages["entrances"])
     self.pages["entrances"].content.pack(side=TOP, fill=BOTH, expand=True)
 
-    eg_map = f"C:\\Users\\Muffins\\Downloads\\ZScreamPNGExport\\MapTest.png"
+    eg_map = Path("resources") / "app" / "gui" / "plandomizer" / "maps" / "egmap.png"
     eg_img = Image.open(eg_map)
 
     for dungeon, world in dungeon_worlds.items():
