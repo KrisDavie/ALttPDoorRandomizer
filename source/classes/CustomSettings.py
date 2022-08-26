@@ -335,15 +335,14 @@ class CustomSettings(object):
 
 
 def load_yaml(path):
-    try:
-        return yaml.load(path, Loader=yaml.SafeLoader)
-    except yaml.YAMLError as exc:
-        if os.path.exists(Path(path)):
-            with open(path, "r", encoding="utf-8") as f:
-                return yaml.load(f, Loader=yaml.SafeLoader)
-        elif urllib.parse.urlparse(path).scheme in ['http', 'https']:
+    if os.path.exists(Path(path)):
+        with open(path, "r", encoding="utf-8") as f:
+            print('Trying yaml.load on file')
+            return yaml.load(f, Loader=yaml.SafeLoader)
+    elif urllib.parse.urlparse(path).scheme in ['http', 'https']:
             return yaml.load(urllib.request.urlopen(path), Loader=yaml.FullLoader)
-        else:
-            raise exc
-    except Exception as e:
-        raise Exception(f'Failed to read customizer file: {e}')
+    else:
+        try:
+            return yaml.load(path, Loader=yaml.SafeLoader)
+        except Exception as e:
+            raise Exception(f'Failed to read customizer file: {e}')
