@@ -19,7 +19,7 @@ from EntranceShuffle import door_addresses
 
 
 JAP10HASH = '03a63945398191337e896e5771f77173'
-RANDOMIZERBASEHASH = 'bfd288a5301b0793aaa1f9dbad36257e'
+RANDOMIZERBASEHASH = 'a69733eb16c0e01ca318ccf24e932190'
 
 
 class JsonRom(object):
@@ -1028,13 +1028,7 @@ def patch_rom(world, player, rom):
 
     # fix trock doors for reverse entrances
     if world.fix_trock_doors:
-        rom.write_byte(0xFED31, 0x0E)  # preopen bombable exit
-        rom.write_byte(0xFEE41, 0x0E)  # preopen bombable exit
-        # included unconditionally in base2current
-        #rom.write_byte(0xFE465, 0x1E)  # remove small key door on backside of big key door
-    else:
-        rom.write_byte(0xFED31, 0x2A)  # preopen bombable exit
-        rom.write_byte(0xFEE41, 0x2A)  # preopen bombable exit
+        rom.initial_sram.pre_open_tr_bomb_doors()  # preopen bombable exits
 
     write_strings(rom, world, player)
 
