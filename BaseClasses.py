@@ -51,7 +51,8 @@ class World(object):
         self.clock_mode = 'off'
         self.rupoor_cost = 10
         self.aga_randomness = True
-        self.lock_aga_door_in_escape = False
+        self.lock_aga_door_in_escape = True if logic == 'noglitches' else False
+        self.block_side_exits_escape = True if logic == 'noglitches' and shuffle != 'vanilla' else False
         self.fix_trock_doors = self.shuffle != 'vanilla' or self.mode == 'inverted'
         self.save_and_quit_from_boss = True
         self.accessibility = accessibility

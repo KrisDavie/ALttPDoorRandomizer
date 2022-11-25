@@ -908,7 +908,7 @@ def patch_rom(world, player, rom):
 
     rom.write_byte(0x18005E, world.crystals_needed_for_gt)
     rom.write_byte(0x18005F, world.crystals_needed_for_ganon)
-    rom.write_byte(0x18008A, 0x01 if world.mode == "standard" else 0x00) # block HC upstairs doors in rain state in standard mode
+    rom.write_byte(0x18008A, 0x01 if world.block_side_exits_escape else 0x00) # block HC upstairs doors in rain state in standard mode
 
      # Bitfield - enable text box to show with free roaming items
      #
