@@ -19,7 +19,7 @@ from EntranceShuffle import door_addresses
 
 
 JAP10HASH = '03a63945398191337e896e5771f77173'
-RANDOMIZERBASEHASH = 'a69733eb16c0e01ca318ccf24e932190'
+RANDOMIZERBASEHASH = '8f3ff5a101adcadbf0fffcf8f3ec046d'
 
 
 class JsonRom(object):
@@ -803,7 +803,8 @@ def patch_rom(world, player, rom):
     rom.write_byte(0x18003F, 0x01 if world.swords == 'swordless' else 0x00)  # hammer can harm ganon
     rom.write_byte(0x180041, 0x01 if world.swords == 'swordless' else 0x00)  # swordless medallions
     rom.write_byte(0x180044, 0x01 if world.swords == 'swordless' else 0x00)  # hammer activates tablets
-    rom.initial_sram.set_swordless_curtains()  # open curtains
+    if world.swords == 'swordless':
+        rom.initial_sram.set_swordless_curtains()  # open curtains
 
     # set up clocks for timed modes
     if world.shuffle == 'vanilla':
