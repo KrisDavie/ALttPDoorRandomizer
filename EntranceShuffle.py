@@ -3276,7 +3276,9 @@ inverted_mandatory_connections = [('Lake Hylia Central Island Pier', 'Lake Hylia
                                   ('Bush Covered Lawn Mirror Spot', 'Dark Grassy Lawn'),
                                   ('Bomb Hut Inner Bushes', 'Light World'),
                                   ('Bomb Hut Outer Bushes', 'Bomb Hut Area'),
-                                  ('Bomb Hut Mirror Spot', 'West Dark World')]
+                                  ('Bomb Hut Mirror Spot', 'West Dark World'),
+                                  ('Northeast Light World', 'Northeast Light World'),
+                                  ('Waterfall Stoop', 'Waterfall Stoop')]
 # non-shuffled entrance links
 default_connections = [('Waterfall of Wishing', 'Waterfall of Wishing'),
                        ("Blinds Hideout", "Blinds Hideout"),

@@ -942,7 +942,7 @@ def patch_rom(world, player, rom):
     hud_bits = 0
     hud_bits |= 0x0F if world.keysanity else 0x00
     hud_bits |= 0x10 if world.logic == 'nologic' else 0x00
-    rom.write_byte(0x180045, hudbits)  # free roaming items in menu
+    rom.write_byte(0x180045, hud_bits)  # free roaming items in menu
 
     # Map reveals
     reveal_bytes = {

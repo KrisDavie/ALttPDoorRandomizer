@@ -601,6 +601,9 @@ def inverted_rules(world, player):
     set_rule(world.get_entrance('Laser Bridge Mirror Spot', player), lambda state: state.has_Mirror(player))
     set_rule(world.get_entrance('Superbunny Cave Exit (Bottom)', player), lambda state: False)  # Cannot get to bottom exit from top. Just exists for shuffling
 
+    set_rule(world.get_entrance('Waterfall Stoop', player), lambda state: state.has('Flippers', player))
+    set_rule(world.get_entrance('Northeast Light World', player), lambda state: state.has('Flippers', player))
+
     set_rule(world.get_location('Spike Cave', player), lambda state:
              state.has('Hammer', player) and state.can_lift_rocks(player) and
              ((state.has('Cape', player) and state.can_extend_magic(player, 16, True)) or
