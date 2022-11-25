@@ -932,13 +932,17 @@ def patch_rom(world, player, rom):
 
      # Bitfield - enable free items to show up in menu
      #
-     # ----dcba
+     # ---edcba
+     # e - bosses
      # d - Compass
      # c - Map
      # b - Big Key
      # a - Small Key
      #
-    rom.write_byte(0x180045, 0xFF if world.keysanity else 0x00)  # free roaming items in menu
+    hud_bits = 0
+    hud_bits |= 0x0F if world.keysanity else 0x00
+    hud_bits |= 0x10 if world.logic == 'nologic' else 0x00
+    rom.write_byte(0x180045, hudbits)  # free roaming items in menu
 
     # Map reveals
     reveal_bytes = {
