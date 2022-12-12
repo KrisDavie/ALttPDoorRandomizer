@@ -23,6 +23,8 @@ class World(Enum):
     TurtleRock = 14
     GanonsTower = 15
     OverWorld = 16
+    LightWorldInsanity = 17
+    DarkWorldInsanity = 18 
 
 
 MAPS_DIR = Path("resources") / "app" / "gui" / "plandomizer" / "maps"
@@ -38,6 +40,20 @@ worlds_data = {
     },
     World.DarkWorld: {
         "entrances": location_data.darkworld_coordinates,
+        "locations": location_data.darkworld_items,
+        "map_file": MAPS_DIR / "darkworld512.png",
+        "map_image": None,
+        "canvas_image": None,
+    },
+    World.LightWorldInsanity: {
+        "entrances": location_data.lightworld_insanity_coordinates,
+        "locations": location_data.lightworld_items,
+        "map_file": MAPS_DIR / "lightworld512.png",
+        "map_image": None,
+        "canvas_image": None,
+    },
+    World.DarkWorldInsanity: {
+        "entrances": location_data.darkworld_insanity_coordinates,
         "locations": location_data.darkworld_items,
         "map_file": MAPS_DIR / "darkworld512.png",
         "map_image": None,

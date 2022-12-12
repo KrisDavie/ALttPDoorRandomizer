@@ -91,16 +91,21 @@ def entrance_customizer_page(top, parent):
 
     def get_loc_by_button(self, button):
         for name, loc in (
-            {**worlds_data[World.LightWorld]["entrances"], **worlds_data[World.DarkWorld]["entrances"]}
+            {**worlds_data[World.LightWorld]["entrances"], **worlds_data[World.DarkWorld]["entrances"], **worlds_data[World.LightWorldInsanity]["entrances"], **worlds_data[World.DarkWorldInsanity]["entrances"]}
         ).items():
             if loc["button"] == button[0]:
                 return name
 
     def get_location_world(loc_name):
+        print(loc_name)
         if loc_name in worlds_data[World.LightWorld]["entrances"]:
             return World.LightWorld
         elif loc_name in worlds_data[World.DarkWorld]["entrances"]:
             return World.DarkWorld
+        elif loc_name in worlds_data[World.LightWorldInsanity]["entrances"]:
+            return World.LightWorldInsanity
+        elif loc_name in worlds_data[World.DarkWorldInsanity]["entrances"]:
+            return World.DarkWorldInsanity
         else:
             return World.UnderWorld
 
@@ -134,12 +139,12 @@ def entrance_customizer_page(top, parent):
         return loc_name in self.defined_connections.values()
 
     def is_dropdown(loc_name):
-        return True if loc_name in drop_map else False
+        return True if loc_name.endswith('Insanity') else False
 
     def mask_locations(self, entrance_type):
         masked = []
         for name, loc in (
-            {**worlds_data[World.LightWorld]["entrances"], **worlds_data[World.DarkWorld]["entrances"]}
+            {**worlds_data[World.LightWorld]["entrances"], **worlds_data[World.DarkWorld]["entrances"], **worlds_data[World.LightWorldInsanity]["entrances"], **worlds_data[World.DarkWorldInsanity]["entrances"]}
         ).items():
             if is_dropdown(name) and entrance_type == "Dropdown":
                 self.canvas.itemconfigure(loc["button"], fill="#888", state="disabled")
@@ -174,7 +179,7 @@ def entrance_customizer_page(top, parent):
                 draw_connection(self, loc_name)
                 draw_connection(self, self.defined_connections[loc_name])
                 return
-            self.masked_locations = mask_locations(self, "Dropdown" if not is_dropdown(loc_name) else "Regular")
+            self.masked_locations = mask_locations(self, "Regular" if not is_dropdown(loc_name) else "Dropdown")
             self.canvas.itemconfigure(item, fill="orange")
             self.select_state = SelectState.SourceSelected
             self.source_location = item
@@ -216,6 +221,7 @@ def entrance_customizer_page(top, parent):
 
     def draw_connection(self, loc_name):
         current_source, source_world, current_target, target_world = get_existing_connection(self, loc_name)
+        print(current_source, source_world, current_target, target_world)
         if (current_source, current_target) in self.displayed_connections or current_source is None:
             return
         if current_source == current_target:
@@ -232,7 +238,8 @@ def entrance_customizer_page(top, parent):
                 worlds_data[source_world]["entrances"][current_source]["y"] + BORDER_SIZE,
                 worlds_data[target_world]["entrances"][current_target]["x"] + BORDER_SIZE,
                 worlds_data[target_world]["entrances"][current_target]["y"] + BORDER_SIZE,
-                fill='black' if source_world != target_world else 'white',
+                # fill='black' if source_world != target_world else 'white',
+                fill='black' if source_world in [World.LightWorld, World.DarkWorld] else 'white',
                 # fill="black",
                 arrow=LAST,
                 width=2,
@@ -289,7 +296,7 @@ def entrance_customizer_page(top, parent):
     self.select_state = SelectState.NoneSelected
     self.defined_connections = {}
     self.displayed_connections = {}
-    self.canvas = Canvas(self, width=self.cwidth * 2 + (BORDER_SIZE * 2), height=self.cheight + (BORDER_SIZE * 2))
+    self.canvas = Canvas(self, width=self.cwidth * 2 + (BORDER_SIZE * 2), height=self.cheight * 2 + (BORDER_SIZE * 2))
     self.canvas.pack()
 
     # Load in the world images
@@ -308,12 +315,34 @@ def entrance_customizer_page(top, parent):
         ),
     )
 
+    worlds_data[World.LightWorldInsanity]["map_image"] = ImageTk.PhotoImage(
+        Image.open(worlds_data[World.LightWorldInsanity]["map_file"])
+    )
+    worlds_data[World.DarkWorldInsanity]["map_image"] = ImageTk.PhotoImage(Image.open(worlds_data[World.DarkWorldInsanity]["map_file"]))
+
+    worlds_data[World.LightWorldInsanity]["canvas_image"] = (
+        self.canvas.create_image(BORDER_SIZE, BORDER_SIZE + 512, anchor=NW, image=worlds_data[World.LightWorldInsanity]["map_image"]),
+    )
+
+    worlds_data[World.DarkWorldInsanity]["canvas_image"] = (
+        self.canvas.create_image(
+            BORDER_SIZE + 512, BORDER_SIZE + 512, anchor=NW, image=worlds_data[World.DarkWorldInsanity]["map_image"]
+        ),
+    )
+
     # Offset darkworld locations
     for name, loc in worlds_data[World.DarkWorld]["entrances"].items():
         worlds_data[World.DarkWorld]["entrances"][name]["x"] += self.cwidth
 
+    for name, loc in worlds_data[World.DarkWorldInsanity]["entrances"].items():
+        worlds_data[World.DarkWorldInsanity]["entrances"][name]["x"] += self.cwidth
+        worlds_data[World.DarkWorldInsanity]["entrances"][name]["y"] += self.cwidth
+
+    for name, loc in worlds_data[World.LightWorldInsanity]["entrances"].items():
+        worlds_data[World.LightWorldInsanity]["entrances"][name]["y"] += self.cwidth
+
     # Display locations (and map?)
-    for world in [World.LightWorld, World.DarkWorld]:
+    for world in [World.LightWorld, World.DarkWorld, World.LightWorldInsanity, World.DarkWorldInsanity]:
         display_world_locations(self, world)
 
     hide_connections_button = ttk.Button(self, text="Hide All Connections", command=lambda: hide_all_connections(self))
