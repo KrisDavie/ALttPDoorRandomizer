@@ -97,7 +97,6 @@ def entrance_customizer_page(top, parent):
                 return name
 
     def get_location_world(loc_name):
-        print(loc_name)
         if loc_name in worlds_data[World.LightWorld]["entrances"]:
             return World.LightWorld
         elif loc_name in worlds_data[World.DarkWorld]["entrances"]:
@@ -221,7 +220,6 @@ def entrance_customizer_page(top, parent):
 
     def draw_connection(self, loc_name):
         current_source, source_world, current_target, target_world = get_existing_connection(self, loc_name)
-        print(current_source, source_world, current_target, target_world)
         if (current_source, current_target) in self.displayed_connections or current_source is None:
             return
         if current_source == current_target:
@@ -278,8 +276,8 @@ def entrance_customizer_page(top, parent):
                 #     final_connections["exits"][source] = "Chris Houlihan Room Exit"
             elif target in default_connections and default_connections[target] != target and not is_dropdown(source):
                 final_connections["two-way"][source] = default_connections[target]
-            elif is_dropdown(target):
-                final_connections["entrances"][source] = drop_map[target]
+            # elif is_dropdown(target):
+                # final_connections["entrances"][source] = drop_map[target]
             else:
                 final_connections["entrances"][source] = target
         if "Links House Exit" not in final_connections["two-way"].values():
