@@ -3,6 +3,7 @@ from tkinter import ttk, NW, Canvas, LAST
 from PIL import ImageTk, Image
 from source.overworld.EntranceShuffle2 import entrance_map, default_connections, drop_map, single_entrance_map
 from source.gui.customizer.worlds_data import worlds_data, World
+import source.gui.customizer.new_location_data as location_data
 
 # TODO: Do I add underworld? This will be needed for decoupled shuffles
 
@@ -87,6 +88,11 @@ def entrance_customizer_page(top, parent):
                 location_oval,
                 "<Button-1>",
                 lambda event: select_location(self, event),
+            )
+            self.canvas.tag_bind(
+                location_oval,
+                "<Button-3>",
+                lambda event: show_chain_connection(self, event),
             )
 
     def get_loc_by_button(self, button):
@@ -286,6 +292,48 @@ def entrance_customizer_page(top, parent):
             final_connections["exits"]["Links House"] = "Chris Houlihan Room Exit"
 
         return final_connections, er_type
+
+    def get_connection_chain(self, loc_name):
+        # print("get_connection_chain", loc_name)
+        locs_to_check = [loc_name]
+        chain = []
+        while len(locs_to_check) > 0:
+            # print("locs_to_check", locs_to_check)
+            loc = locs_to_check.pop(0)
+            if loc in chain:
+                continue
+            if loc in location_data.entrances_to_connectors:
+                for connector_loc in location_data.inside_connectors[location_data.entrances_to_connectors[loc]]:
+                    locs_to_check.append(connector_loc)
+            chain.append(loc)
+            if loc in self.defined_connections:
+                locs_to_check.append(self.defined_connections[loc])
+            elif loc in self.defined_connections.values():
+                for k, v in self.defined_connections.items():
+                    if v == loc:
+                        locs_to_check.append(k)
+        return chain
+
+    def show_chain_connection(self, event):
+        item = self.canvas.find_closest(event.x, event.y)
+
+        # Catch when the user clicks on the world rather than a location
+        if item in [w["canvas_image"] for w in worlds_data.values()]:
+            return
+
+        # Get the location name from the button
+        loc_name = get_loc_by_button(self, item)
+
+
+        # print("show_chain_connection", loc_name)
+        hide_all_connections(self)
+        chain = get_connection_chain(self, loc_name)
+        # print("chain", chain)
+        for i in chain:
+            draw_connection(self, i)
+   
+
+        
 
     # Custom Item Pool
     self = ttk.Frame(parent)
