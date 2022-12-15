@@ -91,7 +91,7 @@ def entrance_customizer_page(top, parent):
 
     def get_loc_by_button(self, button):
         for name, loc in (
-            {**worlds_data[World.LightWorld]["entrances"], **worlds_data[World.DarkWorld]["entrances"], **worlds_data[World.LightWorldInsanity]["entrances"], **worlds_data[World.DarkWorldInsanity]["entrances"]}
+            {**worlds_data[World.LightWorld]["entrances"], **worlds_data[World.DarkWorld]["entrances"], **worlds_data[World.LightWorldInside]["entrances"], **worlds_data[World.DarkWorldInside]["entrances"]}
         ).items():
             if loc["button"] == button[0]:
                 return name
@@ -101,10 +101,10 @@ def entrance_customizer_page(top, parent):
             return World.LightWorld
         elif loc_name in worlds_data[World.DarkWorld]["entrances"]:
             return World.DarkWorld
-        elif loc_name in worlds_data[World.LightWorldInsanity]["entrances"]:
-            return World.LightWorldInsanity
-        elif loc_name in worlds_data[World.DarkWorldInsanity]["entrances"]:
-            return World.DarkWorldInsanity
+        elif loc_name in worlds_data[World.LightWorldInside]["entrances"]:
+            return World.LightWorldInside
+        elif loc_name in worlds_data[World.DarkWorldInside]["entrances"]:
+            return World.DarkWorldInside
         else:
             return World.UnderWorld
 
@@ -138,12 +138,12 @@ def entrance_customizer_page(top, parent):
         return loc_name in self.defined_connections.values()
 
     def is_dropdown(loc_name):
-        return True if loc_name.endswith('Insanity') else False
+        return True if loc_name.endswith(' Inside') else False
 
     def mask_locations(self, entrance_type):
         masked = []
         for name, loc in (
-            {**worlds_data[World.LightWorld]["entrances"], **worlds_data[World.DarkWorld]["entrances"], **worlds_data[World.LightWorldInsanity]["entrances"], **worlds_data[World.DarkWorldInsanity]["entrances"]}
+            {**worlds_data[World.LightWorld]["entrances"], **worlds_data[World.DarkWorld]["entrances"], **worlds_data[World.LightWorldInside]["entrances"], **worlds_data[World.DarkWorldInside]["entrances"]}
         ).items():
             if is_dropdown(name) and entrance_type == "Dropdown":
                 self.canvas.itemconfigure(loc["button"], fill="#888", state="disabled")
@@ -313,18 +313,18 @@ def entrance_customizer_page(top, parent):
         ),
     )
 
-    worlds_data[World.LightWorldInsanity]["map_image"] = ImageTk.PhotoImage(
-        Image.open(worlds_data[World.LightWorldInsanity]["map_file"])
+    worlds_data[World.LightWorldInside]["map_image"] = ImageTk.PhotoImage(
+        Image.open(worlds_data[World.LightWorldInside]["map_file"])
     )
-    worlds_data[World.DarkWorldInsanity]["map_image"] = ImageTk.PhotoImage(Image.open(worlds_data[World.DarkWorldInsanity]["map_file"]))
+    worlds_data[World.DarkWorldInside]["map_image"] = ImageTk.PhotoImage(Image.open(worlds_data[World.DarkWorldInside]["map_file"]))
 
-    worlds_data[World.LightWorldInsanity]["canvas_image"] = (
-        self.canvas.create_image(BORDER_SIZE, BORDER_SIZE + 512, anchor=NW, image=worlds_data[World.LightWorldInsanity]["map_image"]),
+    worlds_data[World.LightWorldInside]["canvas_image"] = (
+        self.canvas.create_image(BORDER_SIZE, BORDER_SIZE + 512, anchor=NW, image=worlds_data[World.LightWorldInside]["map_image"]),
     )
 
-    worlds_data[World.DarkWorldInsanity]["canvas_image"] = (
+    worlds_data[World.DarkWorldInside]["canvas_image"] = (
         self.canvas.create_image(
-            BORDER_SIZE + 512, BORDER_SIZE + 512, anchor=NW, image=worlds_data[World.DarkWorldInsanity]["map_image"]
+            BORDER_SIZE + 512, BORDER_SIZE + 512, anchor=NW, image=worlds_data[World.DarkWorldInside]["map_image"]
         ),
     )
 
@@ -332,15 +332,15 @@ def entrance_customizer_page(top, parent):
     for name, loc in worlds_data[World.DarkWorld]["entrances"].items():
         worlds_data[World.DarkWorld]["entrances"][name]["x"] += self.cwidth
 
-    for name, loc in worlds_data[World.DarkWorldInsanity]["entrances"].items():
-        worlds_data[World.DarkWorldInsanity]["entrances"][name]["x"] += self.cwidth
-        worlds_data[World.DarkWorldInsanity]["entrances"][name]["y"] += self.cwidth
+    for name, loc in worlds_data[World.DarkWorldInside]["entrances"].items():
+        worlds_data[World.DarkWorldInside]["entrances"][name]["x"] += self.cwidth
+        worlds_data[World.DarkWorldInside]["entrances"][name]["y"] += self.cwidth
 
-    for name, loc in worlds_data[World.LightWorldInsanity]["entrances"].items():
-        worlds_data[World.LightWorldInsanity]["entrances"][name]["y"] += self.cwidth
+    for name, loc in worlds_data[World.LightWorldInside]["entrances"].items():
+        worlds_data[World.LightWorldInside]["entrances"][name]["y"] += self.cwidth
 
     # Display locations (and map?)
-    for world in [World.LightWorld, World.DarkWorld, World.LightWorldInsanity, World.DarkWorldInsanity]:
+    for world in [World.LightWorld, World.DarkWorld, World.LightWorldInside, World.DarkWorldInside]:
         display_world_locations(self, world)
 
     hide_connections_button = ttk.Button(self, text="Hide All Connections", command=lambda: hide_all_connections(self))
