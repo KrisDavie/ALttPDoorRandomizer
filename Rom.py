@@ -19,7 +19,7 @@ from EntranceShuffle import door_addresses
 
 
 JAP10HASH = '03a63945398191337e896e5771f77173'
-RANDOMIZERBASEHASH = '8f3ff5a101adcadbf0fffcf8f3ec046d'
+RANDOMIZERBASEHASH = '46f000b3d0e70c67b10407d419d65caf'
 
 
 class JsonRom(object):
@@ -1373,8 +1373,8 @@ def write_strings(rom, world, player):
 
     # inverted spawn menu changes
     if world.mode == 'inverted':
-        tt['menu_start_2'] = "{MENU}\n{SPEED0}\n≥@'s house\n Dark Chapel\n{CHOICE3}"
-        tt['menu_start_3'] = "{MENU}\n{SPEED0}\n≥@'s house\n Dark Chapel\n Mountain Cave\n{CHOICE2}"
+        tt['menu_start_2'] = "{MENU}\n{SPEED0}\n≥@'s House\n Dark Chapel\n{CHOICE3}"
+        tt['menu_start_3'] = "{MENU}\n{SPEED0}\n≥@'s House\n Dark Chapel\n Mountain Cave\n{CHOICE2}"
         tt['intro_main'] = CompressedTextMapper.convert(
                             "{INTRO}\n Episode  III\n{PAUSE3}\n A Link to\n   the Past\n"
                             + "{PAUSE3}\nInverted\n  Randomizer\n{PAUSE3}\nAfter mostly disregarding what happened in the first two games.\n"
@@ -1791,7 +1791,7 @@ HintLocations = ['telepathic_tile_eastern_palace',
                  'telepathic_tile_castle_tower',
                  'telepathic_tile_ice_large_room',
                  'telepathic_tile_turtle_rock',
-                 'telepathic_tile_ice_entrace',
+                 'telepathic_tile_ice_entrance',
                  'telepathic_tile_ice_stalfos_knights_room',
                  'telepathic_tile_tower_of_hera_entrance',
                  'telepathic_tile_south_east_darkworld_cave',
