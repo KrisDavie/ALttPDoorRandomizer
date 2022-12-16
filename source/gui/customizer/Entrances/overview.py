@@ -306,12 +306,11 @@ def entrance_customizer_page(top, parent):
                 for connector_loc in location_data.inside_connectors[location_data.entrances_to_connectors[loc]]:
                     locs_to_check.append(connector_loc)
             chain.append(loc)
-            if loc in self.defined_connections:
-                locs_to_check.append(self.defined_connections[loc])
-            elif loc in self.defined_connections.values():
-                for k, v in self.defined_connections.items():
-                    if v == loc:
-                        locs_to_check.append(k)
+            for k, v in self.defined_connections.items():
+                if v == loc:
+                    locs_to_check.append(k)
+                if k == loc:
+                    locs_to_check.append(v)
         return chain
 
     def show_chain_connection(self, event):
