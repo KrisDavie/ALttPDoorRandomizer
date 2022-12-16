@@ -94,6 +94,32 @@ def entrance_customizer_page(top, parent):
                 "<Button-3>",
                 lambda event: show_chain_connection(self, event),
             )
+            self.canvas.tag_bind(
+                location_oval,
+                "<Button-2>",
+                lambda event: mark_location_complete(self, event),
+            )
+
+    def mark_location_complete(self, event):
+        item = self.canvas.find_closest(event.x, event.y)
+
+        # Catch when the user clicks on the world rather than a location
+        if item in [w["canvas_image"] for w in worlds_data.values()]:
+            return
+
+        # Get the location name from the button
+        loc_name = get_loc_by_button(self, item)
+
+        if loc_name in self.defined_connections.values() or loc_name in self.defined_connections.keys():
+            return
+
+        if loc_name in self.disabled_locations:
+            self.canvas.itemconfigure(item, fill="#0f0")
+            self.disabled_locations.remove(loc_name)
+        else:
+            self.canvas.itemconfigure(item, fill="grey")
+            self.disabled_locations.add(loc_name)
+
 
     def get_loc_by_button(self, button):
         for name, loc in (
@@ -179,6 +205,9 @@ def entrance_customizer_page(top, parent):
         # Get the location name from the button
         loc_name = get_loc_by_button(self, item)
 
+        if loc_name in self.disabled_locations:
+            return
+
         if self.select_state == SelectState.NoneSelected:
             if has_source(self, loc_name):
                 draw_connection(self, loc_name)
@@ -211,6 +240,8 @@ def entrance_customizer_page(top, parent):
         self.canvas.itemconfigure(item, state="hidden")
 
     def colour_node(self, loc_name):
+        if loc_name in self.disabled_locations:
+            return
         current_source, source_world, current_target, target_world = get_existing_connection(self, loc_name)
         for node, world in [(current_source, source_world), (current_target, target_world)]:
             if node is None:
@@ -297,13 +328,16 @@ def entrance_customizer_page(top, parent):
         # print("get_connection_chain", loc_name)
         locs_to_check = [loc_name]
         chain = []
+        connectors_checked = set()
         while len(locs_to_check) > 0:
             # print("locs_to_check", locs_to_check)
             loc = locs_to_check.pop(0)
             if loc in chain:
                 continue
-            if loc in location_data.entrances_to_connectors:
+            if loc in location_data.entrances_to_connectors and loc not in connectors_checked:
+                connectors_checked.add(loc)
                 for connector_loc in location_data.inside_connectors[location_data.entrances_to_connectors[loc]]:
+                    connectors_checked.add(connector_loc)
                     locs_to_check.append(connector_loc)
             chain.append(loc)
             for k, v in self.defined_connections.items():
@@ -341,6 +375,7 @@ def entrance_customizer_page(top, parent):
     self.select_state = SelectState.NoneSelected
     self.defined_connections = {}
     self.displayed_connections = {}
+    self.disabled_locations = set()
     self.canvas = Canvas(self, width=self.cwidth * 2 + (BORDER_SIZE * 2), height=self.cheight * 2 + (BORDER_SIZE * 2))
     self.canvas.pack()
 
