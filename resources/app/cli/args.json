@@ -347,6 +347,10 @@
     "dest": "create_rom",
     "help": "suppress"
   },
+  "suppress_meta": {
+    "action": "store_true",
+    "type": "bool"
+  },
   "shuffleganon": {
     "action": "store_false",
     "type": "bool"
@@ -357,6 +361,10 @@
     "help": "suppress"
   },
   "shufflelinks": {
+    "action": "store_true",
+    "type": "bool"
+  },
+  "shuffletavern": {
     "action": "store_true",
     "type": "bool"
   },

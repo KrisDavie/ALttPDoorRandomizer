@@ -1114,37 +1114,35 @@ def make_customizer_pool(world, player):
         place_item('Master Sword Pedestal', 'Triforce')
 
     guaranteed_items = alwaysitems + ['Magic Mirror', 'Moon Pearl']
+    missing_items = []
     if world.shopsanity[player]:
         guaranteed_items.extend(['Blue Potion', 'Green Potion', 'Red Potion'])
         if world.retro[player]:
             guaranteed_items.append('Small Key (Universal)')
     for item in guaranteed_items:
         if item not in pool:
-            pool.append(item)
+            missing_items.append(item)
 
     glove_count = sum(1 for i in pool if i == 'Progressive Glove')
     glove_count = 2 if next((i for i in pool if i == 'Titans Glove'), None) is not None else glove_count
     for i in range(glove_count, 2):
-        pool.append('Progressive Glove')
+        missing_items.append('Progressive Glove')
 
     if world.bombbag[player]:
         if 'Bomb Upgrade (+10)' not in pool:
-            pool.append('Bomb Upgrade (+10)')
+            missing_items.append('Bomb Upgrade (+10)')
 
     if world.swords[player] != 'swordless':
         beam_swords = {'Master Sword', 'Tempered Sword', 'Golden Sword'}
         sword_count = sum(1 for i in pool if i in 'Progressive Sword')
         sword_count = 2 if next((i for i in pool if i in beam_swords), None) is not None else sword_count
         for i in range(sword_count, 2):
-            pool.append('Progressive Sword')
+            missing_items.append('Progressive Sword')
 
     bow_found = next((i for i in pool if i in {'Bow', 'Progressive Bow'}), None)
     if not bow_found:
-        pool.append('Progressive Bow')
-
-    heart_found = next((i for i in pool if i in {'Boss Heart Container', 'Sanctuary Heart Container'}), None)
-    if heart_found is None:
-        pool.append('Boss Heart Container')
+        missing_items.append('Progressive Bow')
+    logging.getLogger('').warning(f'The following items are not in the custom item pool {", ".join(missing_items)}')
 
     g, t = set_default_triforce(world.goal[player], world.treasure_hunt_count[player],
                                 world.treasure_hunt_total[player])

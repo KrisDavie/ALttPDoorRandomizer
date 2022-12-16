@@ -119,8 +119,8 @@ def parse_cli(argv, no_defaults=False):
                          'mapshuffle', 'compassshuffle', 'keyshuffle', 'bigkeyshuffle', 'startinventory',
                          'usestartinventory', 'bombbag', 'overworld_map', 'restrict_boss_items',
                          'triforce_pool_min', 'triforce_pool_max', 'triforce_goal_min', 'triforce_goal_max',
-                         'triforce_min_difference', 'triforce_goal', 'triforce_pool', 'shufflelinks', 'pseudoboots',
-                         'retro', 'accessibility', 'hints', 'beemizer', 'experimental', 'dungeon_counters',
+                         'triforce_min_difference', 'triforce_goal', 'triforce_pool', 'shufflelinks', 'shuffletavern',
+                         'pseudoboots', 'retro', 'accessibility', 'hints', 'beemizer', 'experimental', 'dungeon_counters',
                          'shufflebosses', 'shuffleenemies', 'enemy_health', 'enemy_damage', 'shufflepots',
                          'ow_palettes', 'uw_palettes', 'sprite', 'disablemusic', 'quickswap', 'fastmenu', 'heartcolor',
                          'heartbeep', 'remote_items', 'shopsanity', 'dropshuffle', 'pottery', 'keydropshuffle',
@@ -163,6 +163,7 @@ def parse_settings():
         "accessibility": "items",
         "algorithm": "balanced",
         'mystery': False,
+        'suppress_meta': False,
         "restrict_boss_items": "none",
 
         # Shuffle Ganon defaults to TRUE
@@ -170,6 +171,7 @@ def parse_settings():
         "shuffleganon": True,
         "shuffle": "vanilla",
         "shufflelinks": False,
+        "shuffletavern": False,
         "overworld_map": "default",
         "pseudoboots": False,
 

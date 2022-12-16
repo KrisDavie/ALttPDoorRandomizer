@@ -333,6 +333,11 @@ Start with dash ability, but no way to use boots to accomplish checks
 
 Whether to shuffle links house in most ER modes.
 
+```
+--shuffletavern
+```
+
+Whether to shuffle the back of the tavern in most ER modes.
 
 ```
 --bombbag

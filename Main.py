@@ -33,7 +33,7 @@ from source.overworld.EntranceShuffle2 import link_entrances_new
 from source.tools.BPS import create_bps_from_data
 from source.classes.CustomSettings import CustomSettings
 
-__version__ = '1.0.2.7-w'
+__version__ = '1.0.2.8-w'
 
 from source.classes.BabelFish import BabelFish
 
@@ -118,6 +118,7 @@ def main(args, seed=None, fish=None):
     world.treasure_hunt_count = {k: int(v) for k, v in args.triforce_goal.items()}
     world.treasure_hunt_total = {k: int(v) for k, v in args.triforce_pool.items()}
     world.shufflelinks = args.shufflelinks.copy()
+    world.shuffletavern = args.shuffletavern.copy()
     world.pseudoboots = args.pseudoboots.copy()
     world.overworld_map = args.overworld_map.copy()
     world.restrict_boss_items = args.restrict_boss_items.copy()
@@ -162,7 +163,7 @@ def main(args, seed=None, fish=None):
     if args.create_spoiler and not args.jsonout:
         logger.info(world.fish.translate("cli", "cli", "create.meta"))
         world.spoiler.meta_to_file(output_path(f'{outfilebase}_Spoiler.txt'))
-    if args.mystery:
+    if args.mystery and not args.suppress_meta:
         world.spoiler.mystery_meta_to_file(output_path(f'{outfilebase}_meta.txt'))
 
     for player in range(1, world.players + 1):
@@ -201,7 +202,7 @@ def main(args, seed=None, fish=None):
     logger.info(world.fish.translate("cli","cli","shuffling.world"))
 
     for player in range(1, world.players + 1):
-        if world.experimental[player] or (world.customizer and world.customizer.get_entrances()):
+        if world.experimental[player] or world.shuffle[player] in ['lite', 'lean'] or world.shuffletavern[player] or (world.customizer and world.customizer.get_entrances()):
             link_entrances_new(world, player)
         else:
             if world.mode[player] != 'inverted':
@@ -375,7 +376,7 @@ def main(args, seed=None, fish=None):
                 with open(output_path('%s_multidata' % outfilebase), 'wb') as f:
                     f.write(multidata)
 
-    if args.mystery:
+    if args.mystery and not args.suppress_meta:
         world.spoiler.hashes_to_file(output_path(f'{outfilebase}_meta.txt'))
     elif args.create_spoiler and not args.jsonout:
         world.spoiler.hashes_to_file(output_path(f'{outfilebase}_Spoiler.txt'))
@@ -583,11 +584,7 @@ def copy_dynamic_regions_and_locations(world, ret):
     for location in world.dynamic_locations:
         new_reg = ret.get_region(location.parent_region.name, location.parent_region.player)
         new_loc = Location(location.player, location.name, location.address, location.crystal, location.hint_text, new_reg)
-        # todo: this is potentially dangerous. later refactor so we
-        # can apply dynamic region rules on top of copied world like other rules
-        new_loc.access_rule = location.access_rule
-        new_loc.always_allow = location.always_allow
-        new_loc.item_rule = location.item_rule
+        new_loc.type = location.type
         new_reg.locations.append(new_loc)
 
         ret.clear_location_cache()

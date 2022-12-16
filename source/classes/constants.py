@@ -79,6 +79,7 @@ SETTINGSTOPROCESS = {
       "openpyramid": "openpyramid",
       "shuffleganon": "shuffleganon",
       "shufflelinks": "shufflelinks",
+      "shuffletavern": "shuffletavern",
       "entranceshuffle": "shuffle",
       "overworld_map": "overworld_map",
     },

@@ -25,7 +25,7 @@ def main(args=None):
 
     def test(testname: str, command: str):
         tests[testname] = [command]
-        basecommand = f"python3.8 Mystery.py --suppress_rom"
+        basecommand = f"python3.8 Mystery.py --suppress_rom --suppress_meta"
 
         def gen_seed():
             taskcommand = basecommand + " " + command

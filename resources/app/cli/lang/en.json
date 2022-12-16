@@ -315,6 +315,9 @@
     "shufflelinks": [
       "Include Link's House in the entrance shuffle pool. (default: %(default)s)"
     ],
+    "shuffletavern": [
+      "Include the back of the tavern in the entrance shuffle pool. (default: %(default)s)"
+    ],
     "overworld_map": [
       "Control if and how the overworld map indicators show the locations of dungeons (default: %(default)s)"
     ],

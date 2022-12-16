@@ -3,6 +3,7 @@ import collections
 import itertools
 import logging
 import math
+from contextlib import suppress
 
 from BaseClasses import CollectionState, FillError, LocationType
 from Items import ItemFactory
@@ -35,17 +36,6 @@ def dungeon_tracking(world):
 
 def fill_dungeons_restrictive(world, shuffled_locations):
     dungeon_tracking(world)
-    all_state_base = world.get_all_state()
-
-    # for player in range(1, world.players + 1):
-    #     pinball_room = world.get_location('Skull Woods - Pinball Room', player)
-    #     if world.retro[player]:
-    #         world.push_item(pinball_room, ItemFactory('Small Key (Universal)', player), False)
-    #     else:
-    #         world.push_item(pinball_room, ItemFactory('Small Key (Skull Woods)', player), False)
-    #     pinball_room.event = True
-    #     pinball_room.locked = True
-    #     shuffled_locations.remove(pinball_room)
 
     # with shuffled dungeon items they are distributed as part of the normal item pool
     for item in world.get_items():
@@ -55,17 +45,28 @@ def fill_dungeons_restrictive(world, shuffled_locations):
             item.priority = True
 
     dungeon_items = [item for item in get_dungeon_item_pool(world) if item.is_inside_dungeon_item(world)]
+    bigs, smalls, others = [], [], []
+    for i in dungeon_items:
+        (bigs if i.bigkey else smalls if i.smallkey else others).append(i)
 
-    # sort in the order Big Key, Small Key, Other before placing dungeon items
-    sort_order = {"BigKey": 3, "SmallKey": 2}
-    dungeon_items.sort(key=lambda item: sort_order.get(item.type, 1))
+    def fill(base_state, items, key_pool):
+        fill_restrictive(world, base_state, shuffled_locations, items, key_pool, True)
 
-    fill_restrictive(world, all_state_base, shuffled_locations, dungeon_items,
-                     keys_in_itempool={player: not world.keyshuffle[player] for player in range(1, world.players+1)},
-                     single_player_placement=True)
+    all_state_base = world.get_all_state()
+    big_state_base = all_state_base.copy()
+    for x in smalls + others:
+        big_state_base.collect(x, True)
+    fill(big_state_base, bigs, smalls)
+    random.shuffle(shuffled_locations)
+    small_state_base = all_state_base.copy()
+    for x in others:
+        small_state_base.collect(x, True)
+    fill(small_state_base, smalls, list(smalls))
+    random.shuffle(shuffled_locations)
+    fill(all_state_base, others, None)
 
 
-def fill_restrictive(world, base_state, locations, itempool, keys_in_itempool=None, single_player_placement=False,
+def fill_restrictive(world, base_state, locations, itempool, key_pool=None, single_player_placement=False,
                      vanilla=False):
     def sweep_from_pool():
         new_state = base_state.copy()
@@ -101,8 +102,7 @@ def fill_restrictive(world, base_state, locations, itempool, keys_in_itempool=No
                 item_locations = filter_locations(item_to_place, locations, world, vanilla)
                 for location in item_locations:
                     spot_to_fill = verify_spot_to_fill(location, item_to_place, maximum_exploration_state,
-                                                       single_player_placement, perform_access_check, itempool,
-                                                       keys_in_itempool, world)
+                                                       single_player_placement, perform_access_check, key_pool, world)
                     if spot_to_fill:
                         break
                 if spot_to_fill is None:
@@ -111,7 +111,7 @@ def fill_restrictive(world, base_state, locations, itempool, keys_in_itempool=No
                         continue
                     spot_to_fill = recovery_placement(item_to_place, locations, world, maximum_exploration_state,
                                                       base_state, itempool, perform_access_check, item_locations,
-                                                      keys_in_itempool, single_player_placement)
+                                                      key_pool, single_player_placement)
                     if spot_to_fill is None:
                         # we filled all reachable spots. Maybe the game can be beaten anyway?
                         unplaced_items.insert(0, item_to_place)
@@ -123,6 +123,9 @@ def fill_restrictive(world, base_state, locations, itempool, keys_in_itempool=No
                         raise FillError('No more spots to place %s' % item_to_place)
 
                 world.push_item(spot_to_fill, item_to_place, False)
+                if item_to_place.smallkey:
+                    with suppress(ValueError):
+                        key_pool.remove(item_to_place)
                 track_outside_keys(item_to_place, spot_to_fill, world)
                 track_dungeon_items(item_to_place, spot_to_fill, world)
                 locations.remove(spot_to_fill)
@@ -132,7 +135,7 @@ def fill_restrictive(world, base_state, locations, itempool, keys_in_itempool=No
 
 
 def verify_spot_to_fill(location, item_to_place, max_exp_state, single_player_placement, perform_access_check,
-                        itempool, keys_in_itempool, world):
+                        key_pool, world):
     if item_to_place.smallkey or item_to_place.bigkey:  # a better test to see if a key can go there
         location.item = item_to_place
         test_state = max_exp_state.copy()
@@ -141,8 +144,7 @@ def verify_spot_to_fill(location, item_to_place, max_exp_state, single_player_pl
         test_state = max_exp_state
     if not single_player_placement or location.player == item_to_place.player:
         if location.can_fill(test_state, item_to_place, perform_access_check):
-            test_pool = itempool if (keys_in_itempool and keys_in_itempool[item_to_place.player]) else world.itempool
-            if valid_key_placement(item_to_place, location, test_pool, world):
+            if valid_key_placement(item_to_place, location, key_pool, world):
                 if item_to_place.crystal or valid_dungeon_placement(item_to_place, location, world):
                     return location
     if item_to_place.smallkey or item_to_place.bigkey:
@@ -150,7 +152,7 @@ def verify_spot_to_fill(location, item_to_place, max_exp_state, single_player_pl
     return None
 
 
-def valid_key_placement(item, location, itempool, world):
+def valid_key_placement(item, location, key_pool, world):
     if not valid_reserved_placement(item, location, world):
         return False
     if ((not item.smallkey and not item.bigkey) or item.player != location.player
@@ -161,7 +163,7 @@ def valid_key_placement(item, location, itempool, world):
         if dungeon.name not in item.name and (dungeon.name != 'Hyrule Castle' or 'Escape' not in item.name):
             return True
         key_logic = world.key_logic[item.player][dungeon.name]
-        unplaced_keys = len([x for x in itempool if x.name == key_logic.small_key_name and x.player == item.player])
+        unplaced_keys = len([x for x in key_pool if x.name == key_logic.small_key_name and x.player == item.player])
         prize_loc = None
         if key_logic.prize_location:
             prize_loc = world.get_location(key_logic.prize_location, location.player)
@@ -216,16 +218,16 @@ def is_dungeon_item(item, world):
 
 
 def recovery_placement(item_to_place, locations, world, state, base_state, itempool, perform_access_check, attempted,
-                       keys_in_itempool=None, single_player_placement=False):
+                       key_pool=None, single_player_placement=False):
     logging.getLogger('').debug(f'Could not place {item_to_place} attempting recovery')
     if world.algorithm in ['balanced', 'equitable']:
-        return last_ditch_placement(item_to_place, locations, world, state, base_state, itempool, keys_in_itempool,
+        return last_ditch_placement(item_to_place, locations, world, state, base_state, itempool, key_pool,
                                     single_player_placement)
     elif world.algorithm == 'vanilla_fill':
         if item_to_place.type == 'Crystal':
             possible_swaps = [x for x in state.locations_checked if x.item.type == 'Crystal']
             return try_possible_swaps(possible_swaps, item_to_place, locations, world, base_state, itempool,
-                                      keys_in_itempool, single_player_placement)
+                                      key_pool, single_player_placement)
         else:
             i, config = 0, world.item_pool_config
             tried = set(attempted)
@@ -235,7 +237,7 @@ def recovery_placement(item_to_place, locations, world, state, base_state, itemp
                     other_locs = [x for x in locations if x.name in fallback_locations]
                     for location in other_locs:
                         spot_to_fill = verify_spot_to_fill(location, item_to_place, state, single_player_placement,
-                                                           perform_access_check, itempool, keys_in_itempool, world)
+                                                           perform_access_check, key_pool, world)
                         if spot_to_fill:
                             return spot_to_fill
                     i += 1
@@ -244,14 +246,14 @@ def recovery_placement(item_to_place, locations, world, state, base_state, itemp
                other_locations = vanilla_fallback(item_to_place, locations, world)
                for location in other_locations:
                    spot_to_fill = verify_spot_to_fill(location, item_to_place, state, single_player_placement,
-                                                      perform_access_check, itempool, keys_in_itempool, world)
+                                                      perform_access_check, key_pool, world)
                    if spot_to_fill:
                        return spot_to_fill
                tried.update(other_locations)
             other_locations = [x for x in locations if x not in tried]
             for location in other_locations:
                 spot_to_fill = verify_spot_to_fill(location, item_to_place, state, single_player_placement,
-                                                   perform_access_check, itempool, keys_in_itempool, world)
+                                                   perform_access_check, key_pool, world)
                 if spot_to_fill:
                     return spot_to_fill
             return None
@@ -259,14 +261,14 @@ def recovery_placement(item_to_place, locations, world, state, base_state, itemp
         other_locations = [x for x in locations if x not in attempted]
         for location in other_locations:
             spot_to_fill = verify_spot_to_fill(location, item_to_place, state, single_player_placement,
-                                               perform_access_check, itempool, keys_in_itempool, world)
+                                               perform_access_check, key_pool, world)
             if spot_to_fill:
                 return spot_to_fill
     return None
 
 
 def last_ditch_placement(item_to_place, locations, world, state, base_state, itempool,
-                         keys_in_itempool=None, single_player_placement=False):
+                         key_pool=None, single_player_placement=False):
     def location_preference(loc):
         if not loc.item.advancement:
             return 1
@@ -284,21 +286,21 @@ def last_ditch_placement(item_to_place, locations, world, state, base_state, ite
                           if x.item.type not in ['Event', 'Crystal'] and not x.forced_item]
     swap_locations = sorted(possible_swaps, key=location_preference)
     return try_possible_swaps(swap_locations, item_to_place, locations, world, base_state, itempool,
-                              keys_in_itempool, single_player_placement)
+                              key_pool, single_player_placement)
 
 
 def try_possible_swaps(swap_locations, item_to_place, locations, world, base_state, itempool,
-                       keys_in_itempool=None, single_player_placement=False):
+                       key_pool=None, single_player_placement=False):
     for location in swap_locations:
         old_item = location.item
         new_pool = list(itempool) + [old_item]
         new_spot = find_spot_for_item(item_to_place, [location], world, base_state, new_pool,
-                                      keys_in_itempool, single_player_placement)
+                                      key_pool, single_player_placement)
         if new_spot:
             restore_item = new_spot.item
             new_spot.item = item_to_place
             swap_spot = find_spot_for_item(old_item, locations, world, base_state, itempool,
-                                           keys_in_itempool, single_player_placement)
+                                           key_pool, single_player_placement)
             if swap_spot:
                 logging.getLogger('').debug(f'Swapping {old_item} for {item_to_place}')
                 world.push_item(swap_spot, old_item, False)
@@ -414,13 +416,13 @@ def distribute_items_restrictive(world, gftower_trash=False, fill_locations=None
     # Make sure the escape small key is placed first in standard with key shuffle to prevent running out of spots
     # todo: crossed
     progitempool.sort(key=lambda item: 1 if item.name == 'Small Key (Escape)' and world.keyshuffle[item.player] and world.mode[item.player] == 'standard' else 0)
-    keys_in_pool = {player: world.keyshuffle[player] or world.algorithm != 'balanced' for player in range(1, world.players + 1)}
+    key_pool = [x for x in progitempool if x.smallkey]
 
     # sort maps and compasses to the back -- this may not be viable in equitable & ambrosia
     progitempool.sort(key=lambda item: 0 if item.map or item.compass else 1)
     if world.algorithm == 'vanilla_fill':
-        fill_restrictive(world, world.state, fill_locations, progitempool, keys_in_pool, vanilla=True)
-    fill_restrictive(world, world.state, fill_locations, progitempool, keys_in_pool)
+        fill_restrictive(world, world.state, fill_locations, progitempool, key_pool, vanilla=True)
+    fill_restrictive(world, world.state, fill_locations, progitempool, key_pool)
     random.shuffle(fill_locations)
     if world.algorithm == 'balanced':
         fast_fill(world, prioitempool, fill_locations)

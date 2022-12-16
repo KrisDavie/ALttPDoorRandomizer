@@ -111,6 +111,7 @@ class CustomSettings(object):
                 args.shufflepots[p] = get_setting(settings['shufflepots'], args.shufflepots[p])
                 args.bombbag[p] = get_setting(settings['bombbag'], args.bombbag[p])
                 args.shufflelinks[p] = get_setting(settings['shufflelinks'], args.shufflelinks[p])
+                args.shuffletavern[p] = get_setting(settings['shuffletavern'], args.shuffletavern[p])
                 args.restrict_boss_items[p] = get_setting(settings['restrict_boss_items'], args.restrict_boss_items[p])
                 args.overworld_map[p] = get_setting(settings['overworld_map'], args.overworld_map[p])
                 args.pseudoboots[p] = get_setting(settings['pseudoboots'], args.pseudoboots[p])
@@ -212,6 +213,7 @@ class CustomSettings(object):
             settings_dict[p]['shufflepots'] = world.potshuffle[p]
             settings_dict[p]['bombbag'] = world.bombbag[p]
             settings_dict[p]['shufflelinks'] = world.shufflelinks[p]
+            settings_dict[p]['shuffletavern'] = world.shuffletavern[p]
             settings_dict[p]['overworld_map'] = world.overworld_map[p]
             settings_dict[p]['pseudoboots'] = world.pseudoboots[p]
             settings_dict[p]['triforce_goal'] = world.treasure_hunt_count[p]
@@ -305,7 +307,7 @@ class CustomSettings(object):
             for door in world.doors:
                 if door.player == p and not door.entranceFlag and door.type in door_types and door not in skip:
                     if door.type == DoorType.Interior:
-                        if door.name in door_types:
+                        if door.name in door_kinds:
                             door_value = {'type':  door_kinds[door.name]}
                             door_map[door.name] = door_value  # intra-tile note
                             skip.add(door.dest)

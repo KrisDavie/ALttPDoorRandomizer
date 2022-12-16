@@ -223,12 +223,15 @@ def place_bosses(world, player):
         for u, level in used_bosses:
             if not level:
                 bosses.remove(u)
+        gt_bosses = []
 
         for [loc, level] in boss_locations:
             loc_text = loc + (' ('+level+')' if level else '')
             try:
                 if level:
-                    boss = random.choice([b for b in placeable_bosses if can_place_boss(world, player, b, loc, level)])
+                    boss = random.choice([b for b in placeable_bosses if can_place_boss(world, player, b, loc, level)
+                                          and b not in gt_bosses])
+                    gt_bosses.append(boss)
                 else:
                     boss = random.choice([b for b in bosses if can_place_boss(world, player, b, loc, level)])
                     bosses.remove(boss)

@@ -18,6 +18,7 @@
       ]
     },
     "shufflelinks":     { "type": "checkbox" },
+    "shuffletavern":     { "type": "checkbox" },
     "overworld_map": {
       "type": "selectbox",
       "options": [
