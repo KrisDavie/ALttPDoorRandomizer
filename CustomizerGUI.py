@@ -51,14 +51,13 @@ def customizerGUI(top=None):
             self.pages["items"].pages[dungeon].content.load_yaml(
                 self.pages["items"].pages[dungeon].content, yaml_data["placements"][1]
             )
-            if dungeon == 'Overworld':
+            if dungeon == "Overworld":
                 continue
             self.pages["pots"].pages[dungeon].content.load_yaml(
                 self.pages["pots"].pages[dungeon].content, yaml_data["placements"][1]
             )
-            if dungeon == 'Underworld':
+            if dungeon == "Underworld":
                 continue
-
 
             self.pages["doors"].pages[dungeon].content.load_yaml(
                 self.pages["doors"].pages[dungeon].content, yaml_data["doors"][1]
@@ -79,19 +78,23 @@ def customizerGUI(top=None):
             yaml_data["entrances"] = {1: entrances}
 
         # Save doors
-        yaml_data["doors"] = {1: {}}
+        yaml_data["doors"] = {1: {"doors": {}, "lobbies": {}}}
 
         for item_world in self.pages["doors"].pages:
-            for door, linked_door in (
+            doors_data, doors_type = (
                 self.pages["doors"]
                 .pages[item_world]
-                .content.return_connections(self.pages["doors"].pages[item_world].content.door_links)[0]['doors']
-                .items()
-            ):
-                yaml_data["doors"][1].update({door: linked_door})
-        
+                .content.return_connections(
+                    self.pages["doors"].pages[item_world].content.door_links,
+                    self.pages["doors"].pages[item_world].content.lobby_doors,
+                    self.pages["doors"].pages[item_world].content.special_doors,
+                )[0]
+            )
+            yaml_data["doors"][1]["doors"].update(doors_data["doors"])
+            yaml_data["doors"][1]["lobbies"].update(doors_data["lobbies"])
+
         if len(yaml_data["doors"][1]) == 0:
-            del(yaml_data["doors"])
+            del yaml_data["doors"]
 
         # Save items
         yaml_data["placements"] = {1: {}}
@@ -109,7 +112,7 @@ def customizerGUI(top=None):
             del yaml_data["placements"]
 
         # Save Pots
-        if 'placements' not in yaml_data:
+        if "placements" not in yaml_data:
             yaml_data["placements"] = {1: {}}
 
         for pot_world in self.pages["pots"].pages:
@@ -123,8 +126,6 @@ def customizerGUI(top=None):
                 yaml_data["placements"][1].update({loc: item})
         if len(yaml_data["placements"][1]) == 0:
             del yaml_data["placements"]
-
-
 
         if not save:
             if len(yaml_data) == 0:
@@ -174,22 +175,21 @@ def customizerGUI(top=None):
         self.pages["items"].pages[dungeon] = ttk.Frame(self.pages["items"].notebook)
         self.pages["items"].notebook.add(self.pages["items"].pages[dungeon], text=dungeon.replace("_", " "))
         self.pages["items"].pages[dungeon].content = item_customizer_page(
-            self, self.pages["items"].pages[dungeon], world, tab_item_type='standard', eg_img=eg_img
+            self, self.pages["items"].pages[dungeon], world, tab_item_type="standard", eg_img=eg_img
         )
         self.pages["items"].pages[dungeon].content.pack(side=TOP, fill=BOTH, expand=True)
 
-        if dungeon == 'Overworld':
+        if dungeon == "Overworld":
             continue
 
         self.pages["pots"].pages[dungeon] = ttk.Frame(self.pages["pots"].notebook)
         self.pages["pots"].notebook.add(self.pages["pots"].pages[dungeon], text=dungeon.replace("_", " "))
         self.pages["pots"].pages[dungeon].content = item_customizer_page(
-            self, self.pages["pots"].pages[dungeon], world, tab_item_type='pot', eg_img=eg_img
+            self, self.pages["pots"].pages[dungeon], world, tab_item_type="pot", eg_img=eg_img
         )
         self.pages["pots"].pages[dungeon].content.pack(side=TOP, fill=BOTH, expand=True)
 
-
-        if dungeon == 'Underworld':
+        if dungeon == "Underworld":
             continue
 
         self.pages["doors"].pages[dungeon] = ttk.Frame(self.pages["doors"].notebook)
@@ -198,7 +198,6 @@ def customizerGUI(top=None):
             self, self.pages["doors"].pages[dungeon], world, eg_img=eg_img
         )
         self.pages["doors"].pages[dungeon].content.pack(side=TOP, fill=BOTH, expand=True)
-
 
     self.pages["items"].notebook.pack()
     self.pages["pots"].notebook.pack()

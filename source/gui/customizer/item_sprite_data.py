@@ -128,4 +128,9 @@ item_table = {
     "Crystal": (8, 13),
     "Red Crystal": (8, 14),
     "Triforce Piece": (8, 15),
+    "Chicken": (8, 0),
+    "Red Potion": (8, 1),
+    "Green Potion": (8, 2),
+    "Blue Potion": (8, 3),
+    "Bee Trap": (8, 4),
 }

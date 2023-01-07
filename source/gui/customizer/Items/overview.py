@@ -27,6 +27,8 @@ def item_customizer_page(top, parent, tab_world, tab_item_type="standard", eg_im
             ):
                 continue
             item = worlds_data[tab_world][f"locations_{tab_item_type}"][loc_name]["button"]
+            if placed_item == "Nothing":
+                continue
             if placed_item.startswith("Crystal"):
                 crystal_num = int(placed_item[-1])
                 if crystal_num in [5, 6]:
@@ -423,9 +425,8 @@ def item_customizer_page(top, parent, tab_world, tab_item_type="standard", eg_im
                     new_tile_img = cropped_tiles_data[tile_1]["image"].crop((0, 0, 512, 512))
                     new_tile_img.paste(cropped_tiles_data[tile]["image"], (0, 256))
 
-                    ImageDraw.Draw(new_tile_img).line(((0, 256), (512, 256)), fill='#f0f0f0', width=3)
+                    ImageDraw.Draw(new_tile_img).line(((0, 256), (512, 256)), fill="#f0f0f0", width=3)
                     new_tile_img = new_tile_img.resize((tile_size, tile_size))
-
 
                     # Add the new tile to the supertile image
                     supertiles_img.paste(
@@ -461,7 +462,7 @@ def item_customizer_page(top, parent, tab_world, tab_item_type="standard", eg_im
                     # paste the two tiles together
                     new_tile_img = cropped_tiles_data[tile_1]["image"].crop((0, 0, 512, 512))
                     new_tile_img.paste(cropped_tiles_data[tile]["image"], (256, 0))
-                    ImageDraw.Draw(new_tile_img).line(((256, 0), (256, 512)), fill='#f0f0f0', width=3)
+                    ImageDraw.Draw(new_tile_img).line(((256, 0), (256, 512)), fill="#f0f0f0", width=3)
 
                     new_tile_img = new_tile_img.resize((tile_size, tile_size))
 
@@ -481,9 +482,13 @@ def item_customizer_page(top, parent, tab_world, tab_item_type="standard", eg_im
 
         # Clean up any remaining horizontal tiles
         if h_tiles == 1 and s_tiles >= 1:
-            h_tile = [tile for tile, tile_data in cropped_tiles_data.copy().items() if tile_data["tile_type"] == "horizontal"][0]
-            
-            single_tiles = [tile for tile, tile_data in cropped_tiles_data.copy().items() if tile_data["tile_type"] == "single"]
+            h_tile = [
+                tile for tile, tile_data in cropped_tiles_data.copy().items() if tile_data["tile_type"] == "horizontal"
+            ][0]
+
+            single_tiles = [
+                tile for tile, tile_data in cropped_tiles_data.copy().items() if tile_data["tile_type"] == "single"
+            ]
             s_tile1 = single_tiles[0]
             if s_tiles > 1:
                 s_tile2 = single_tiles[1]
@@ -499,7 +504,9 @@ def item_customizer_page(top, parent, tab_world, tab_item_type="standard", eg_im
                 add_item_to_world(item, item_data, scaling_factor, canvas_x, canvas_y, tile_size, adjust_y=256)
             if s_tile2 != None:
                 for item, item_data in cropped_tiles_data[s_tile2]["items"].items():
-                    add_item_to_world(item, item_data, scaling_factor, canvas_x, canvas_y, tile_size, adjust_y=256, adjust_x=256)
+                    add_item_to_world(
+                        item, item_data, scaling_factor, canvas_x, canvas_y, tile_size, adjust_y=256, adjust_x=256
+                    )
 
             new_tile_img = cropped_tiles_data[h_tile]["image"].crop((0, 0, 512, 512))
             new_tile_img.paste(cropped_tiles_data[s_tile1]["image"], (0, 256))
@@ -507,8 +514,8 @@ def item_customizer_page(top, parent, tab_world, tab_item_type="standard", eg_im
             if s_tile2 != None:
                 new_tile_img.paste(cropped_tiles_data[s_tile2]["image"], (256, 256))
 
-            ImageDraw.Draw(new_tile_img).line(((0, 256), (512, 256)), fill='#f0f0f0', width=3)
-            ImageDraw.Draw(new_tile_img).line(((256, 256), (256, 512)), fill='#f0f0f0', width=3)
+            ImageDraw.Draw(new_tile_img).line(((0, 256), (512, 256)), fill="#f0f0f0", width=3)
+            ImageDraw.Draw(new_tile_img).line(((256, 256), (256, 512)), fill="#f0f0f0", width=3)
 
             new_tile_img = new_tile_img.resize((tile_size, tile_size))
 
@@ -529,9 +536,13 @@ def item_customizer_page(top, parent, tab_world, tab_item_type="standard", eg_im
 
         # Clean up any remaining vertical tiles
         if v_tiles == 1 and s_tiles >= 1:
-            v_tile = [tile for tile, tile_data in cropped_tiles_data.copy().items() if tile_data["tile_type"] == "vertical"][0]
-            
-            single_tiles = [tile for tile, tile_data in cropped_tiles_data.copy().items() if tile_data["tile_type"] == "single"]
+            v_tile = [
+                tile for tile, tile_data in cropped_tiles_data.copy().items() if tile_data["tile_type"] == "vertical"
+            ][0]
+
+            single_tiles = [
+                tile for tile, tile_data in cropped_tiles_data.copy().items() if tile_data["tile_type"] == "single"
+            ]
             s_tile1 = single_tiles[0]
             if s_tiles > 1:
                 s_tile2 = single_tiles[1]
@@ -547,15 +558,17 @@ def item_customizer_page(top, parent, tab_world, tab_item_type="standard", eg_im
                 add_item_to_world(item, item_data, scaling_factor, canvas_x, canvas_y, tile_size, adjust_x=256)
             if s_tile2 != None:
                 for item, item_data in cropped_tiles_data[s_tile2]["items"].items():
-                    add_item_to_world(item, item_data, scaling_factor, canvas_x, canvas_y, tile_size, adjust_y=256, adjust_x=256)
+                    add_item_to_world(
+                        item, item_data, scaling_factor, canvas_x, canvas_y, tile_size, adjust_y=256, adjust_x=256
+                    )
 
             new_tile_img = cropped_tiles_data[v_tile]["image"].crop((0, 0, 512, 512))
             new_tile_img.paste(cropped_tiles_data[s_tile1]["image"], (256, 0))
             if s_tile2 != None:
                 new_tile_img.paste(cropped_tiles_data[s_tile2]["image"], (256, 256))
 
-            ImageDraw.Draw(new_tile_img).line(((256, 0), (256, 512)), fill='#f0f0f0', width=3)
-            ImageDraw.Draw(new_tile_img).line(((256, 256), (512, 256)), fill='#f0f0f0', width=3)
+            ImageDraw.Draw(new_tile_img).line(((256, 0), (256, 512)), fill="#f0f0f0", width=3)
+            ImageDraw.Draw(new_tile_img).line(((256, 256), (512, 256)), fill="#f0f0f0", width=3)
             new_tile_img = new_tile_img.resize((tile_size, tile_size))
 
             supertiles_img.paste(
@@ -572,10 +585,12 @@ def item_customizer_page(top, parent, tab_world, tab_item_type="standard", eg_im
             del cropped_tiles_data[s_tile1]
             if s_tile2 != None:
                 del cropped_tiles_data[s_tile2]
-        
+
         # Finally combine any remaining single tiles
         while s_tiles > 0:
-            single_tiles = [tile for tile, tile_data in cropped_tiles_data.copy().items() if tile_data["tile_type"] == "single"]
+            single_tiles = [
+                tile for tile, tile_data in cropped_tiles_data.copy().items() if tile_data["tile_type"] == "single"
+            ]
             s_tile1 = single_tiles[0]
             if s_tiles == 1:
                 s_tile2, s_tile3, s_tile4 = None, None, None
@@ -600,7 +615,9 @@ def item_customizer_page(top, parent, tab_world, tab_item_type="standard", eg_im
                     add_item_to_world(item, item_data, scaling_factor, canvas_x, canvas_y, tile_size, adjust_y=256)
             if s_tile4 != None:
                 for item, item_data in cropped_tiles_data[s_tile4]["items"].items():
-                    add_item_to_world(item, item_data, scaling_factor, canvas_x, canvas_y, tile_size, adjust_y=256, adjust_x=256)
+                    add_item_to_world(
+                        item, item_data, scaling_factor, canvas_x, canvas_y, tile_size, adjust_y=256, adjust_x=256
+                    )
 
             new_tile_img = cropped_tiles_data[s_tile1]["image"].crop((0, 0, 512, 512))
             if s_tile2 != None:
@@ -610,9 +627,8 @@ def item_customizer_page(top, parent, tab_world, tab_item_type="standard", eg_im
             if s_tile4 != None:
                 new_tile_img.paste(cropped_tiles_data[s_tile4]["image"], (256, 256))
 
-
-            ImageDraw.Draw(new_tile_img).line(((256, 0), (256, 512)), fill='#f0f0f0', width=3)
-            ImageDraw.Draw(new_tile_img).line(((0, 256), (512, 256)), fill='#f0f0f0', width=3)
+            ImageDraw.Draw(new_tile_img).line(((256, 0), (256, 512)), fill="#f0f0f0", width=3)
+            ImageDraw.Draw(new_tile_img).line(((0, 256), (512, 256)), fill="#f0f0f0", width=3)
             new_tile_img = new_tile_img.resize((tile_size, tile_size))
 
             supertiles_img.paste(
@@ -647,12 +663,13 @@ def item_customizer_page(top, parent, tab_world, tab_item_type="standard", eg_im
         #         worlds_data[tab_world][f"locations_{tab_item_type}"][item]["y"] *= upscale_ratio
 
         for i in range(cols + 1):
-            ImageDraw.Draw(supertiles_img).line(((tile_size * i, 0), (tile_size * i, tile_size * rows)), fill='#f0f0f0', width=3)
+            ImageDraw.Draw(supertiles_img).line(
+                ((tile_size * i, 0), (tile_size * i, tile_size * rows)), fill="#f0f0f0", width=3
+            )
         for i in range(rows + 1):
-            ImageDraw.Draw(supertiles_img).line(((0, tile_size * i), (tile_size * cols, tile_size * i)), fill='#f0f0f0', width=3)
-           
-
-               
+            ImageDraw.Draw(supertiles_img).line(
+                ((0, tile_size * i), (tile_size * cols, tile_size * i)), fill="#f0f0f0", width=3
+            )
 
         tile_img = ImageTk.PhotoImage(supertiles_img)
         worlds_data[tab_world]["map_image"].append(tile_img)
