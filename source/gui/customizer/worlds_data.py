@@ -25,6 +25,24 @@ class World(Enum):
     OverWorld = 16
 
 
+dungeon_worlds = {
+    "Overworld": World.OverWorld,
+    "Underworld": World.UnderWorld,
+    "Hyrule_Castle": World.HyruleCastle,
+    "Eastern_Palace": World.EasternPalace,
+    "Desert_Palace": World.DesertPalace,
+    "Tower_of_Hera": World.TowerOfHera,
+    "Castle_Tower": World.CastleTower,
+    "Palace_of_Darkness": World.PalaceOfDarkness,
+    "Swamp_Palace": World.SwampPalace,
+    "Skull_Woods": World.SkullWoods,
+    "Thieves_Town": World.ThievesTown,
+    "Ice_Palace": World.IcePalace,
+    "Misery_Mire": World.MiseryMire,
+    "Turtle_Rock": World.TurtleRock,
+    "Ganons_Tower": World.GanonsTower,
+}
+
 MAPS_DIR = Path("resources") / "app" / "gui" / "plandomizer" / "maps"
 
 
@@ -71,7 +89,9 @@ worlds_data = {
         "locations_bak": location_data.underworld_items,
         # "map_file": MAPS_DIR / "Dungeons" / "Hyrule_Castle.png",
         "map_file": None,
-        "supertile_locs": [k for k, v in location_data.underworld_categories.items() if "Escape" in v or "Hyrule Castle" in v],
+        "supertile_locs": [
+            k for k, v in location_data.underworld_categories.items() if "Escape" in v or "Hyrule Castle" in v
+        ],
         "map_image": None,
         "canvas_image": None,
     },

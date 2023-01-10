@@ -1,33 +1,17 @@
 from pathlib import Path
+import pickle
 from tkinter import Tk, TOP, BOTH, Toplevel, ttk, filedialog
 from PIL import Image
 from source.gui.customizer.Doors.overview import door_customizer_page
 from source.gui.customizer.Entrances.overview import entrance_customizer_page
 from source.gui.customizer.Items.overview import item_customizer_page
-from source.gui.customizer.worlds_data import World, worlds_data
+from source.gui.customizer.worlds_data import dungeon_worlds
 
 from Main import __version__ as ESVersion
 import os
 import yaml
 
 # This should be made better
-dungeon_worlds = {
-    "Overworld": World.OverWorld,
-    "Underworld": World.UnderWorld,
-    "Hyrule_Castle": World.HyruleCastle,
-    "Eastern_Palace": World.EasternPalace,
-    "Desert_Palace": World.DesertPalace,
-    "Tower_of_Hera": World.TowerOfHera,
-    "Castle_Tower": World.CastleTower,
-    "Palace_of_Darkness": World.PalaceOfDarkness,
-    "Swamp_Palace": World.SwampPalace,
-    "Skull_Woods": World.SkullWoods,
-    "Thieves_Town": World.ThievesTown,
-    "Ice_Palace": World.IcePalace,
-    "Misery_Mire": World.MiseryMire,
-    "Turtle_Rock": World.TurtleRock,
-    "Ganons_Tower": World.GanonsTower,
-}
 
 
 def customizerGUI(top=None):
@@ -39,6 +23,20 @@ def customizerGUI(top=None):
     self = mainWindow
 
     mainWindow.wm_title("Door Shuffle %s" % ESVersion)
+
+    def _save_vanilla(self):
+        data = {}
+        # Tile map, tile_size, map_dims
+        for dungeon in dungeon_worlds.keys():
+            if dungeon in ["Overworld", "Underworld"]:
+                continue
+            data[dungeon] = {
+                "tile_map": self.pages["doors"].pages[dungeon].content.tile_map,
+                "tile_size": self.pages["doors"].pages[dungeon].content.tile_size,
+                "map_dims": self.pages["doors"].pages[dungeon].content.map_dims,
+            }
+        with open("vanilla_layout.pickle", "wb") as f:
+            pickle.dump(data, f, pickle.HIGHEST_PROTOCOL)
 
     def load_yaml(self):
         file = filedialog.askopenfilename(
@@ -206,6 +204,8 @@ def customizerGUI(top=None):
     save_data_button.pack()
     load_data_button = ttk.Button(self, text="Load Customizer Data", command=lambda: load_yaml(self))
     load_data_button.pack()
+    save_vanilla_button = ttk.Button(self, text="Save Vanilla Data", command=lambda: _save_vanilla(self))
+    save_vanilla_button.pack()
 
     def close_window():
         if top:

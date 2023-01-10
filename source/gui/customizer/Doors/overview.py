@@ -1,13 +1,10 @@
 from enum import Enum
-import math
-from operator import ne
-from tkinter import BOTH, Toplevel, ttk, NW, Canvas
-from typing import final
-from PIL import ImageTk, Image, ImageOps, ImageDraw
+import pickle
+from tkinter import BOTH, BooleanVar, Toplevel, ttk, NW, Canvas
+from PIL import ImageTk, Image, ImageOps
 from collections import deque, defaultdict
-import source.gui.customizer.item_sprite_data as item_sprite_data
-from source.gui.customizer.worlds_data import worlds_data
-from source.gui.customizer.new_location_data import supertile_overrides
+import source.gui.customizer.doors_sprite_data as doors_sprite_data
+from source.gui.customizer.worlds_data import worlds_data, dungeon_worlds
 from source.gui.customizer.doors_data import (
     doors_data,
     dungeon_lobbies,
@@ -17,11 +14,8 @@ from source.gui.customizer.doors_data import (
 )
 from DoorShuffle import (
     interior_doors,
-    default_one_way_connections,
     logical_connections,
     dungeon_warps,
-    spiral_staircases,
-    straight_staircases,
     falldown_pits,
     vanilla_logical_connections,
 )
@@ -34,6 +28,7 @@ class SelectState(Enum):
 
 
 BORDER_SIZE = 20
+TAB_ITEM_TYPE = tab_item_type = "Doors"
 TILE_BORDER_SIZE = 3
 DOOR_COLOURS = {
     "Key Door": "gold",
@@ -44,40 +39,46 @@ DOOR_COLOURS = {
     "Lobby Door": "white",
 }
 
-import sys
 
-# TODO: Reaplce with Door sprites
-item_sheet_path = Path("resources") / "app" / "gui" / "plandomizer" / "Item_Sheet.png"
+item_sheet_path = Path("resources") / "app" / "gui" / "plandomizer" / "Doors_Sheet.png"
 
 
-# TODO: Crystal barriers are not in any lists and dungeons stop generating at them?
-def door_customizer_page(top, parent, tab_world, eg_img=None):
-    def init_page(self):
+def door_customizer_page(
+    top, parent, tab_world, eg_img=None, eg_selection_mode=False, vanilla_data=None, plando_window=None
+):
+    def init_page(self, redraw=False):
         if hasattr(self, "canvas"):
             self.canvas.destroy()
         self.canvas = Canvas(self, width=self.cwidth + (BORDER_SIZE * 2), height=self.cheight + (BORDER_SIZE * 2))
         self.canvas.pack()
+        if not self.eg_selection_mode:
+            self.tile_map = []
         self.door_links = []
-        self.tile_map = []
         self.doors = {}
         self.tiles_added = {}
         self.lobby_doors = []
         self.special_doors = {}
+        self.eg_tiles = {}
+        self.placed_items = defaultdict(dict)
+        if self.eg_selection_mode:
+            draw_vanilla_eg_map(self, top)
+        elif not redraw:
+            self.tiles = {}
+            draw_map(self)
 
     def redraw_canvas(self):
         yaml = return_connections(self.door_links, self.lobby_doors, self.special_doors)[0]
-        if len(yaml["doors"]) == 0:
-            init_page(self)
-            return
+        # if len(yaml["doors"]) == 0:
+        #     init_page(self, redraw=True)
+        #     return
         load_yaml(self, yaml)
 
     def load_yaml(self, yaml_data):
-        self.tiles = {}  # (eg_x, eg_y): (tile_x, tile_y)
         self.doors_processed = set()
         self.door_links_to_make = set()
         self.doors_to_process = deque()
         self.regions_processed = set()
-        init_page(self)
+        init_page(self, redraw=True)
         _interior_doors_dict = dict(interior_doors)
         _interior_doors_dict.update(dict([(x[1], x[0]) for x in interior_doors]))
 
@@ -138,6 +139,8 @@ def door_customizer_page(top, parent, tab_world, eg_img=None):
         self.inverse_doors = {v: k for k, v in self.doors.items()}
 
         for lobby in dungeon_lobbies[tab_world]:
+            if len(yaml_data["lobbies"]) == 0:
+                break
             lobby_door = yaml_data["lobbies"][lobby]
             add_lobby(self, lobby_door, lobby)
             queue_regions_doors(self, lobby_door)
@@ -176,8 +179,6 @@ def door_customizer_page(top, parent, tab_world, eg_img=None):
                         self.doors_to_process.appendleft(linked_door)
 
             linked_door_is_door, linked_door_x, linked_door_y = get_doors_eg_tile(linked_door)
-
-            # TODO: Need to add the link here
 
             # (Is this a door) or (have we already added the tile)?
             if not door_is_door or (door_tile_x, door_tile_y) in self.tiles:
@@ -277,17 +278,41 @@ def door_customizer_page(top, parent, tab_world, eg_img=None):
             self.tiles[(x, y)] = (0, 0)
         add_lobby_door(self, lobby_room, lobby)
 
+    def draw_vanilla_eg_map(self, top):
+        for tile_y, x_tiles in enumerate(self.tile_map):
+            for tile_x, tile_data in enumerate(x_tiles):
+                if tile_data["tile"] == None:
+                    continue
+                x, y = tile_data["tile"]
+                x1 = (tile_x * self.tile_size) + BORDER_SIZE + (((2 * tile_x + 1) - 1) * TILE_BORDER_SIZE)
+                y1 = (tile_y * self.tile_size) + BORDER_SIZE + (((2 * tile_y + 1) - 1) * TILE_BORDER_SIZE)
+                img = ImageTk.PhotoImage(
+                    eg_img.crop((x * 512, y * 512, (x + 1) * 512, (y + 1) * 512)).resize(
+                        (self.tile_size, self.tile_size), Image.ANTIALIAS
+                    )
+                )
+                kwargs = {}
+                # if parent.eg_tile_multiuse[tile_data["tile"]] == 0:
+                #     kwargs = {"stipple": "gray12", "state": "disabled"}
+                map = self.canvas.create_image(x1, y1, image=img, anchor=NW, **kwargs)
+                self.tile_map[tile_y][tile_x]["map"] = map
+                self.eg_tiles[(map,)] = (x, y)
+                self.canvas.tag_bind(map, "<Button-1>", lambda event: select_eg_tile(self, top, event, plando_window))
+                self.tiles_added[(x, y)] = img
+
     def draw_map(self):
-        # Normalise tile map to have origin at (0,0)
-        # First invert map to bring y0 to top
+        icon_queue = []
+        if len(self.tiles) > 0:
+            min_x = min(self.tiles.values(), key=lambda x: x[0])[0]
+            min_y = min(self.tiles.values(), key=lambda x: x[1])[1]
+            for k, v in self.tiles.items():
+                self.tiles[k] = (v[0] - min_x, v[1] - min_y)
 
-        min_x = min(self.tiles.values(), key=lambda x: x[0])[0]
-        min_y = min(self.tiles.values(), key=lambda x: x[1])[1]
-        for k, v in self.tiles.items():
-            self.tiles[k] = (v[0] - min_x, v[1] - min_y)
-
-        max_y = max(self.tiles.values(), key=lambda x: x[0])[0] + 1
-        max_x = max(self.tiles.values(), key=lambda x: x[1])[1]
+            max_y = max(self.tiles.values(), key=lambda x: x[0])[0] + 1
+            max_x = max(self.tiles.values(), key=lambda x: x[1])[1]
+        else:
+            max_x = max_y = 2
+            min_y = min_x = 3
 
         if max_y // 2 < max_x:
             self.map_dims = (max_x, max_x * 2)
@@ -315,6 +340,7 @@ def door_customizer_page(top, parent, tab_world, eg_img=None):
                 )
                 self.canvas.tag_bind(tile, "<Button-1>", lambda event: select_tile(self, event))
                 self.tile_map[row].append({"button": tile, "tile": None})
+                self.eg_tiles[(tile,)] = (col, row)
 
         for tile in self.tiles:
             x, y = tile
@@ -330,6 +356,7 @@ def door_customizer_page(top, parent, tab_world, eg_img=None):
             )
             map = self.canvas.create_image(x1, y1, image=img, anchor=NW)
             self.tile_map[tile_y][tile_x]["map"] = map
+            self.eg_tiles[(map,)] = (x, y)
             self.tile_map[tile_y][tile_x]["tile"] = (x, y)
             self.tiles_added[(x, y)] = img
 
@@ -356,25 +383,9 @@ def door_customizer_page(top, parent, tab_world, eg_img=None):
             )
 
             if door_link["door"] in self.special_doors:
-                self.door_links[n]["special_button"] = self.canvas.create_rectangle(
-                    x1 - 5,
-                    y1 - 5,
-                    x1 + 5,
-                    y1 + 5,
-                    fill=DOOR_COLOURS[self.special_doors[door_link["door"]]],
-                    width=2,
-                    activefill="red",
-                )
+                icon_queue.append((self.special_doors[door_link["door"]], x1, y1))
             if door_link["linked_door"] in self.special_doors:
-                self.door_links[n]["special_button"] = self.canvas.create_rectangle(
-                    x2 - 5,
-                    y2 - 5,
-                    x2 + 5,
-                    y2 + 5,
-                    fill=DOOR_COLOURS[self.special_doors[door_link["linked_door"]]],
-                    width=2,
-                    activefill="red",
-                )
+                icon_queue.append((self.special_doors[door_link["linked_door"]], x1, y1))
 
         for n, lobby in enumerate(self.lobby_doors):
             min_x = abs(
@@ -394,8 +405,9 @@ def door_customizer_page(top, parent, tab_world, eg_img=None):
                 width=2,
                 activefill="red",
             )
-            # self.canvas.create_text(x1, y1, text=f"{door_link['door']}", fill="black")
-            # self.canvas.create_text(x2, y2, text=f"{door_link['linked_door']}", fill="black")
+        while icon_queue:
+            icon, x, y = icon_queue.pop()
+            place_item(self, icon, x, y)
 
     def get_final_door_coords(self, door, door_type, min_x, min_y):
         if door_type == "source":
@@ -452,25 +464,6 @@ def door_customizer_page(top, parent, tab_world, eg_img=None):
             }
         )
 
-    # def get_linked_doors(self, door, tiles=set()):
-    #     x = int(doors_data[door][0]) % 16
-    #     y = int(doors_data[door][0]) // 16
-    #     if (x, y) in tiles:
-    #         return tiles
-    #     else:
-    #         tiles.add((x, y))
-    #         for door in door_coordinates[(x, y)]:
-    #             door = door["name"]
-    #             try:
-    #                 if door in self.doors:
-    #                     linked_door = self.doors[door]
-    #                 else:
-    #                     linked_door = self.inverse_doors[door]
-    #             except KeyError:
-    #                 continue
-    #             tiles = tiles.union(get_linked_tiles(self, linked_door, tiles))
-    #         return tiles
-
     def get_tile(self):
         x = y = None
         for row in range(self.map_dims[0]):
@@ -481,9 +474,6 @@ def door_customizer_page(top, parent, tab_world, eg_img=None):
                     x1 = (col * self.tile_size) + BORDER_SIZE + (((2 * col + 1) - 1) * TILE_BORDER_SIZE)
                     y1 = (row * self.tile_size) + BORDER_SIZE + (((2 * row + 1) - 1) * TILE_BORDER_SIZE)
                     return x1, y1, (x, y)
-
-        # if x == None and y == None:
-        # print("No more room for tiles!")
 
     def add_connection(self, door, linked_door):
         if door not in self.doors:
@@ -510,8 +500,32 @@ def door_customizer_page(top, parent, tab_world, eg_img=None):
             if data["image"] == button[0]:
                 return name
 
-    def return_connections(door_links, lobby_doors, special_doors):
+    def place_item(self, placed_item, x_loc, y_loc):
+        # self.canvas.itemconfigure(item, state="hidden")
 
+        # Place a new sprite
+        sprite_y, sprite_x = doors_sprite_data.item_table[placed_item]
+        self.placed_items[(x_loc, y_loc)]["sprite"] = ImageTk.PhotoImage(
+            ImageOps.expand(
+                Image.open(item_sheet_path).crop(
+                    (sprite_x * 16, sprite_y * 16, sprite_x * 16 + 16, sprite_y * 16 + 16)
+                ),
+                1,
+                "#fff",
+            )
+        )
+        self.placed_items[(x_loc, y_loc)]["image"] = self.canvas.create_image(
+            x_loc,
+            y_loc,
+            image=self.placed_items[(x_loc, y_loc)]["sprite"],
+        )
+        # self.canvas.tag_bind(
+        #     self.placed_items[loc_name]["image"],
+        #     "<Button-3>",
+        #     lambda event: remove_item(self, event),
+        # )
+
+    def return_connections(door_links, lobby_doors, special_doors):
         final_connections = {"doors": {}, "lobbies": {}}
         doors_type = "vanilla"
         if len(door_links) == 0:
@@ -531,89 +545,89 @@ def door_customizer_page(top, parent, tab_world, eg_img=None):
 
         return final_connections, doors_type
 
-    # TODO: Refactor this out, will be reused in other places
-    def show_sprites(self, parent_event, prize=False):
-        prize_names = [
-            "Green Pendant",
-            "Red Pendant",
-            "Blue Pendant",
-            "Crystal",
-            "Red Crystal",
-        ]
-
-        def select_sprite(parent, self, event):
-            item = self.canvas.find_closest(event.x, event.y)
-            if item in [w["canvas_image"] for w in worlds_data.values()]:
-                return
-            item_name = get_sprite_by_button(self, item)
-
-            parent.placed_items[parent.currently_selected] = {"name": item_name, "sprite": None}
-            self.destroy()
-
-        def get_sprite_by_button(self, button):
-            for name, loc in self.items.items():
-                if loc == button[0]:
-                    return name
-
-        sprite_window = Toplevel(self)
-        w = top.winfo_x()
-        h = top.winfo_y()
-        x = max(0, min(w + parent_event.x - 544, self.winfo_screenwidth() - 544))
-        y = max(0, min(h + parent_event.y - 288, self.winfo_screenheight() - 288))
-        sprite_window.geometry(f"{544 + (BORDER_SIZE * 2)}x{288 + (BORDER_SIZE * 2)}+{int(x)}+{int(y)}")
-        sprite_window.title("Sprites Window")
-        sprite_window.focus_set()
-        sprite_window.grab_set()
-
-        sprite_window.canvas = Canvas(
-            sprite_window, width=544 + (BORDER_SIZE * 2), height=288 + (BORDER_SIZE * 2), background="black"
-        )
-        sprite_window.canvas.pack()
-        sprite_window.spritesheet = ImageTk.PhotoImage(Image.open(item_sheet_path).resize((544, 288)))
-        sprite_window.image = sprite_window.canvas.create_image(
-            0 + BORDER_SIZE, 0 + BORDER_SIZE, anchor=NW, image=sprite_window.spritesheet
-        )
-        sprite_window.items = {}
-        for item, coords in item_sprite_data.item_table.items():
-            if (prize and item not in prize_names) or (not prize and item in prize_names):
-                disabled = True
-            else:
-                disabled = False
-
-            y, x = coords
-            item_selector = sprite_window.canvas.create_rectangle(
-                x * 32 + BORDER_SIZE,
-                y * 32 + BORDER_SIZE,
-                x * 32 + 33 + BORDER_SIZE,
-                y * 32 + 33 + BORDER_SIZE,
-                outline="",
-                fill="#888" if disabled else "",
-                stipple="gray12" if disabled else "",
-                state="disabled" if disabled else "normal",
-            )
-            sprite_window.items[item] = item_selector
-            sprite_window.canvas.tag_bind(
-                item_selector,
-                "<Button-1>",
-                lambda event: select_sprite(self, sprite_window, event),
-            )
-        sprite_window.wait_window(sprite_window)
-        sprite_window.grab_release()
-
     def select_tile(self, event):
-        item = self.canvas.find_closest(event.x, event.y)
-        if item in [w["canvas_image"] for w in worlds_data.values()]:
-            return
-        self.canvas.itemconfigure(item, state="normal", fill="#00f")
+        self.setvar("selected_eg_tile", BooleanVar(value=False))
+        if self.eg_tile_window:
+            self.eg_tile_window.deiconify()
+        else:
+            eg_tile_window = Toplevel(self)
+            self.eg_tile_window_notebook = ttk.Notebook(eg_tile_window)
+            self.eg_tile_window_notebook.pages = {}
+            with open(Path("resources/app/gui/plandomizer/vanilla_layout.pickle"), "rb") as f:
+                vanilla_layout = pickle.load(f)
+            for dungeon, world in dungeon_worlds.items():
+                if dungeon in ["Overworld", "Underworld"]:
+                    continue
+                self.eg_tile_window_notebook.pages[dungeon] = ttk.Frame(self.eg_tile_window_notebook)
+                self.eg_tile_window_notebook.add(
+                    self.eg_tile_window_notebook.pages[dungeon], text=dungeon.replace("_", " ")
+                )
+                self.eg_tile_window_notebook.pages[dungeon].content = door_customizer_page(
+                    eg_tile_window,
+                    self.eg_tile_window_notebook.pages[dungeon],
+                    world,
+                    eg_img=eg_img,
+                    eg_selection_mode=True,
+                    vanilla_data=vanilla_layout[dungeon],
+                    plando_window=self,
+                )
+                self.eg_tile_window_notebook.pages[dungeon].content.pack(fill=BOTH, expand=True)
+
+            self.eg_tile_window_notebook.pack()
+
+            eg_tile_window.title("EG Map Window")
+            self.eg_tile_window = eg_tile_window
+
+        self.eg_tile_window.focus_set()
+        self.eg_tile_window.grab_set()
+        # self.eg_tile_window.wait_visibility(self.eg_tile_window)
+        self.wait_variable("selected_eg_tile")
+        print("EG Tile Window Closed")
+        print(self.selected_eg_tile)
+
+        empty_tile = self.canvas.find_closest(event.x, event.y)
+        tile_x, tile_y = self.eg_tiles[empty_tile]
+        x1 = (tile_x * self.tile_size) + BORDER_SIZE + (((2 * tile_x + 1) - 1) * TILE_BORDER_SIZE)
+        y1 = (tile_y * self.tile_size) + BORDER_SIZE + (((2 * tile_y + 1) - 1) * TILE_BORDER_SIZE)
+
+        x, y = self.selected_eg_tile
+
+        # Add clicked EG tile to clicked empty tile
+
+        img = ImageTk.PhotoImage(
+            eg_img.crop((x * 512, y * 512, (x + 1) * 512, (y + 1) * 512)).resize(
+                (self.tile_size, self.tile_size), Image.ANTIALIAS
+            )
+        )
+        self.tiles_added[(x, y)] = img
+        map = self.canvas.create_image(x1, y1, image=img, anchor=NW)
+        self.tiles[self.selected_eg_tile] = (tile_x, tile_y)
+
+        self.tile_map[tile_y][tile_x]["map"] = map
+
+    def select_eg_tile(self, top, event, parent):
+        tile = self.canvas.find_closest(event.x, event.y)
+        eg_tile = self.eg_tiles[tile]
+        parent.selected_eg_tile = eg_tile
+        parent.setvar("selected_eg_tile", BooleanVar(value=True))
+        top.grab_release()
+        top.withdraw()
 
     self = ttk.Frame(parent)
+    self.eg_selection_mode = eg_selection_mode
+    self.eg_tile_window = None
     # self.cwidth = 1024
     # self.cheight = 512
     self.cwidth = 2048
     self.cheight = 1024
     self.select_state = SelectState.NoneSelected
-    redraw_canvas_button = ttk.Button(self, text="Redraw Canvas", command=lambda: redraw_canvas(self))
-    redraw_canvas_button.pack()
+    if not eg_selection_mode:
+        redraw_canvas_button = ttk.Button(self, text="Redraw Canvas", command=lambda: redraw_canvas(self))
+        redraw_canvas_button.pack()
+    if vanilla_data:
+        self.tile_map = vanilla_data["tile_map"]
+        self.tile_size = vanilla_data["tile_size"]
+        self.map_dims = vanilla_data["map_dims"]
 
     init_page(self)
 

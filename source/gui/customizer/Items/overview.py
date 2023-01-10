@@ -109,7 +109,9 @@ def item_customizer_page(top, parent, tab_world, tab_item_type="standard", eg_im
         self.canvas.itemconfigure(item, fill="orange", state="disabled")
 
         # Show the sprite sheet
-        show_sprites(self, event, prize=True if "Prize" in loc_name else False)
+        selected_item = item_sprite_data.show_sprites(self, top, event, prize=True if "Prize" in loc_name else False)
+        if selected_item is not None:
+            self.placed_items[self.currently_selected] = {"name": selected_item, "sprite": None}
 
         # Hide the circle
         if loc_name not in self.placed_items:
@@ -147,75 +149,6 @@ def item_customizer_page(top, parent, tab_world, tab_item_type="standard", eg_im
                 final_placements[loc_name] = item_data["name"]
 
         return final_placements
-
-    # TODO: Refactor this out, will be reused in other places
-    def show_sprites(self, parent_event, prize=False):
-        prize_names = [
-            "Green Pendant",
-            "Red Pendant",
-            "Blue Pendant",
-            "Crystal",
-            "Red Crystal",
-        ]
-
-        def select_sprite(parent, self, event):
-            item = self.canvas.find_closest(event.x, event.y)
-            if item in [w["canvas_image"] for w in worlds_data.values()]:
-                return
-            item_name = get_sprite_by_button(self, item)
-
-            parent.placed_items[parent.currently_selected] = {"name": item_name, "sprite": None}
-            self.destroy()
-
-        def get_sprite_by_button(self, button):
-            for name, loc in self.items.items():
-                if loc == button[0]:
-                    return name
-
-        sprite_window = Toplevel(self)
-        w = top.winfo_x()
-        h = top.winfo_y()
-        x = max(0, min(w + parent_event.x - 544, self.winfo_screenwidth() - 544))
-        y = max(0, min(h + parent_event.y - 288, self.winfo_screenheight() - 288))
-        sprite_window.geometry(f"{544 + (BORDER_SIZE * 2)}x{288 + (BORDER_SIZE * 2)}+{int(x)}+{int(y)}")
-        sprite_window.title("Sprites Window")
-        sprite_window.focus_set()
-        sprite_window.grab_set()
-
-        sprite_window.canvas = Canvas(
-            sprite_window, width=544 + (BORDER_SIZE * 2), height=288 + (BORDER_SIZE * 2), background="black"
-        )
-        sprite_window.canvas.pack()
-        sprite_window.spritesheet = ImageTk.PhotoImage(Image.open(item_sheet_path).resize((544, 288)))
-        sprite_window.image = sprite_window.canvas.create_image(
-            0 + BORDER_SIZE, 0 + BORDER_SIZE, anchor=NW, image=sprite_window.spritesheet
-        )
-        sprite_window.items = {}
-        for item, coords in item_sprite_data.item_table.items():
-            if (prize and item not in prize_names) or (not prize and item in prize_names):
-                disabled = True
-            else:
-                disabled = False
-
-            y, x = coords
-            item_selector = sprite_window.canvas.create_rectangle(
-                x * 32 + BORDER_SIZE,
-                y * 32 + BORDER_SIZE,
-                x * 32 + 33 + BORDER_SIZE,
-                y * 32 + 33 + BORDER_SIZE,
-                outline="",
-                fill="#888" if disabled else "",
-                stipple="gray12" if disabled else "",
-                state="disabled" if disabled else "normal",
-            )
-            sprite_window.items[item] = item_selector
-            sprite_window.canvas.tag_bind(
-                item_selector,
-                "<Button-1>",
-                lambda event: select_sprite(self, sprite_window, event),
-            )
-        sprite_window.wait_window(sprite_window)
-        sprite_window.grab_release()
 
     def show_item_on_tab(tab_item_type, item_data):
         return (tab_item_type == "standard" and item_data["loc_type"] != "pot") or (

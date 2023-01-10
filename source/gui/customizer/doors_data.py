@@ -1,5 +1,6 @@
 from source.gui.customizer.worlds_data import World
 from DoorShuffle import falldown_pits
+from collections import defaultdict
 
 # Doors data
 
@@ -45,67 +46,6 @@ with open("Doors.py", "r") as f:
                 direction, room, _, _ = d[4:-1].split(", ")
         if room and direction:
             doors_data[door] = (int(room, 16), direction)
-
-
-# Manual door entries go here
-# doors_data["Ice Bomb Drop Hole"] = (0x1E, "Dn")
-# doors_data["Ice Stalfos Hint Drop Entrance"] = (0x3E, "Up")
-
-# doors_data["Ice Falling Square Hole"] = (0x5E, "Dn")
-# doors_data["Ice Switch Room Drop Entrance"] = (0xBE, "Up")
-
-# doors_data["Ice Freezors Hole"] = (0x7E, "Dn")
-# doors_data["Ice Big Chest View Drop Entrance"] = (0x9E, "Up")
-
-# doors_data["PoD Pit Room Bomb Hole"] = (0x3A, "Dn")
-# doors_data["PoD Basement Ledge Drop Entrance"] = (0x0A, "Up")
-
-# doors_data["PoD Pit Room Freefall"] = (0x3A, "Dn")
-# doors_data["PoD Stalfos Basement Drop Entrance"] = (0x0A, "Up")
-
-# doors_data["Swamp Attic Left Pit"] = (0x54, "Dn")
-# doors_data["Swamp West Ledge Drop Down Drop Entrance"] = (0x34, "Up")
-
-# doors_data["Swamp Attic Right Pit"] = (0x54, "Dn")
-# doors_data["Swamp Barrier Ledge Drop Down Drop Entrance"] = (0x34, "Up")
-
-# doors_data["Skull Final Drop Hole"] = (0x39, "Dn")
-# doors_data["Skull Boss Drop Entrance"] = (0x29, "Up")
-
-# doors_data["Mire Torches Bottom Holes"] = (0x97, "Dn")
-# doors_data["Mire Warping Pool Drop Entrance"] = (0xD1, "Up")
-
-# doors_data["Mire Torches Top Hole"] = (0x97, "Dn")
-# doors_data["Mire Conveyor Barrier Drop Entrance"] = (0xD1, "Up")
-
-# doors_data["Mire Attic Hint Hole"] = (0x97, "Dn")
-# doors_data["Mire BK Chest Ledge Drop Entrance"] = (0xD1, "Up")
-
-# doors_data["GT Bob's Room Hole"] = (0x8C, "Dn")
-# doors_data["GT Ice Armos Drop Entrance"] = (0x1C, "Up")
-
-# doors_data["GT Falling Torches Hole"] = (0x3D, "Dn")
-# doors_data["GT Staredown Drop Entrance"] = (0x96, "Up")
-
-# doors_data["GT Moldorm Hole"] = (0x4D, "Dn")
-# doors_data["GT Moldorm Pit Drop Entrance"] = (0xA6, "Up")
-
-
-# TODO:
-# Ice Falling Square Hole ( 0x5e ) -> Ice Switch Room Drop Entrance ( 0xbe )
-# Ice Freezors Hole ( 0x7e ) -> Ice Big Chest View ES Drop Entrance ( 0x9e )
-# PoD Pit Room Bomb Hole ( 0x3a ) -> PoD Big Key Landing Hole Drop Entrance ( 0x3a )
-# PoD Pit Room Freefall ( 0x3a ) -> PoD Warp Room Warp Drop Entrance ( 0x09 )
-# Swamp Attic Left Pit ( 0x54 ) -> Swamp West Ledge Drop Down Drop Entrance ( 0x34 )
-# Swamp Attic Right Pit ( 0x54 ) -> Swamp Barrier Ledge Drop Down Drop Entrance ( 0x34 )
-# Skull Final Drop Hole ( 0x39 ) -> Skull Boss Drop Entrance ( ?? )
-# Mire Torches Bottom Holes ( 0x97 ) -> Mire Warping Pool Drop Entrance ( 0xd1 )
-# Mire Torches Top Hole ( 0x97 ) -> Mire Conveyor Barrier Drop Entrance ( 0xd1 )
-# Mire Attic Hint Hole ( 0x97 ) -> Mire BK Chest Ledge Drop Entrance ( 0xd1 )
-# GT Bob\'s Room Hole ( 0x8c ) -> GT Ice Armos Drop Entrance ( 0x1c )
-# GT Falling Torches Hole ( 0x3d ) -> GT Staredown Drop Entrance ( 0x96 )
-# GT Moldorm Hole ( 0x4d ) -> GT Moldorm Pit Drop Entrance ( 0xa6 )
-
 
 door_coordinates = {
     (1, 6): [
@@ -1339,63 +1279,6 @@ with open("Regions.py", "r") as fh:
         for door in doors:
             doors_to_regions[door] = region
 
-# # Manual doors go here:
-# # Ice Stalfos Hint
-# doors_to_regions["Ice Stalfos Hint Drop Entrance"] = "Ice Stalfos Hint"
-# regions_to_doors["Ice Stalfos Hint"].append("Ice Stalfos Hint Drop Entrance")
-
-# # Ice Switch Room
-# doors_to_regions["Ice Switch Room Drop Entrance"] = "Ice Switch Room"
-# regions_to_doors["Ice Switch Room"].append("Ice Switch Room Drop Entrance")
-
-# # Ice Big Chest View
-# doors_to_regions["Ice Big Chest View Drop Entrance"] = "Ice Big Chest View"
-# regions_to_doors["Ice Big Chest View"].append("Ice Big Chest View Drop Entrance")
-
-# # PoD Stalfos Basement
-# doors_to_regions["PoD Basement Ledge Drop Entrance"] = "PoD Basement Ledge"
-# regions_to_doors["PoD Basement Ledge"].append("PoD Basement Ledge Drop Entrance")
-
-# doors_to_regions["PoD Stalfos Basement Drop Entrance"] = "PoD Stalfos Basement"
-# regions_to_doors["PoD Stalfos Basement"].append("PoD Stalfos Basement Drop Entrance")
-
-# # Swamp West Ledge
-# doors_to_regions["Swamp West Ledge Drop Down Drop Entrance"] = "Swamp West Ledge"
-# regions_to_doors["Swamp West Ledge"].append("Swamp West Ledge Drop Down Drop Entrance")
-
-# # Swamp Barrier Ledge
-# doors_to_regions["Swamp Barrier Ledge Drop Down Drop Entrance"] = "Swamp Barrier Ledge"
-# regions_to_doors["Swamp Barrier Ledge"].append("Swamp Barrier Ledge Drop Down Drop Entrance")
-
-# # Skull Boss
-# doors_to_regions["Skull Boss Drop Entrance"] = "Skull Boss"
-# regions_to_doors["Skull Boss"].append("Skull Boss Drop Entrance")
-
-# # Mire Warping Pool
-# doors_to_regions["Mire Warping Pool Drop Entrance"] = "Mire Warping Pool"
-# regions_to_doors["Mire Warping Pool"].append("Mire Warping Pool Drop Entrance")
-
-# # Mire Conveyor Barrier
-# doors_to_regions["Mire Conveyor Barrier Drop Entrance"] = "Mire Conveyor Barrier"
-# regions_to_doors["Mire Conveyor Barrier"].append("Mire Conveyor Barrier Drop Entrance")
-
-# # Mire BK Chest Ledge
-# doors_to_regions["Mire BK Chest Ledge Drop Entrance"] = "Mire BK Chest Ledge"
-# regions_to_doors["Mire BK Chest Ledge"].append("Mire BK Chest Ledge Drop Entrance")
-
-# # GT Ice Armos
-# doors_to_regions["GT Ice Armos Drop Entrance"] = "GT Ice Armos"
-# regions_to_doors["GT Ice Armos"].append("GT Ice Armos Drop Entrance")
-
-# # GT Staredown
-# doors_to_regions["GT Staredown Drop Entrance"] = "GT Staredown"
-# regions_to_doors["GT Staredown"].append("GT Staredown Drop Entrance")
-
-# # GT Moldorm Pit
-# doors_to_regions["GT Moldorm Pit Drop Entrance"] = "GT Moldorm Pit"
-# regions_to_doors["GT Moldorm Pit"].append("GT Moldorm Pit Drop Entrance")
-
-
 # To add a manual entry, like a drop, it has to be added in all three structure
 add_manual_drop("Ice Bomb Drop Hole", 0x1E, 0x3E)
 add_manual_drop("Ice Crystal Block Hole", 0x9E, 0xBE)
@@ -1436,3 +1319,14 @@ dungeon_lobbies = {
         "Turtle Rock Eye Bridge",
     ],
 }
+
+#     (13, 0): [{"x": 127, "y": 478, "loc_type": "door", "button": 1079, "name": "GT Agahnim 2 SW"}],
+# }
+
+dungeon_tiles = defaultdict(list)
+
+# We could potentially just use a vanilla customizer layout to get the maps as people expect to see them
+# Use the same doors code currently used, but don't add arrows and make tiles clickable
+for tile, doors in door_coordinates.items():
+    dungeon = doors[0]["name"].split(" ")[0]
+    dungeon_tiles[dungeon].append(tile)
