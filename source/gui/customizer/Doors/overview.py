@@ -38,6 +38,13 @@ DOOR_COLOURS = {
     "Trap Door": "gray",
     "Lobby Door": "white",
 }
+MANUAL_REGIONS_ADDED = {
+    "Sewers Secret Room Up Stairs": "Sewers Rat Path",  # Sewer Drop
+    "Skull Small Hall ES": "Skull Back Drop",  # Skull Back Drop
+    "Skull Pot Circle WN": "Skull Pot Circle",  # Skull Pot Circle
+    "Skull Left Drop ES": "Skull Left Drop",  # Skull Left Drop
+    "Skull Pinball NE": "Skull Pinball",  # Skull Pinball
+}
 
 
 item_sheet_path = Path("resources") / "app" / "gui" / "plandomizer" / "Doors_Sheet.png"
@@ -47,38 +54,44 @@ def door_customizer_page(
     top, parent, tab_world, eg_img=None, eg_selection_mode=False, vanilla_data=None, plando_window=None
 ):
     def init_page(self, redraw=False):
+        # Do we have a canvas already? If so, destroy it and make a new one
         if hasattr(self, "canvas"):
             self.canvas.destroy()
         self.canvas = Canvas(self, width=self.cwidth + (BORDER_SIZE * 2), height=self.cheight + (BORDER_SIZE * 2))
         self.canvas.pack()
+
+        # Are we plotting the vanilla map? If so, we need leave the vanilla data in place (added when the page is created)
         if not self.eg_selection_mode:
             self.tile_map = []
+
+        # Initialise the variables we need
         self.door_links = []
         self.doors = {}
         self.tiles_added = {}
         self.lobby_doors = []
         self.special_doors = {}
         self.eg_tiles = {}
-        self.placed_items = defaultdict(dict)
-        if self.eg_selection_mode:
-            draw_vanilla_eg_map(self, top)
-        elif not redraw:
-            self.tiles = {}
-            draw_map(self)
+        self.placed_icons = defaultdict(dict)
+
+        #  If we're redrawing, we need to keep tiles with no current connections, we store them temporarily in old_tiles
+        if redraw:
+            self.old_tiles = self.tiles.copy()
+        else:
+            self.old_tiles = {}
+
+        #  reinitialise the tiles dict
+        self.tiles = {}
 
     def redraw_canvas(self):
         yaml = return_connections(self.door_links, self.lobby_doors, self.special_doors)[0]
-        # if len(yaml["doors"]) == 0:
-        #     init_page(self, redraw=True)
-        #     return
-        load_yaml(self, yaml)
+        load_yaml(self, yaml, redraw=True)
 
-    def load_yaml(self, yaml_data):
+    def load_yaml(self, yaml_data, redraw=False):
         self.doors_processed = set()
         self.door_links_to_make = set()
         self.doors_to_process = deque()
         self.regions_processed = set()
-        init_page(self, redraw=True)
+        init_page(self, redraw=redraw)
         _interior_doors_dict = dict(interior_doors)
         _interior_doors_dict.update(dict([(x[1], x[0]) for x in interior_doors]))
 
@@ -136,6 +149,10 @@ def door_customizer_page(
         self.doors["GT Falling Torches Hole"] = "GT Staredown Drop Entrance"
         self.doors["GT Moldorm Hole"] = "GT Moldorm Pit Drop Entrance"
 
+        # We somehow need to include the dropdowns from the overworld here
+        # They don't have an external door, but we need to include them in the map
+        # otherwise dropdowns leading to isloated areas will be missed when drawing the map
+
         self.inverse_doors = {v: k for k, v in self.doors.items()}
 
         for lobby in dungeon_lobbies[tab_world]:
@@ -149,6 +166,9 @@ def door_customizer_page(
             # Get the next door
 
             next_door = self.doors_to_process.pop()
+
+            if next_door in MANUAL_REGIONS_ADDED:
+                queue_regions_doors(self, MANUAL_REGIONS_ADDED[next_door], region=True)
 
             self.doors_processed.add(next_door)
 
@@ -342,6 +362,14 @@ def door_customizer_page(
                 self.tile_map[row].append({"button": tile, "tile": None})
                 self.eg_tiles[(tile,)] = (col, row)
 
+        for tile in self.old_tiles:
+            if tile not in self.tiles:
+                for row in range(self.map_dims[0]):
+                    for col in range(self.map_dims[1]):
+                        if self.tile_map[row][col]["tile"] == None:
+                            self.tiles[tile] = self.old_tiles[tile]
+        self.old_tiles = {}
+
         for tile in self.tiles:
             x, y = tile
             if x == None or y == None:
@@ -355,19 +383,30 @@ def door_customizer_page(
                 )
             )
             map = self.canvas.create_image(x1, y1, image=img, anchor=NW)
-            self.tile_map[tile_y][tile_x]["map"] = map
+            # TODO: There's a bug here when loading a second yaml file - possibly also with redrawing the map
+            try:
+                self.tile_map[tile_y][tile_x]["map"] = map
+            except:
+                print("Error: ", tile_x, tile_y, self.tile_map)
             self.eg_tiles[(map,)] = (x, y)
             self.tile_map[tile_y][tile_x]["tile"] = (x, y)
             self.tiles_added[(x, y)] = img
 
         # Display links between doors here
+        doors_linked = set()
+
+        # I don't know why this needs to be different for the unlinked doors...
+        flat_tile_map = [item for sublist in self.tile_map for item in sublist]
+        min_x = abs(min([x["tile"][0] if x["tile"] is not None else 0 for x in flat_tile_map]))
+        min_y = abs(min([x["tile"][1] if x["tile"] is not None else 0 for x in flat_tile_map]))
+
         for n, door_link in enumerate(self.door_links):
-            min_x = abs(
-                min([x["source_tile"][0] for x in self.door_links] + [x["linked_tile"][0] for x in self.door_links])
-            )
-            min_y = abs(
-                min([x["source_tile"][1] for x in self.door_links] + [x["linked_tile"][1] for x in self.door_links])
-            )
+            # min_x = abs(
+            #     min([x["source_tile"][0] for x in self.door_links] + [x["linked_tile"][0] for x in self.door_links])
+            # )
+            # min_y = abs(
+            #     min([x["source_tile"][1] for x in self.door_links] + [x["linked_tile"][1] for x in self.door_links])
+            # )
 
             x1, y1 = get_final_door_coords(self, door_link, "source", min_x, min_y)
             x2, y2 = get_final_door_coords(self, door_link, "linked", min_x, min_y)
@@ -381,6 +420,8 @@ def door_customizer_page(
                 arrow=BOTH,
                 activefill="red",
             )
+            doors_linked.add(door_link["door"])
+            doors_linked.add(door_link["linked_door"])
 
             if door_link["door"] in self.special_doors:
                 icon_queue.append((self.special_doors[door_link["door"]], x1, y1))
@@ -388,12 +429,12 @@ def door_customizer_page(
                 icon_queue.append((self.special_doors[door_link["linked_door"]], x1, y1))
 
         for n, lobby in enumerate(self.lobby_doors):
-            min_x = abs(
-                min([x["source_tile"][0] for x in self.door_links] + [x["linked_tile"][0] for x in self.door_links])
-            )
-            min_y = abs(
-                min([x["source_tile"][1] for x in self.door_links] + [x["linked_tile"][1] for x in self.door_links])
-            )
+            # min_x = abs(
+            #     min([x["source_tile"][0] for x in self.door_links] + [x["linked_tile"][0] for x in self.door_links])
+            # )
+            # min_y = abs(
+            #     min([x["source_tile"][1] for x in self.door_links] + [x["linked_tile"][1] for x in self.door_links])
+            # )
 
             x1, y1 = get_final_door_coords(self, lobby, "source", min_x, min_y)
             self.lobby_doors[n]["button"] = self.canvas.create_rectangle(
@@ -405,9 +446,37 @@ def door_customizer_page(
                 width=2,
                 activefill="red",
             )
+            doors_linked.add(lobby["door"])
+            doors_linked.add(lobby["lobby"])
+
+        # Draw any unlinked doors
+        for door, data in doors_data.items():
+            if door not in doors_linked:
+                d_eg_x = int(data[0]) % 16
+                d_eg_y = int(data[0]) // 16
+                if (d_eg_x, d_eg_y) not in self.tiles_added:
+                    continue
+                d_t_x, d_t_y = self.tiles[(d_eg_x, d_eg_y)]
+                d_data = [x for x in door_coordinates[(d_eg_x, d_eg_y)] if x["name"] == door][0]
+                _data = {
+                    "door": door,
+                    "source_tile": (d_t_x, d_t_y),
+                    "source_coords": (d_data["x"], d_data["y"]),
+                }
+                x1, y1 = get_final_door_coords(self, _data, "source", min_x, min_y)
+                self.canvas.create_oval(
+                    x1 - 5,
+                    y1 - 5,
+                    x1 + 5,
+                    y1 + 5,
+                    fill="#0f0",
+                    width=2,
+                    activefill="red",
+                )
+
         while icon_queue:
             icon, x, y = icon_queue.pop()
-            place_item(self, icon, x, y)
+            place_door_icon(self, icon, x, y)
 
     def get_final_door_coords(self, door, door_type, min_x, min_y):
         if door_type == "source":
@@ -496,16 +565,16 @@ def door_customizer_page(
         for name, loc in worlds_data[tab_world][f"locations_{tab_item_type}"].items():
             if loc["button"] == button[0]:
                 return name
-        for name, data in self.placed_items.items():
+        for name, data in self.placed_icons.items():
             if data["image"] == button[0]:
                 return name
 
-    def place_item(self, placed_item, x_loc, y_loc):
+    def place_door_icon(self, placed_icon, x_loc, y_loc):
         # self.canvas.itemconfigure(item, state="hidden")
 
         # Place a new sprite
-        sprite_y, sprite_x = doors_sprite_data.item_table[placed_item]
-        self.placed_items[(x_loc, y_loc)]["sprite"] = ImageTk.PhotoImage(
+        sprite_y, sprite_x = doors_sprite_data.item_table[placed_icon]
+        self.placed_icons[(x_loc, y_loc)]["sprite"] = ImageTk.PhotoImage(
             ImageOps.expand(
                 Image.open(item_sheet_path).crop(
                     (sprite_x * 16, sprite_y * 16, sprite_x * 16 + 16, sprite_y * 16 + 16)
@@ -514,16 +583,44 @@ def door_customizer_page(
                 "#fff",
             )
         )
-        self.placed_items[(x_loc, y_loc)]["image"] = self.canvas.create_image(
+        self.placed_icons[(x_loc, y_loc)]["image"] = self.canvas.create_image(
             x_loc,
             y_loc,
-            image=self.placed_items[(x_loc, y_loc)]["sprite"],
+            image=self.placed_icons[(x_loc, y_loc)]["sprite"],
         )
         # self.canvas.tag_bind(
-        #     self.placed_items[loc_name]["image"],
+        #     self.placed_icons[loc_name]["image"],
         #     "<Button-3>",
         #     lambda event: remove_item(self, event),
         # )
+
+    def select_location(self, event):
+        item = self.canvas.find_closest(event.x, event.y)
+
+        # Catch when the user clicks on the world rather than a location
+        if item in [w["canvas_image"] for w in worlds_data.values()]:
+            return
+
+        # Get the location name from the button
+        loc_name = get_loc_by_button(self, item)
+
+        if self.select_state == SelectState.NoneSelected:
+            self.canvas.itemconfigure(item, fill="orange")
+            self.select_state = SelectState.SourceSelected
+            self.source_location = item
+        elif self.select_state == SelectState.SourceSelected:
+            if has_target(self, loc_name):
+                return
+
+            add_door_link(self, get_loc_by_button(self, self.source_location), loc_name)
+            self.defined_connections[get_loc_by_button(self, self.source_location)] = loc_name
+            self.select_state = SelectState.NoneSelected
+
+    def has_source(self, loc_name):
+        return loc_name in self.defined_connections
+
+    def has_target(self, loc_name):
+        return loc_name in self.defined_connections.values()
 
     def return_connections(door_links, lobby_doors, special_doors):
         final_connections = {"doors": {}, "lobbies": {}}
@@ -582,8 +679,6 @@ def door_customizer_page(
         self.eg_tile_window.grab_set()
         # self.eg_tile_window.wait_visibility(self.eg_tile_window)
         self.wait_variable("selected_eg_tile")
-        print("EG Tile Window Closed")
-        print(self.selected_eg_tile)
 
         empty_tile = self.canvas.find_closest(event.x, event.y)
         tile_x, tile_y = self.eg_tiles[empty_tile]
@@ -604,6 +699,33 @@ def door_customizer_page(
         self.tiles[self.selected_eg_tile] = (tile_x, tile_y)
 
         self.tile_map[tile_y][tile_x]["map"] = map
+        flat_tile_map = [item for sublist in self.tile_map for item in sublist]
+        orig_min_x = abs(min([x["tile"][0] if x["tile"] is not None else 0 for x in flat_tile_map]))
+        orig_min_y = abs(min([x["tile"][1] if x["tile"] is not None else 0 for x in flat_tile_map]))
+        # Draw any unlinked doors
+        for door, data in doors_data.items():
+            if door not in [dl["door"] for dl in self.door_links] + [dl["linked_door"] for dl in self.door_links]:
+                d_eg_x = int(data[0]) % 16
+                d_eg_y = int(data[0]) // 16
+                if (d_eg_x, d_eg_y) not in self.tiles_added:
+                    continue
+                d_t_x, d_t_y = self.tiles[(d_eg_x, d_eg_y)]
+                d_data = [x for x in door_coordinates[(d_eg_x, d_eg_y)] if x["name"] == door][0]
+                _data = {
+                    "door": door,
+                    "source_tile": (d_t_x, d_t_y),
+                    "source_coords": (d_data["x"], d_data["y"]),
+                }
+                x1, y1 = get_final_door_coords(self, _data, "source", orig_min_x, orig_min_y)
+                self.canvas.create_oval(
+                    x1 - 5,
+                    y1 - 5,
+                    x1 + 5,
+                    y1 + 5,
+                    fill="lightgreen",
+                    width=2,
+                    activefill="red",
+                )
 
     def select_eg_tile(self, top, event, parent):
         tile = self.canvas.find_closest(event.x, event.y)
@@ -630,6 +752,12 @@ def door_customizer_page(
         self.map_dims = vanilla_data["map_dims"]
 
     init_page(self)
+
+    #  If we're in eg selection mode, we need to use the special function to only draw tiles and not connections
+    if self.eg_selection_mode:
+        draw_vanilla_eg_map(self, top)
+    else:
+        draw_map(self)
 
     self.load_yaml = load_yaml
     self.return_connections = return_connections

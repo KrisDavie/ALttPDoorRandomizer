@@ -204,8 +204,8 @@ def customizerGUI(top=None):
     save_data_button.pack()
     load_data_button = ttk.Button(self, text="Load Customizer Data", command=lambda: load_yaml(self))
     load_data_button.pack()
-    save_vanilla_button = ttk.Button(self, text="Save Vanilla Data", command=lambda: _save_vanilla(self))
-    save_vanilla_button.pack()
+    # save_vanilla_button = ttk.Button(self, text="Save Vanilla Data", command=lambda: _save_vanilla(self))
+    # save_vanilla_button.pack()
 
     def close_window():
         if top:
