@@ -76,23 +76,23 @@ def customizerGUI(top=None):
             yaml_data["entrances"] = {1: entrances}
 
         # Save doors
-        yaml_data["doors"] = {1: {"doors": {}, "lobbies": {}}}
+        # yaml_data["doors"] = {1: {"doors": {}, "lobbies": {}}}
 
-        for item_world in self.pages["doors"].pages:
-            doors_data, doors_type = (
-                self.pages["doors"]
-                .pages[item_world]
-                .content.return_connections(
-                    self.pages["doors"].pages[item_world].content.door_links,
-                    self.pages["doors"].pages[item_world].content.lobby_doors,
-                    self.pages["doors"].pages[item_world].content.special_doors,
-                )[0]
-            )
-            yaml_data["doors"][1]["doors"].update(doors_data["doors"])
-            yaml_data["doors"][1]["lobbies"].update(doors_data["lobbies"])
+        # for item_world in self.pages["doors"].pages:
+        #     doors_data, doors_type = (
+        #         self.pages["doors"]
+        #         .pages[item_world]
+        #         .content.return_connections(
+        #             self.pages["doors"].pages[item_world].content.door_links,
+        #             self.pages["doors"].pages[item_world].content.lobby_doors,
+        #             self.pages["doors"].pages[item_world].content.special_doors,
+        #         )[0]
+        #     )
+        #     yaml_data["doors"][1]["doors"].update(doors_data["doors"])
+        #     yaml_data["doors"][1]["lobbies"].update(doors_data["lobbies"])
 
-        if len(yaml_data["doors"][1]) == 0:
-            del yaml_data["doors"]
+        # if len(yaml_data["doors"][1]) == 0:
+        #     del yaml_data["doors"]
 
         # Save items
         yaml_data["placements"] = {1: {}}
