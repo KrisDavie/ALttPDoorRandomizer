@@ -47,6 +47,8 @@ with open("Doors.py", "r") as f:
         if room and direction:
             doors_data[door] = (int(room, 16), direction)
 
+doors_data["Sanctuary Mirror Route"] = (18, "Up")
+
 door_coordinates = {
     (1, 6): [
         {"x": 57, "y": 263, "loc_type": "door", "button": 9, "name": "Hyrule Castle Lobby W"},
@@ -154,6 +156,7 @@ door_coordinates = {
     ],
     (2, 1): [
         {"x": 255, "y": 74, "loc_type": "door", "button": 95, "name": "Sanctuary N"},
+        {"x": 256, "y": 204, "loc_type": "door", "button": 96, "name": "Sanctuary Mirror Route"},
         {"x": 256, "y": 454, "loc_type": "door", "button": 96, "name": "Sanctuary S"},
     ],
     (9, 12): [
@@ -1330,3 +1333,9 @@ dungeon_tiles = defaultdict(list)
 for tile, doors in door_coordinates.items():
     dungeon = doors[0]["name"].split(" ")[0]
     dungeon_tiles[dungeon].append(tile)
+
+door_coordinates_key = {
+    door_data["name"]: (eg_tuple, list_pos)
+    for eg_tuple, door_datas in door_coordinates.items()
+    for list_pos, door_data in enumerate(door_datas)
+}
