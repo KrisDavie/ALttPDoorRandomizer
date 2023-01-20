@@ -6,6 +6,7 @@ from source.gui.customizer.Doors.overview import door_customizer_page
 from source.gui.customizer.Entrances.overview import entrance_customizer_page
 from source.gui.customizer.Items.overview import item_customizer_page
 from source.gui.customizer.worlds_data import dungeon_worlds
+from source.gui.customizer.doors_data import eg_tile_multiuse
 
 from Main import __version__ as ESVersion
 import os
@@ -47,21 +48,27 @@ def customizerGUI(top=None):
 
         for dungeon in dungeon_worlds.keys():
             self.pages["items"].pages[dungeon].content.load_yaml(
-                self.pages["items"].pages[dungeon].content, yaml_data["placements"][1]
+                self.pages["items"].pages[dungeon].content,
+                yaml_data["placements"][1] if "placements" in yaml_data else {},
             )
             if dungeon == "Overworld":
                 continue
             self.pages["pots"].pages[dungeon].content.load_yaml(
-                self.pages["pots"].pages[dungeon].content, yaml_data["placements"][1]
+                self.pages["pots"].pages[dungeon].content,
+                yaml_data["placements"][1] if "placements" in yaml_data else {},
             )
             if dungeon == "Underworld":
                 continue
 
             self.pages["doors"].pages[dungeon].content.load_yaml(
-                self.pages["doors"].pages[dungeon].content, yaml_data["doors"][1]
+                self.pages["doors"].pages[dungeon].content, yaml_data["doors"][1] if "doors" in yaml_data else {}
             )
 
-        all_entrances = {**yaml_data["entrances"][1]["entrances"], **yaml_data["entrances"][1]["two-way"]}
+        all_entrances = (
+            {**yaml_data["entrances"][1]["entrances"], **yaml_data["entrances"][1]["two-way"]}
+            if "entrances" in yaml_data
+            else {}
+        )
         self.pages["entrances"].content.load_yaml(self.pages["entrances"].content, all_entrances)
 
     def save_yaml(self, save=True):
@@ -200,6 +207,7 @@ def customizerGUI(top=None):
     self.pages["items"].notebook.pack()
     self.pages["pots"].notebook.pack()
     self.pages["doors"].notebook.pack()
+    self.eg_tile_multiuse = eg_tile_multiuse.copy()
     save_data_button = ttk.Button(self, text="Save Customizer Data", command=lambda: save_yaml(self))
     save_data_button.pack()
     load_data_button = ttk.Button(self, text="Load Customizer Data", command=lambda: load_yaml(self))

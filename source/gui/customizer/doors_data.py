@@ -1339,3 +1339,43 @@ door_coordinates_key = {
     for eg_tuple, door_datas in door_coordinates.items()
     for list_pos, door_data in enumerate(door_datas)
 }
+
+#  First make a list of each EG tile and 1 use
+eg_tile_multiuse = {tile: 1 for tile in door_coordinates.keys()}
+
+# Override EG tiles that are used more than once - i.e. have multiple, isolated paths
+eg_tile_multiuse_override = {
+    (0, 9): 2,  # PoD shooter
+    (4, 1): 3,  # TR pipes
+    (10, 1): 2,  # PoD Hammerjump
+    (10, 2): 2,  # PoD Area
+    (5, 3): 2,  # Swamp right side chest
+    (6, 3): 2,  # Swamp isolated pots
+    (7, 3): 2,  # Swamp map chest
+    (15, 4): 2,  # Ice refill & faries
+    (7, 5): 2,  # Skull pot prison
+    (10, 6): 2,  # PoD boss catwalk
+    (5, 7): 2,  # Desert right side chest
+    (4, 7): 2,  # Desert lobby upper
+    (11, 7): 3,  # GT Stalfos + right side
+    (12, 7): 2,  # GT rando room + falling bridge
+    (13, 7): 2,  # GT right side portal room
+    (2, 8): 2,  # HC guards + catwalk
+    (7, 8): 2,  # Hera basement cage
+    (12, 8): 2,  # GT Bobs room
+    (11, 9): 2,  # GT Left side portals
+    (13, 9): 2,  # GT invisible bridge
+    (2, 10): 2,  # Mire left right bridge
+    (9, 10): 2,  # Eastern Big Chest Overlook
+    (2, 11): 2,  # BK door overlook
+    (6, 11): 2,  # TR trap room
+    (9, 11): 2,  # Eastern cannonball room
+    (12, 11): 2,  # Thieves pots
+    (15, 11): 2,  # Ice pots 2?
+    (7, 12): 2,  # TR fire puzzle overlook
+    (1, 13): 2,  # Mire BK chest overlook
+    (6, 13): 2,  # TR entrance
+    (11, 13): 2,  # TT BK chest
+}
+
+eg_tile_multiuse.update(eg_tile_multiuse_override)
