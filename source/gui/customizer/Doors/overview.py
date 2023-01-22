@@ -634,6 +634,8 @@ def door_customizer_page(
         # self.canvas.itemconfigure(item, state="hidden")
 
         # Place a new sprite
+        if placed_icon == None:
+            return
         sprite_y, sprite_x = doors_sprite_data.item_table[placed_icon]
         self.placed_icons[(x_loc, y_loc)]["sprite"] = ImageTk.PhotoImage(
             ImageOps.expand(

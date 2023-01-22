@@ -12,7 +12,6 @@ TILE_BORDER_SIZE = 3
 def show_sprites(self, top, parent_event):
     def select_sprite(parent, self, event):
         item = self.canvas.find_closest(event.x, event.y)
-        print(item)
         if item not in [(x,) for x in self.items.values()]:
             return
         item_name = get_sprite_by_button(self, item)
@@ -66,6 +65,8 @@ def show_sprites(self, top, parent_event):
         )
     sprite_window.wait_window(sprite_window)
     sprite_window.grab_release()
+    if not hasattr(sprite_window, "selected_item"):
+        return
     return sprite_window.selected_item
 
 
