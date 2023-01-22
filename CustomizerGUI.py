@@ -2,6 +2,7 @@ from pathlib import Path
 import pickle
 from tkinter import Tk, TOP, BOTH, Toplevel, ttk, filedialog
 from PIL import Image
+from SpoilerToYaml import parse_dr_spoiler
 from source.gui.customizer.Doors.overview import door_customizer_page
 from source.gui.customizer.Entrances.overview import entrance_customizer_page
 from source.gui.customizer.Items.overview import item_customizer_page
@@ -44,7 +45,16 @@ def customizerGUI(top=None):
             filetypes=[("Yaml Files", (".yaml", ".yml")), ("All Files", "*")], initialdir=os.path.join(".")
         )
         with open(file, mode="r") as fh:
-            yaml_data = yaml.safe_load(fh)
+            try:
+                yaml_data = yaml.safe_load(fh)
+            except:
+                print("Error loading yaml file. Attempting to load DR spoiler log.")
+                try:
+                    fh.seek(0)
+                    yaml_data = parse_dr_spoiler(fh)
+                except Exception as e:
+                    print(f"Error loading DR spoiler log. {e}")
+                    return
 
         for dungeon in dungeon_worlds.keys():
             self.pages["items"].pages[dungeon].content.load_yaml(
@@ -60,16 +70,14 @@ def customizerGUI(top=None):
             if dungeon == "Underworld":
                 continue
 
-            self.pages["doors"].pages[dungeon].content.load_yaml(
-                self.pages["doors"].pages[dungeon].content, yaml_data["doors"][1] if "doors" in yaml_data else {}
-            )
+            if "doors" in yaml_data:
+                self.pages["doors"].pages[dungeon].content.load_yaml(
+                    self.pages["doors"].pages[dungeon].content, yaml_data["doors"][1]
+                )
 
-        all_entrances = (
-            {**yaml_data["entrances"][1]["entrances"], **yaml_data["entrances"][1]["two-way"]}
-            if "entrances" in yaml_data
-            else {}
-        )
-        self.pages["entrances"].content.load_yaml(self.pages["entrances"].content, all_entrances)
+        if "entrances" in yaml_data:
+            all_entrances = {**yaml_data["entrances"][1]["entrances"], **yaml_data["entrances"][1]["two-way"]}
+            self.pages["entrances"].content.load_yaml(self.pages["entrances"].content, all_entrances)
 
     def save_yaml(self, save=True):
         yaml_data = {}
