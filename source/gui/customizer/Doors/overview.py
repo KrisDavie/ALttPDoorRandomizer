@@ -96,16 +96,15 @@ class DoorPage(ttk.Frame):
     tile_map: list
     disabled_tiles: dict
     door_links: List[DoorLink]
-    tiles_added: dict[tuple, tuple]
     lobby_doors: list[LobbyData]
     special_doors: dict
-    eg_tiles: dict
     placed_icons: dict
     unlinked_doors: set
     door_buttons: dict
     sanc_dungeon: bool
     old_tiles: dict
-    tiles: dict
+    tiles: dict[Tuple[int, int], EGTileData]
+    unusued_map_tiles: dict
     eg_tile: Union[str, None]
     eg_tile_data: Union[dict, None]
     load_yaml: typing.Callable
@@ -113,8 +112,18 @@ class DoorPage(ttk.Frame):
     y_offset: int
     x_offset: int
     source_location: tuple
-    eg_tile_images: dict[int, tuple]
 
+def get_tile_data_by_map_tile(tiles: dict[Tuple[int, int], EGTileData], map_tile: Tuple[int, int]) -> Union[Tuple[int, int], None]:
+    for eg_tile in tiles:
+        if tiles[eg_tile]["map_tile"] == map_tile:
+            return eg_tile
+    return None
+
+def get_tile_data_by_button(tiles: dict[Tuple[int, int], EGTileData], button: int) -> Union[Tuple[int, int], None]:
+    for eg_tile in tiles:
+        if tiles[eg_tile]["button"] == button:
+            return eg_tile
+    return None
 
 def door_customizer_page(
     top,
@@ -134,36 +143,34 @@ def door_customizer_page(
             self.canvas.destroy()
         self.canvas = Canvas(self, width=self.cwidth + (BORDER_SIZE * 2), height=self.cheight + (BORDER_SIZE * 2))
         self.canvas.pack()
-
-        # Are we plotting the vanilla map? If so, we need leave the vanilla data in place (added when the page is created)
-        if not self.eg_selection_mode:
-            self.tile_map = []
         self.disabled_tiles = {}
 
         # Initialise the variables we need
         self.door_links = []
         self.doors = {}
-        self.tiles_added = {}
         self.lobby_doors = []
         self.special_doors = {}
-        self.eg_tiles = {}
         self.placed_icons = defaultdict(dict)
         self.unlinked_doors = set()
         self.door_buttons = {}
         self.sanc_dungeon = False
-        self.eg_tile_images = {}
 
         #  If we're redrawing, we need to keep tiles with no current connections, we store them temporarily in old_tiles
         if redraw:
             self.old_tiles = self.tiles.copy()
             self.redraw = True
-            # print("old tiles", self.old_tiles)
         else:
-            self.redraw = False
             self.old_tiles = {}
+            self.redraw = False
 
-        #  reinitialise the tiles dict
-        self.tiles = {}
+        # Are we plotting the vanilla map? If so, we need leave the vanilla data in place (added when the page is created)
+        if not self.eg_selection_mode:
+            self.tiles = defaultdict(dict) # type: ignore
+        else:
+            self.tiles = defaultdict(dict, vanilla_data['tiles']) # type: ignore
+
+        self.unusued_map_tiles = {}
+
 
     def redraw_canvas(self: DoorPage) -> None:
         yaml = return_connections(self.door_links, self.lobby_doors, self.special_doors)[0]
@@ -327,14 +334,14 @@ def door_customizer_page(
 
             # PoD warp tile (Never seen but still linked, start from 0,0)
             if (linked_door_x, linked_door_y) in self.tiles:
-                new_tile_x, new_tile_y = self.tiles[(linked_door_x, linked_door_y)]
+                new_tile_x, new_tile_y = self.tiles[(linked_door_x, linked_door_y)]['map_tile']
             else:
                 new_tile_x = new_tile_y = 0
 
             # Find closest unused map tile to place supertile in, respect directionality where possible
             direction = doors_data[next_door][1]
             last_cardinal = 0
-            while (new_tile_x, new_tile_y) in self.tiles.values():
+            while get_tile_data_by_map_tile(self.tiles, (new_tile_x, new_tile_y)):
                 if (direction == "We" and last_cardinal == 0) or (
                     ((direction == "No" or direction == "Up") or (direction == "So" or direction == "Dn"))
                     and last_cardinal == -1
@@ -359,7 +366,7 @@ def door_customizer_page(
                     last_cardinal = 1
                 elif last_cardinal == 1:
                     last_cardinal = 0
-            self.tiles[(door_tile_x, door_tile_y)] = (new_tile_x, new_tile_y)
+            self.tiles[(door_tile_x, door_tile_y)]['map_tile'] = (new_tile_x, new_tile_y)
 
         for door in door_links_to_make:
             try:
@@ -380,6 +387,19 @@ def door_customizer_page(
             )
         else:
             return (None, None)
+        
+    def find_map_tile(map_tile: Tuple[int, int]):
+        for eg_tile, tile_data in self.tiles.items():
+            if tile_data['map_tile'] == map_tile:
+                return eg_tile
+        return None
+    
+    def get_min_max_map_tiles():
+        min_x = min(self.tiles.values(), key=lambda x: x['map_tile'][0])['map_tile'][0]
+        max_x = max(self.tiles.values(), key=lambda x: x['map_tile'][0])['map_tile'][0]
+        min_y = min(self.tiles.values(), key=lambda x: x['map_tile'][1])['map_tile'][1]
+        max_y = max(self.tiles.values(), key=lambda x: x['map_tile'][1])['map_tile'][1]
+        return min_x, max_x, min_y, max_y
 
     def add_lobby(self: DoorPage, lobby_room: str, lobby: str):
         x, y = get_doors_eg_tile(lobby_room)
@@ -387,27 +407,28 @@ def door_customizer_page(
         if (x, y) in self.tiles:
             add_lobby_door(self, lobby_room, lobby)
             return
-        if (0, 0) in self.tiles.values():
+        if find_map_tile((0, 0)):
+            min_x, max_x, min_y, max_y = get_min_max_map_tiles()
             if "East" in lobby_room:
-                tile_x = max(self.tiles.values(), key=lambda x: x[0])[0] + 1
+                tile_x = max_x + 1
             else:
-                tile_x = min(self.tiles.values(), key=lambda x: x[0])[0] - 1
-            self.tiles[(x, y)] = (tile_x, 0)
+                tile_x = min_x - 1
+            self.tiles[(x, y)]['map_tile'] = (tile_x, 0)
         else:
-            self.tiles[(x, y)] = (0, 0)
+            self.tiles[(x, y)]['map_tile'] = (0, 0)
         add_lobby_door(self, lobby_room, lobby)
 
     def remove_eg_tile(self: DoorPage, event):
-
-        tile = self.canvas.find_closest(event.x, event.y)[0]
-        tile_x, tile_y, img = self.eg_tile_images[tile]
-        for k, v in self.tiles.items():
-            if v == (tile_x, tile_y):
-                del self.tiles[k]
-                top.eg_tile_multiuse[k] += 1
-                break
+        button = self.canvas.find_closest(event.x, event.y)[0]
+        eg_tile = get_tile_data_by_button(self.tiles, button)
+        if not eg_tile:
+            return
+        tile_x, tile_y = self.tiles[eg_tile]['map_tile']
+        del(self.tiles[eg_tile])
+        top.eg_tile_multiuse[eg_tile] += 1
+        
         # find doors in this tile:
-        for door in door_coordinates[k]:
+        for door in door_coordinates[eg_tile]:
             _door_link = get_link_by_door(door["name"])  # type: ignore
             if not _door_link:
                 continue
@@ -416,15 +437,9 @@ def door_customizer_page(
             self.canvas.itemconfigure(self.door_buttons[_door_link["door"]], fill="#0f0")
             self.canvas.itemconfigure(self.door_buttons[_door_link["linked_door"]], fill="#0f0")
 
-        del self.tile_map[tile_y][tile_x]["map"]
-        del self.eg_tile_images[tile]
-        for (x, y), img2 in self.tiles_added.items():
-            if img == img2:
-                del self.tiles_added[(x, y)]
-                break
         # draw_empty_map(self)
 
-    def get_eg_tile_img(self: DoorPage, x, y, tile_x, tile_y, ci_kwargs={}):
+    def add_eg_tile_img(self: DoorPage, x, y, tile_x, tile_y, ci_kwargs={}):
         x1 = (tile_x * self.tile_size) + BORDER_SIZE + (((2 * tile_x + 1) - 1) * TILE_BORDER_SIZE)
         y1 = (tile_y * self.tile_size) + BORDER_SIZE + (((2 * tile_y + 1) - 1) * TILE_BORDER_SIZE)
 
@@ -436,27 +451,18 @@ def door_customizer_page(
         map = self.canvas.create_image(x1, y1, image=img, anchor=NW, **ci_kwargs)
         if not self.eg_selection_mode:
             self.canvas.tag_bind(map, "<Button-3>", lambda event: remove_eg_tile(self, event))
-        self.tiles_added[(x, y)] = img
-        self.eg_tile_images[map] = (tile_x, tile_y, img)
-        try:
-            self.tile_map[tile_y][tile_x]["map"] = map
-        except:
-            print("Err")
-        return map, img
+        else:
+            self.canvas.tag_bind(map, "<Button-1>", lambda event: select_eg_tile(self, top, event, plando_window))
+        self.tiles[(x, y)]["img_obj"] = img
+        self.tiles[(x, y)]["button"] = map
+        return map
 
     def draw_vanilla_eg_map(self: DoorPage, top):
-        for tile_y, x_tiles in enumerate(self.tile_map):
-            for tile_x, tile_data in enumerate(x_tiles):
-                if tile_data["tile"] == None:
-                    continue
-                x, y = tile_data["tile"]
-
-                kwargs = {}
-                # if self.eg_tile_multiuse[tile_data["tile"]] <= 0:
-                #     kwargs = {"state": "disabled"}
-                map, img = get_eg_tile_img(self, x, y, tile_x, tile_y, ci_kwargs=kwargs)
-                self.eg_tiles[(map,)] = (x, y)
-                self.canvas.tag_bind(map, "<Button-1>", lambda event: select_eg_tile(self, top, event, plando_window))
+        for (eg_tile_x, eg_tile_y), tile_data in self.tiles.items():
+            if tile_data["map_tile"] == None:
+                continue
+            x, y = tile_data["map_tile"]
+            add_eg_tile_img(self,eg_tile_x, eg_tile_y, x + self.x_offset, y + self.y_offset)
 
     def get_door_coords(door):
         eg_tile, list_pos = door_coordinates_key[door]
@@ -464,10 +470,8 @@ def door_customizer_page(
 
     def draw_empty_map(self: DoorPage):
         for row in range(self.map_dims[0]):
-            if len(self.tile_map) <= row:
-                self.tile_map.append([])
             for col in range(self.map_dims[1]):
-                if (col + self.x_offset, row + self.y_offset) in self.tiles.values():
+                if get_tile_data_by_map_tile(self.tiles, (col + self.x_offset, row + self.y_offset)):
                     continue
 
                 x1 = (col * self.tile_size) + BORDER_SIZE + (((2 * col + 1) - 1) * TILE_BORDER_SIZE)
@@ -482,19 +486,14 @@ def door_customizer_page(
                     activefill=f"#800",
                 )
                 self.canvas.tag_bind(tile, "<Button-1>", lambda event: select_tile(self, event))
-                self.tile_map[row].append({"button": tile, "tile": None})
-                self.eg_tiles[(tile,)] = (col, row)
+                self.unusued_map_tiles[(col, row)] = tile
 
     def draw_map(self: DoorPage):
         # x is columns, y is rows
         icon_queue = []
         if len(self.tiles) > 0:
             # Get the min x and y values
-            min_x = min(self.tiles.values(), key=lambda x: x[0])[0]
-            min_y = min(self.tiles.values(), key=lambda x: x[1])[1]
-            max_x = max(self.tiles.values(), key=lambda x: x[0])[0]
-            max_y = max(self.tiles.values(), key=lambda x: x[1])[1]
-
+            min_x, max_x, min_y, max_y = get_min_max_map_tiles()
         else:
             # No tiles to plot, make an empty map
             min_x = min_y = 0
@@ -526,33 +525,33 @@ def door_customizer_page(
         draw_empty_map(self)
 
         #  Add any old tiles, with no connections to the tiles to be plotted. Put them in the first empty space
-        for tile, pos in self.old_tiles.items():
-            if tile in self.tiles:
+        for tile, tile_data in self.old_tiles.items():
+            if tile in self.tiles or len(tile_data) == 0:
                 continue
-            if pos not in self.tiles.values():
-                self.tiles[tile] = pos
+            if not get_tile_data_by_map_tile(self.tiles, tile_data['map_tile']):
+                self.tiles[tile]['map_tile'] = tile_data['map_tile']
                 continue
             for row in range(self.map_dims[0]):
                 for col in range(self.map_dims[1]):
-                    if (col, row) not in self.tiles.values():
-                        self.tiles[tile] = (col, row)
+                    if not get_tile_data_by_map_tile(self.tiles, (col, row)):
+                        self.tiles[tile]['map_tile'] = (col, row)
         self.old_tiles = {}
 
-        for (eg_x, eg_y), (tile_x, tile_y) in self.tiles.items():
+        for (eg_x, eg_y), tile_data in self.tiles.items():
+            tile_x, tile_y = tile_data["map_tile"]
             if eg_x == None or eg_y == None:
                 continue
 
             tile_x += x_offset
             tile_y += y_offset
-            map, img = get_eg_tile_img(self, eg_x, eg_y, tile_x, tile_y)
+            add_eg_tile_img(self, eg_x, eg_y, tile_x, tile_y)
             if not self.redraw:
                 top.eg_tile_multiuse[(eg_x, eg_y)] -= 1
-            self.eg_tiles[(map,)] = (tile_x, tile_y)
 
         for door, data in doors_data.items():
             d_eg_x = int(data[0]) % 16
             d_eg_y = int(data[0]) // 16
-            if (d_eg_x, d_eg_y) not in self.tiles_added:
+            if "img_obj" not in self.tiles[(d_eg_x, d_eg_y)]:
                 continue
 
             _data = create_door_dict(door)
@@ -870,13 +869,17 @@ def door_customizer_page(
         if not hasattr(self, "selected_eg_tile"):
             return
 
-        empty_tile = self.canvas.find_closest(event.x, event.y)
-        tile_x, tile_y = self.eg_tiles[empty_tile]
+        empty_tile_button = self.canvas.find_closest(event.x, event.y)[0]
+        for (tile_x, tile_y), button in self.unusued_map_tiles.items():
+            if button == empty_tile_button:
+                break
+        else:
+            print(f'No empty tile found at {event.x}, {event.y}')
         x, y = self.selected_eg_tile
 
         # Add clicked EG tile to clicked empty tile this function IS needed
-        _, _ = get_eg_tile_img(self, x, y, tile_x, tile_y)
-        self.tiles[self.selected_eg_tile] = (tile_x - self.x_offset, tile_y - self.y_offset)
+        add_eg_tile_img(self, x, y, tile_x, tile_y)
+        self.tiles[self.selected_eg_tile]['map_tile'] = (tile_x - self.x_offset, tile_y - self.y_offset)
         top.eg_tile_multiuse[self.selected_eg_tile] -= 1
 
         self.setvar("selected_eg_tile", BooleanVar(value=False))  # type: ignore
@@ -893,7 +896,7 @@ def door_customizer_page(
             ):
                 d_eg_x = int(data[0]) % 16
                 d_eg_y = int(data[0]) // 16
-                if (d_eg_x, d_eg_y) not in self.tiles_added:
+                if "img_obj" not in self.tiles[(d_eg_x, d_eg_y)]:
                     continue
                 if door.startswith("Sanctuary") and not self.sanc_dungeon:
                     self.sanc_dungeon = True
@@ -923,7 +926,7 @@ def door_customizer_page(
     def create_door_dict(door, linked=False) -> DoorLink:
         d_data = get_door_coords(door)
         d_eg_x, d_eg_y = door_coordinates_key[door][0]
-        d_t_x, d_t_y = self.tiles[(d_eg_x, d_eg_y)]
+        d_t_x, d_t_y = self.tiles[(d_eg_x, d_eg_y)]['map_tile']
         data: DoorLink = {
             "linked_door" if linked else "door": door,  # type: ignore
             "linked_tile" if linked else "source_tile": (d_t_x, d_t_y),  # type: ignore
@@ -938,10 +941,10 @@ def door_customizer_page(
         return None
 
     def select_eg_tile(self: DoorPage, top, event, parent):
-        tile = self.canvas.find_closest(event.x, event.y)
-        if tile not in self.eg_tiles:
+        button = self.canvas.find_closest(event.x, event.y)[0]
+        eg_tile = get_tile_data_by_button(self.tiles, button)
+        if not eg_tile:
             return
-        eg_tile = self.eg_tiles[tile]
         parent.selected_eg_tile = eg_tile
         parent.setvar("selected_eg_tile", BooleanVar(value=True))
         top.grab_release()
@@ -952,17 +955,18 @@ def door_customizer_page(
     self.eg_tile_window = None
     self.cwidth = 1024
     self.cheight = 512
-    # self.cwidth = 2048
-    # self.cheight = 1024
+    self.cwidth = 2048
+    self.cheight = 1024
     self.select_state = SelectState.NoneSelected
     if not eg_selection_mode:
         redraw_canvas_button = ttk.Button(self, text="Redraw Canvas", command=lambda: redraw_canvas(self))
         redraw_canvas_button.pack()
     if vanilla_data:
-        self.tile_map = vanilla_data["tile_map"]
         # Original vanilla data was stored at 2048x1024, so we need to scale it down to the current size
         self.tile_size = int(vanilla_data["tile_size"] / 2048 * self.cwidth)
         self.map_dims = vanilla_data["map_dims"]
+        self.x_offset = vanilla_data["x_offset"]
+        self.y_offset = vanilla_data["y_offset"]
     if eg_tile_multiuse:
         self.eg_tile_multiuse = eg_tile_multiuse
 
