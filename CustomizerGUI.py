@@ -33,9 +33,11 @@ def customizerGUI(top=None):
             if dungeon in ["Overworld", "Underworld"]:
                 continue
             data[dungeon] = {
-                "tile_map": self.pages["doors"].pages[dungeon].content.tile_map,
+                'tiles': {k: {'map_tile': v['map_tile']} for k, v in self.pages["doors"].pages[dungeon].content.tiles.items() if 'map_tile' in v },
                 "tile_size": self.pages["doors"].pages[dungeon].content.tile_size,
                 "map_dims": self.pages["doors"].pages[dungeon].content.map_dims,
+                'x_offset': self.pages["doors"].pages[dungeon].content.x_offset,
+                'y_offset': self.pages["doors"].pages[dungeon].content.y_offset,
             }
         with open("vanilla_layout.pickle", "wb") as f:
             pickle.dump(data, f, pickle.HIGHEST_PROTOCOL)
