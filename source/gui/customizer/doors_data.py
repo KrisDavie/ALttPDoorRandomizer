@@ -1323,8 +1323,24 @@ dungeon_lobbies = {
     ],
 }
 
-#     (13, 0): [{"x": 127, "y": 478, "loc_type": "door", "button": 1079, "name": "GT Agahnim 2 SW"}],
-# }
+# Boss tiles are locked to their dungeons.
+# SW drop tiles are locked to their dungeon.
+mandatory_tiles: dict[World, list[tuple[int, int]]] = {
+    World.CastleTower: [(0, 2)],
+    World.DesertPalace: [(3, 3)],
+    World.EasternPalace: [(8, 12)],
+    World.GanonsTower: [(13, 0)],
+    World.TowerOfHera: [(7, 0), ],
+    World.HyruleCastle: [],
+    World.IcePalace: [(14, 13)],
+    World.MiseryMire: [(0, 9)],
+    World.PalaceOfDarkness: [(10, 5)],
+    World.SkullWoods: [(9, 2), (8, 6), (7, 6), (8, 5), (6, 5)],
+    World.SwampPalace: [(6, 0)],
+    World.ThievesTown: [(12, 10)],
+    World.TurtleRock: [(4, 10)],
+}
+
 
 dungeon_tiles = defaultdict(list)
 
@@ -1345,7 +1361,7 @@ eg_tile_multiuse = {tile: 1 for tile in door_coordinates.keys()}
 
 # Override EG tiles that are used more than once - i.e. have multiple, isolated paths
 eg_tile_multiuse_override = {
-    (0, 9): 2,  # PoD shooter
+    (9, 0): 2,  # PoD shooter
     (4, 1): 3,  # TR pipes
     (10, 1): 2,  # PoD Hammerjump
     (10, 2): 2,  # PoD Area
