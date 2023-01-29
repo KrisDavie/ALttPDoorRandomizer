@@ -115,13 +115,13 @@ class DoorPage(ttk.Frame):
 
 def get_tile_data_by_map_tile(tiles: dict[Tuple[int, int], EGTileData], map_tile: Tuple[int, int]) -> Union[Tuple[int, int], None]:
     for eg_tile in tiles:
-        if tiles[eg_tile]["map_tile"] == map_tile:
+        if "map_tile" in tiles[eg_tile] and tiles[eg_tile]["map_tile"] == map_tile:
             return eg_tile
     return None
 
 def get_tile_data_by_button(tiles: dict[Tuple[int, int], EGTileData], button: int) -> Union[Tuple[int, int], None]:
     for eg_tile in tiles:
-        if tiles[eg_tile]["button"] == button:
+        if 'button' in tiles[eg_tile] and tiles[eg_tile]["button"] == button:
             return eg_tile
     return None
 
@@ -423,9 +423,12 @@ def door_customizer_page(
         eg_tile = get_tile_data_by_button(self.tiles, button)
         if not eg_tile:
             return
-        tile_x, tile_y = self.tiles[eg_tile]['map_tile']
         del(self.tiles[eg_tile])
         top.eg_tile_multiuse[eg_tile] += 1
+        for page in top.eg_tile_window.pages.values():
+            if eg_tile in page.content.tiles:
+                page.content.deactivate_tiles(page.content, top.eg_tile_multiuse, top.disabled_eg_tiles)
+
         
         # find doors in this tile:
         for door in door_coordinates[eg_tile]:
@@ -545,8 +548,6 @@ def door_customizer_page(
             tile_x += x_offset
             tile_y += y_offset
             add_eg_tile_img(self, eg_x, eg_y, tile_x, tile_y)
-            if not self.redraw:
-                top.eg_tile_multiuse[(eg_x, eg_y)] -= 1
 
         for door, data in doors_data.items():
             d_eg_x = int(data[0]) % 16
@@ -786,18 +787,19 @@ def door_customizer_page(
                 self.canvas.itemconfigure(self.door_buttons[data["linked_door"]], fill="#0f0")
                 break
 
-    def deactivate_tiles(self: DoorPage):
-        for tile in self.eg_tiles.values():
-            if self.eg_tile_multiuse[tile] > 0:
-                if tile in self.disabled_tiles:
-                    # self.canvas.delete(self.tiles[tile])  # type: ignore
-                    self.canvas.delete(self.disabled_tiles[tile])  # type: ignore
-                    del self.disabled_tiles[tile]
+    def deactivate_tiles(self: DoorPage, eg_tile_multiuse, disabled_eg_tiles):
+        for tile in self.tiles:
+            if eg_tile_multiuse[tile] > 0:
+                if tile in disabled_eg_tiles:
+                    self.canvas.delete(disabled_eg_tiles[tile])  # type: ignore
+                    del disabled_eg_tiles[tile]
                 continue
-            for row in range(self.map_dims[0]):
-                for col in range(self.map_dims[1]):
-                    if self.tile_map[row][col]["tile"] == tile:
-                        tile_x, tile_y = (col, row)
+            elif tile in disabled_eg_tiles:
+                continue
+            tile_x, tile_y = self.tiles[tile]["map_tile"]
+            tile_x += self.x_offset
+            tile_y += self.y_offset
+
             x1 = (tile_x * self.tile_size) + BORDER_SIZE + (((2 * tile_x + 1) - 1) * TILE_BORDER_SIZE)
             y1 = (tile_y * self.tile_size) + BORDER_SIZE + (((2 * tile_y + 1) - 1) * TILE_BORDER_SIZE)
             x2 = x1 + self.tile_size
@@ -808,66 +810,24 @@ def door_customizer_page(
                 x2,
                 y2,
                 fill="#888",
-                stipple="gray12",
+                stipple="gray25",
                 state="disabled",
             )
-            self.disabled_tiles[(tile_x, tile_y)] = rect
+            disabled_eg_tiles[tile] = rect
 
     def select_tile(self: DoorPage, event):
-        # Currently we're making one window per tab, we should make one for the whole plando tool instead
-        self.setvar("selected_eg_tile", BooleanVar(value=False))  # type: ignore
-        if self.eg_tile_window:
-            for dungeon, world in dungeon_worlds.items():
-                if dungeon in ["Overworld", "Underworld"]:
-                    continue
-                page = self.eg_tile_window_notebook.pages[dungeon].content  # type: ignore
-                # deactivate_tiles(page)
-            self.eg_tile_window.deiconify()
+        parent.setvar("selected_eg_tile", BooleanVar(value=False))  # type: ignore
+        for page in top.eg_tile_window.pages.values():
+            page.content.deactivate_tiles(page.content, top.eg_tile_multiuse, top.disabled_eg_tiles)
 
-        else:
-
-            def hide_dont_close(self):
-                eg_tile_window.grab_release()
-                eg_tile_window.withdraw()
-
-            eg_tile_window = Toplevel(self)
-            eg_tile_window.wm_title("EG Tiles")
-            eg_tile_window.protocol("WM_DELETE_WINDOW", lambda: hide_dont_close(self))
-            self.eg_tile_window_notebook = ttk.Notebook(eg_tile_window)
-            self.eg_tile_window_notebook.pages = {}  # type: ignore
-            with open(Path("resources/app/gui/plandomizer/vanilla_layout.pickle"), "rb") as f:
-                vanilla_layout = pickle.load(f)
-            for dungeon, world in dungeon_worlds.items():
-                if dungeon in ["Overworld", "Underworld"]:
-                    continue
-                self.eg_tile_window_notebook.pages[dungeon] = ttk.Frame(self.eg_tile_window_notebook)  # type: ignore
-                self.eg_tile_window_notebook.add(
-                    self.eg_tile_window_notebook.pages[dungeon], text=dungeon.replace("_", " ")  # type: ignore
-                )
-                self.eg_tile_window_notebook.pages[dungeon].content = door_customizer_page(  # type: ignore
-                    eg_tile_window,
-                    self.eg_tile_window_notebook.pages[dungeon],  # type: ignore
-                    world,
-                    eg_img=eg_img,
-                    eg_selection_mode=True,
-                    vanilla_data=vanilla_layout[dungeon],
-                    plando_window=self,
-                    eg_tile_multiuse=top.eg_tile_multiuse,
-                )
-                self.eg_tile_window_notebook.pages[dungeon].content.pack(fill=BOTH, expand=True)  # type: ignore
-                # deactivate_tiles(self.eg_tile_window_notebook.pages[dungeon].content)  # type: ignore
-
-            self.eg_tile_window_notebook.pack()
-
-            eg_tile_window.title("EG Map Window")
-            self.eg_tile_window = eg_tile_window
-
-        self.eg_tile_window.focus_set()
-        self.eg_tile_window.grab_set()
+        top.eg_tile_window.deiconify()
+        top.eg_tile_window.focus_set()
+        top.eg_tile_window.grab_set()
         # self.eg_tile_window.wait_visibility(self.eg_tile_window)
-        self.wait_variable("selected_eg_tile")
-        if not hasattr(self, "selected_eg_tile"):
+        parent.master.wait_variable("selected_eg_tile")
+        if not hasattr(parent.master, "selected_eg_tile"):
             return
+        selected_eg_tile =  parent.master.selected_eg_tile
 
         empty_tile_button = self.canvas.find_closest(event.x, event.y)[0]
         for (tile_x, tile_y), button in self.unusued_map_tiles.items():
@@ -875,15 +835,14 @@ def door_customizer_page(
                 break
         else:
             print(f'No empty tile found at {event.x}, {event.y}')
-        x, y = self.selected_eg_tile
+        x, y = selected_eg_tile
 
         # Add clicked EG tile to clicked empty tile this function IS needed
         add_eg_tile_img(self, x, y, tile_x, tile_y)
-        self.tiles[self.selected_eg_tile]['map_tile'] = (tile_x - self.x_offset, tile_y - self.y_offset)
-        top.eg_tile_multiuse[self.selected_eg_tile] -= 1
+        self.tiles[selected_eg_tile]['map_tile'] = (tile_x - self.x_offset, tile_y - self.y_offset)
 
-        self.setvar("selected_eg_tile", BooleanVar(value=False))  # type: ignore
-        delattr(self, "selected_eg_tile")
+        parent.master.setvar("selected_eg_tile", BooleanVar(value=False))  # type: ignore
+        delattr(parent.master, "selected_eg_tile")
 
         # Draw any _new_ unlinked doors
         for door, data in doors_data.items():
@@ -947,8 +906,10 @@ def door_customizer_page(
             return
         parent.selected_eg_tile = eg_tile
         parent.setvar("selected_eg_tile", BooleanVar(value=True))
-        top.grab_release()
-        top.withdraw()
+        deactivate_tiles(self, top.eg_tile_multiuse, top.disabled_eg_tiles)
+
+        top.eg_tile_window.grab_release()
+        top.eg_tile_window.withdraw()
 
     self: DoorPage = typing.cast(DoorPage, ttk.Frame(parent))
     self.eg_selection_mode = eg_selection_mode
@@ -967,19 +928,20 @@ def door_customizer_page(
         self.map_dims = vanilla_data["map_dims"]
         self.x_offset = vanilla_data["x_offset"]
         self.y_offset = vanilla_data["y_offset"]
-    if eg_tile_multiuse:
-        self.eg_tile_multiuse = eg_tile_multiuse
 
     init_page(self)
+
+    self.load_yaml = load_yaml
+    self.return_connections = return_connections
+    self.deactivate_tiles = deactivate_tiles
 
     #  If we're in eg selection mode, we need to use the special function to only draw tiles and not connections
     if self.eg_selection_mode:
         draw_vanilla_eg_map(self, top)
     else:
-        draw_map(self)
+        redraw_canvas(self)
+        # draw_map(self)
 
-    self.load_yaml = load_yaml
-    self.return_connections = return_connections
 
     # TODO: Add a new button to store this info somwhere as JSON for the generation
     return self

@@ -155,6 +155,10 @@ def customizerGUI(top=None):
 
     self.notebook = ttk.Notebook(self)
 
+    def hide_dont_close(self):
+        self.eg_tile_window.grab_release()
+        self.eg_tile_window.withdraw()
+
     # make array for pages
     self.pages = {}
 
@@ -165,6 +169,7 @@ def customizerGUI(top=None):
     self.pages["items"] = ttk.Frame(self.notebook)
     self.pages["pots"] = ttk.Frame(self.notebook)
     self.pages["doors"] = ttk.Frame(self.notebook)
+
     self.notebook.add(self.pages["entrances"], text="Entrances")
     self.notebook.add(self.pages["items"], text="Items")
     self.notebook.add(self.pages["pots"], text="Pots")
@@ -180,12 +185,25 @@ def customizerGUI(top=None):
     self.pages["doors"].notebook = ttk.Notebook(self.pages["doors"])
     self.pages["doors"].pages = {}
 
+
+
     self.pages["entrances"].content = entrance_customizer_page(self, self.pages["entrances"])
     self.pages["entrances"].content.pack(side=TOP, fill=BOTH, expand=True)
 
     eg_map = Path("resources") / "app" / "gui" / "plandomizer" / "maps" / "egmap.png"
     eg_img = Image.open(eg_map)
 
+    self.eg_tile_window = Toplevel(self)
+    self.eg_tile_window.wm_title("EG Tiles")
+    self.eg_tile_window.title("EG Map Window")
+    self.eg_tile_window.protocol("WM_DELETE_WINDOW", lambda: hide_dont_close(self))
+    self.eg_tile_window.notebook = ttk.Notebook(self.eg_tile_window)
+    self.eg_tile_window.pages = {}
+    with open(Path("resources/app/gui/plandomizer/vanilla_layout.pickle"), "rb") as f:
+        vanilla_layout = pickle.load(f)
+
+    self.eg_tile_multiuse = eg_tile_multiuse.copy()
+    self.disabled_eg_tiles = {}
     for dungeon, world in dungeon_worlds.items():
         self.pages["items"].pages[dungeon] = ttk.Frame(self.pages["items"].notebook)
         self.pages["items"].notebook.add(self.pages["items"].pages[dungeon], text=dungeon.replace("_", " "))
@@ -214,14 +232,26 @@ def customizerGUI(top=None):
         )
         self.pages["doors"].pages[dungeon].content.pack(side=TOP, fill=BOTH, expand=True)
 
+        self.eg_tile_window.pages[dungeon] = ttk.Frame(self.eg_tile_window.notebook)
+        self.eg_tile_window.notebook.add(self.eg_tile_window.pages[dungeon], text=dungeon.replace("_", " "))
+        self.eg_tile_window.pages[dungeon].content = door_customizer_page(
+            self, self.eg_tile_window.pages[dungeon], world, 
+            eg_img=eg_img, 
+            eg_selection_mode=True, 
+            vanilla_data=vanilla_layout[dungeon],
+            plando_window=self.pages["doors"].notebook)
+        self.eg_tile_window.pages[dungeon].content.pack(side=TOP, fill=BOTH, expand=True)
+
     self.pages["items"].notebook.pack()
     self.pages["pots"].notebook.pack()
     self.pages["doors"].notebook.pack()
-    self.eg_tile_multiuse = eg_tile_multiuse.copy()
+    self.eg_tile_window.notebook.pack()
     save_data_button = ttk.Button(self, text="Save Customizer Data", command=lambda: save_yaml(self))
     save_data_button.pack()
     load_data_button = ttk.Button(self, text="Load Customizer Data", command=lambda: load_yaml(self))
     load_data_button.pack()
+    self.eg_tile_window.withdraw()
+
     # save_vanilla_button = ttk.Button(self, text="Save Vanilla Data", command=lambda: _save_vanilla(self))
     # save_vanilla_button.pack()
 
