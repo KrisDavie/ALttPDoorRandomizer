@@ -76,7 +76,11 @@ def item_customizer_page(top, parent, tab_world, tab_item_type="standard", eg_im
         self.canvas.itemconfigure(item, state="hidden")
 
         # Place a new sprite
-        sprite_y, sprite_x = item_sprite_data.item_table[placed_item]
+        try:
+            sprite_y, sprite_x = item_sprite_data.item_table[placed_item]
+        except KeyError:
+            print(f"Error: {placed_item} not found in item table")
+            return
         self.placed_items[loc_name]["sprite"] = ImageTk.PhotoImage(
             ImageOps.expand(
                 Image.open(item_sheet_path).crop(

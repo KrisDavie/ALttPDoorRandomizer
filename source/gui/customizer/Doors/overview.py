@@ -446,11 +446,8 @@ def door_customizer_page(
         
         # find doors in this tile:
         for door in door_coordinates[eg_tile]:
-            if door in self.door_buttons:
-                self.canvas.delete(self.door_buttons[door])
-                del(self.door_buttons[door])
-            if door in self.special_doors:
-                del(self.special_doors[door])
+            if door['name'] in self.special_doors:
+                del(self.special_doors[door['name']])
             _lobby_doors = [x['door'] for x in self.lobby_doors]
             if door['name'] in _lobby_doors:
                 del(self.lobby_doors[_lobby_doors.index(door['name'])])
@@ -687,7 +684,7 @@ def door_customizer_page(
             lobby_number = len(self.lobby_doors)
             if self.sanc_dungeon:
                 lobby_number -= 1
-            if lobby == len(dungeon_lobbies[tab_world]):
+            if lobby_number == len(dungeon_lobbies[tab_world]):
                 return
             lobby = dungeon_lobbies[tab_world][lobby_number]
             print(f"Adding lobby door for {loc_name} to {lobby} ({lobby_number}")
