@@ -460,10 +460,10 @@ def door_customizer_page(
                 self.canvas.delete(_door_link["button"])  # type: ignore
                 # Set colors back to normal
                 if _door_link["door"] == door['name']:
-                    self.canvas.itemconfigure(self.door_buttons[_door_link["linked_door"]], fill="#f00")
+                    self.canvas.itemconfigure(self.door_buttons[_door_link["linked_door"]], fill="#0f0")
                     self.canvas.delete(self.door_buttons[_door_link["door"]])
                 else:
-                    self.canvas.itemconfigure(self.door_buttons[_door_link["door"]], fill="#f00")
+                    self.canvas.itemconfigure(self.door_buttons[_door_link["door"]], fill="#0f0")
                     self.canvas.delete(self.door_buttons[_door_link["linked_door"]])
                 del(self.door_links[_dl_idx])
                 for _d in [_door_link["door"], _door_link["linked_door"]]:
@@ -476,7 +476,8 @@ def door_customizer_page(
         x1 = (tile_x * self.tile_size) + BORDER_SIZE + (((2 * tile_x + 1) - 1) * TILE_BORDER_SIZE)
         y1 = (tile_y * self.tile_size) + BORDER_SIZE + (((2 * tile_y + 1) - 1) * TILE_BORDER_SIZE)
         if not eg_selection_mode and 'img_obj' not in self.tiles[(x, y)]:
-            top.eg_tile_multiuse[(x, y)] -= 1
+            if top.eg_tile_multiuse[(x, y)] > 0:
+                top.eg_tile_multiuse[(x, y)] -= 1
 
         img = ImageTk.PhotoImage(
             eg_img.crop((x * 512, y * 512, (x + 1) * 512, (y + 1) * 512)).resize(
