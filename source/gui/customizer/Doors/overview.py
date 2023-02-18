@@ -455,11 +455,16 @@ def door_customizer_page(
             while True:
                 _dl_idx, _door_link = get_link_by_door(door["name"])  # type: ignore
                 if not _door_link:
+                    self.canvas.delete(self.door_buttons[door['name']])
                     break
                 self.canvas.delete(_door_link["button"])  # type: ignore
                 # Set colors back to normal
-                self.canvas.itemconfigure(self.door_buttons[_door_link["door"]], fill="#0f0")
-                self.canvas.itemconfigure(self.door_buttons[_door_link["linked_door"]], fill="#0f0")
+                if _door_link["door"] == door['name']:
+                    self.canvas.itemconfigure(self.door_buttons[_door_link["linked_door"]], fill="#f00")
+                    self.canvas.delete(self.door_buttons[_door_link["door"]])
+                else:
+                    self.canvas.itemconfigure(self.door_buttons[_door_link["door"]], fill="#0f0")
+                    self.canvas.delete(self.door_buttons[_door_link["linked_door"]])
                 del(self.door_links[_dl_idx])
                 for _d in [_door_link["door"], _door_link["linked_door"]]:
                     if _d in self.special_doors:
@@ -610,7 +615,7 @@ def door_customizer_page(
                 activefill="red",
             )
             self.canvas.tag_bind(
-                self.door_links[-1]["button"], "<Button-3>", lambda event: remove_door_link(self, event)
+                self.door_links[n]["button"], "<Button-3>", lambda event: remove_door_link(self, event)
             )
 
             # TODO: Refactor this
