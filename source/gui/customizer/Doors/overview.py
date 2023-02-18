@@ -463,7 +463,7 @@ def door_customizer_page(
                     self.canvas.itemconfigure(self.door_buttons[_door_link["linked_door"]], fill="#f00")
                     self.canvas.delete(self.door_buttons[_door_link["door"]])
                 else:
-                    self.canvas.itemconfigure(self.door_buttons[_door_link["door"]], fill="#0f0")
+                    self.canvas.itemconfigure(self.door_buttons[_door_link["door"]], fill="#f00")
                     self.canvas.delete(self.door_buttons[_door_link["linked_door"]])
                 del(self.door_links[_dl_idx])
                 for _d in [_door_link["door"], _door_link["linked_door"]]:
