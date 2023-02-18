@@ -763,7 +763,7 @@ def door_customizer_page(
             self.select_state = SelectState.SourceSelected
             self.source_location = door
         elif self.select_state == SelectState.SourceSelected:
-            if has_target(self, loc_name):
+            if has_target(self, loc_name) or self.source_location == door:
                 return
             add_door_link(self, get_loc_by_button(self, self.source_location), loc_name)
             x1, y1 = get_final_door_coords(self, self.door_links[-1], "source", self.x_offset, self.y_offset)
