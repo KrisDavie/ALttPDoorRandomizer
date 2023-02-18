@@ -609,6 +609,9 @@ def door_customizer_page(
                 arrow=BOTH,
                 activefill="red",
             )
+            self.canvas.tag_bind(
+                self.door_links[-1]["button"], "<Button-3>", lambda event: remove_door_link(self, event)
+            )
 
             # TODO: Refactor this
             doors_linked.add(door_link["door"])
