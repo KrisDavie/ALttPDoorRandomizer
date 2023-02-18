@@ -678,6 +678,7 @@ def door_customizer_page(
         d_data = typing.cast(LobbyData, create_door_dict(door))
         d_data["lobby"] = lobby
         self.lobby_doors.append(d_data)
+        self.special_doors[door] = 'Lobby Door'
 
     def get_loc_by_button(self: DoorPage, button):
         for name, loc in self.door_buttons.items():
@@ -694,11 +695,16 @@ def door_customizer_page(
                 lobby_number -= 1
             if lobby_number == len(dungeon_lobbies[tab_world]):
                 return
+            for n, x in enumerate(dungeon_lobbies[tab_world]):
+                if x not in [y["lobby"] for y in self.lobby_doors]:
+                    lobby_number = n
+                    break
             lobby = dungeon_lobbies[tab_world][lobby_number]
             print(f"Adding lobby door for {loc_name} to {lobby} ({lobby_number}")
             add_lobby_door(self, loc_name, lobby)
 
             x_loc, y_loc = get_final_door_coords(self, self.lobby_doors[-1], "source", self.x_offset, self.y_offset)
+            self.special_doors[loc_name] = 'Lobby Door'
         else:
             _data = create_door_dict(loc_name)
             x_loc, y_loc = get_final_door_coords(self, _data, "source", self.x_offset, self.y_offset)
@@ -740,6 +746,9 @@ def door_customizer_page(
         self.canvas.delete(item)  # type: ignore
         for loc, data in self.placed_icons.items():
             if data["image"] == item[0]:
+                if self.special_doors[data["name"]] == "Lobby Door":
+                    _lobby_doors = [x['door'] for x in self.lobby_doors]
+                    del(self.lobby_doors[_lobby_doors.index(data['name'])])
                 del self.special_doors[data["name"]]
                 del self.placed_icons[loc]
                 break
