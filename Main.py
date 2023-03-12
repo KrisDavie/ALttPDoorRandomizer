@@ -198,8 +198,8 @@ def copy_world(world):
     ret.treasure_hunt_count = world.treasure_hunt_count
     ret.treasure_hunt_icon = world.treasure_hunt_icon
     ret.sewer_light_cone = world.sewer_light_cone
-    ret.light_world_light_cone = world.light_world_light_cone
-    ret.dark_world_light_cone = world.dark_world_light_cone
+    ret.light_world_light_cone = False
+    ret.dark_world_light_cone = False
     ret.seed = world.seed
     ret.can_access_trock_eyebridge = world.can_access_trock_eyebridge
     ret.can_access_trock_front = world.can_access_trock_front

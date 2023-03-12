@@ -19,7 +19,7 @@ from EntranceShuffle import door_addresses
 
 
 JAP10HASH = '03a63945398191337e896e5771f77173'
-RANDOMIZERBASEHASH = '430dbeb84ec274b32c36a3d7eb25105a'
+RANDOMIZERBASEHASH = '86370c0770e368b7f863c5b7399d93a6'
 
 
 class JsonRom(object):
@@ -589,8 +589,6 @@ def patch_rom(world, player, rom):
 
     # set light cones
     rom.write_byte(0x180038, 0x01 if world.sewer_light_cone else 0x00)
-    rom.write_byte(0x180039, 0x01 if world.light_world_light_cone else 0x00)
-    rom.write_byte(0x18003A, 0x01 if world.dark_world_light_cone else 0x00)
 
     GREEN_TWENTY_RUPEES = 0x47
     TRIFORCE_PIECE = ItemFactory('Triforce Piece', player).code
