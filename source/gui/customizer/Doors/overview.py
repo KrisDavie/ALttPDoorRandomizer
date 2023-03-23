@@ -233,7 +233,11 @@ def door_customizer_page(
                         dest = _interior_doors_dict[source]
                     except KeyError:
                         print("Could not find interior door for " + source)
-                        continue
+                        dest = None
+                if not dest and 'type' in v:
+                    self.special_doors[source] = v['type']
+                    continue
+
                 self.doors[source] = dest
                 self.doors[dest] = source
                 if "type" in v:
@@ -577,6 +581,8 @@ def door_customizer_page(
 
             _data = create_door_dict(door)
             x1, y1 = get_final_door_coords(self, _data, "source", x_offset, y_offset)
+            if door in self.special_doors:
+                icon_queue.append((self.special_doors[door], x1, y1, door))
             if door == "Sanctuary Mirror Route":
                 continue
             self.door_buttons[door] = self.canvas.create_oval(
@@ -797,6 +803,7 @@ def door_customizer_page(
             if door in special_doors:
                 door_type = special_doors[door]
                 final_connections["doors"][door] = {"dest": final_connections["doors"][door], "type": door_type}
+                special_doors.pop(door)
 
         for lobby_data in lobby_doors:
             lobby = lobby_data["lobby"]
@@ -804,6 +811,11 @@ def door_customizer_page(
                 continue
             lobby_door = lobby_data["door"]
             final_connections["lobbies"][lobby] = lobby_door
+            special_doors.pop(lobby_door)
+
+        for door in special_doors:
+            final_connections["doors"][door] = {"type": special_doors[door]}
+
 
         return final_connections, doors_type
 
