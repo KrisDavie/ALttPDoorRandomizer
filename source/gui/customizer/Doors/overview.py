@@ -281,6 +281,12 @@ def door_customizer_page(
             lobby_door = yaml_data["lobbies"][lobby]
             add_lobby(self, lobby_door, lobby)
             queue_regions_doors(lobby_door)
+        
+        if 'Sanctuary_Mirror' in yaml_data["lobbies"]:
+            sanc_world = dungeon_worlds[yaml_data["lobbies"]['Sanctuary_Mirror']]
+            if sanc_world == tab_world:
+                add_lobby(self, 'Sanctuary Mirror Route', 'Sanctuary_Mirror')
+                queue_regions_doors('Sanctuary Mirror Route')
 
         if len(doors_to_process) == 0:
             for tile in mandatory_tiles[tab_world]:
@@ -443,15 +449,17 @@ def door_customizer_page(
         # find doors in this tile:
         for door in door_coordinates[eg_tile]:
             if door['name'] in self.special_doors:
+                icon_idx = [k for k, v in self.placed_icons.items() if v['name'] == door['name']][0]
+                del(self.placed_icons[icon_idx])
                 del(self.special_doors[door['name']])
             _lobby_doors = [x['door'] for x in self.lobby_doors]
             if door['name'] in _lobby_doors:
                 del(self.lobby_doors[_lobby_doors.index(door['name'])])
-                continue
             while True:
                 _dl_idx, _door_link = get_link_by_door(door["name"])  # type: ignore
                 if not _door_link:
-                    self.canvas.delete(self.door_buttons[door['name']])
+                    if not door['name'] == 'Sanctuary Mirror Route':
+                        self.canvas.delete(self.door_buttons[door['name']])
                     break
                 self.canvas.delete(_door_link["button"])  # type: ignore
                 # Set colors back to normal
@@ -704,7 +712,7 @@ def door_customizer_page(
 
         place_door_icon(self, selected_item, x_loc, y_loc, loc_name)
 
-    def place_door_icon(self: DoorPage, placed_icon, x_loc, y_loc, loc_name=None):
+    def place_door_icon(self: DoorPage, placed_icon, x_loc, y_loc, loc_name):
         # self.canvas.itemconfigure(item, state="hidden")
 
         # Place a new sprite
@@ -720,13 +728,14 @@ def door_customizer_page(
                 "#fff",
             )
         )
-        if loc_name:
-            self.placed_icons[(x_loc, y_loc)]["name"] = loc_name
+        self.placed_icons[(x_loc, y_loc)]["name"] = loc_name
         self.placed_icons[(x_loc, y_loc)]["image"] = self.canvas.create_image(
             x_loc,
             y_loc,
             image=self.placed_icons[(x_loc, y_loc)]["sprite"],
         )
+        if placed_icon == 'Sanctuary_Mirror':
+            return
         self.canvas.tag_bind(
             self.placed_icons[(x_loc, y_loc)]["image"],
             "<Button-3>",
@@ -808,9 +817,11 @@ def door_customizer_page(
         for lobby_data in lobby_doors:
             lobby = lobby_data["lobby"]
             if lobby == "Sanctuary_Mirror":
-                continue
-            lobby_door = lobby_data["door"]
-            final_connections["lobbies"][lobby] = lobby_door
+                lobby_door = 'Sanctuary Mirror Route'
+                final_connections["lobbies"][lobby] = {v: k for k, v in dungeon_worlds.items()}[tab_world] # Add dungeon name instead of door name
+            else:
+                lobby_door = lobby_data["door"]
+                final_connections["lobbies"][lobby] = lobby_door
             special_doors.pop(lobby_door)
 
         for door in special_doors:
@@ -880,7 +891,7 @@ def door_customizer_page(
             print(f'No empty tile found at {event.x}, {event.y}')
         x, y = selected_eg_tile
 
-        # Add clicked EG tile to clicked empty tile this function IS needed
+        # Add clicked EG tile to clicked empty tile, this function IS needed
         add_eg_tile_img(self, x, y, tile_x, tile_y)
         self.tiles[selected_eg_tile]['map_tile'] = (tile_x - self.x_offset, tile_y - self.y_offset)
 
@@ -905,8 +916,9 @@ def door_customizer_page(
                     print("Adding Sanctuary Mirror Route")
                     add_lobby_door(self, "Sanctuary Mirror Route", "Sanctuary_Mirror")
                     x1, y1 = get_final_door_coords(
-                        self, self.lobby_doors[-1], "source", self.x_offset, tile_y - self.y_offset
+                        self, self.lobby_doors[-1], "source", self.x_offset, self.y_offset
                     )
+                    place_door_icon(self, "Sanctuary_Mirror", x1, y1, "Sanctuary Mirror Route")
 
                 _data = create_door_dict(door)
 
