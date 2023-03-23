@@ -1360,6 +1360,7 @@ door_coordinates_key = {
 eg_tile_multiuse = {tile: 1 for tile in door_coordinates.keys()}
 
 # Override EG tiles that are used more than once - i.e. have multiple, isolated paths
+# Tuple -> (Column, Row): Uses
 eg_tile_multiuse_override = {
     (9, 0): 2,  # PoD shooter
     (4, 1): 3,  # TR pipes
@@ -1371,8 +1372,8 @@ eg_tile_multiuse_override = {
     (15, 4): 2,  # Ice refill & faries
     (7, 5): 2,  # Skull pot prison
     (10, 6): 2,  # PoD boss catwalk
-    (5, 7): 2,  # Desert right side chest
     (4, 7): 2,  # Desert lobby upper
+    (5, 7): 2,  # Desert right side chest
     (11, 7): 3,  # GT Stalfos + right side
     (12, 7): 2,  # GT rando room + falling bridge
     (13, 7): 2,  # GT right side portal room
@@ -1383,7 +1384,7 @@ eg_tile_multiuse_override = {
     (13, 9): 2,  # GT invisible bridge
     (2, 10): 2,  # Mire left right bridge
     (9, 10): 2,  # Eastern Big Chest Overlook
-    (2, 11): 2,  # BK door overlook
+    (2, 11): 2,  # Mire BK door overlook
     (6, 11): 2,  # TR trap room
     (9, 11): 2,  # Eastern cannonball room
     (12, 11): 2,  # Thieves pots
