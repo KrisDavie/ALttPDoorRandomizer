@@ -44,7 +44,7 @@ def show_sprites(self, top, parent_event, world):
     )
     sprite_window.items = {}
     for item, coords in all_icons.items():
-        if item not in item_table and item not in dungeon_lobbies[world]:
+        if (item not in item_table and item not in dungeon_lobbies[world]) or item == "Sanctuary_Mirror":
             disabled = True
         else:
             disabled = False
@@ -80,6 +80,12 @@ item_table = {
     "Key Door": (0, 3),
     "Big Key Door": (0, 4),
     "Trap Door": (0, 5),
+    "Somaria": (1, 0),
+    "Lamp": (1, 1),
+    "Hammer": (1, 2),
+    "Flippers": (1, 3),
+    "Hookshot": (1, 4),
+    "Sanctuary_Mirror": (8, 5),
 }
 
 dungeon_lobbies = {
