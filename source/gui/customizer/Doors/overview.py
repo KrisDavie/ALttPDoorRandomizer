@@ -431,7 +431,7 @@ def door_customizer_page(
     def remove_eg_tile(self: DoorPage, event):
         button = self.canvas.find_closest(event.x, event.y)[0]
         eg_tile = get_tile_data_by_button(self.tiles, button)
-        if not eg_tile:
+        if not eg_tile or eg_tile in mandatory_tiles[tab_world]:
             return
         del(self.tiles[eg_tile])
         top.eg_tile_multiuse[eg_tile] += 1
@@ -482,7 +482,7 @@ def door_customizer_page(
         )
         map = self.canvas.create_image(x1, y1, image=img, anchor=NW, **ci_kwargs)
         if not self.eg_selection_mode:
-            self.canvas.tag_bind(map, "<Button-3>", lambda event: remove_eg_tile(self, event))
+            self.canvas.tag_bind(map, "<Control-Button-3>", lambda event: remove_eg_tile(self, event))
         else:
             self.canvas.tag_bind(map, "<Button-1>", lambda event: select_eg_tile(self, top, event, plando_window))
         self.tiles[(x, y)]["img_obj"] = img
