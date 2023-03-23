@@ -29,14 +29,6 @@ from pathlib import Path
 
 BORDER_SIZE = 20
 TILE_BORDER_SIZE = 3
-DOOR_COLOURS = {
-    "Key Door": "gold",
-    "Bomb Door": "blue",
-    "Dash Door": "red",
-    "Big Key Door": "green",
-    "Trap Door": "gray",
-    "Lobby Door": "white",
-}
 MANUAL_REGIONS_ADDED = {
     "Sewers Secret Room Up Stairs": "Sewers Rat Path",  # Sewer Drop
     "Skull Small Hall ES": "Skull Back Drop",  # Skull Back Drop
@@ -637,9 +629,11 @@ def door_customizer_page(
 
         for n, lobby in enumerate(self.lobby_doors):
             x1, y1 = get_final_door_coords(self, lobby, "source", x_offset, y_offset)
-            icon_queue.append(("Lobby Door", x1, y1, lobby["door"]))
+            icon_queue.append((lobby["lobby"], x1, y1, lobby["door"]))
             doors_linked.add(lobby["door"])
             doors_linked.add(lobby["lobby"])
+
+        icon_queue = list(set(icon_queue))
 
         while icon_queue:
             icon, eg_x, eg_y, loc_name = icon_queue.pop()
@@ -679,7 +673,7 @@ def door_customizer_page(
         d_data = typing.cast(LobbyData, create_door_dict(door))
         d_data["lobby"] = lobby
         self.lobby_doors.append(d_data)
-        self.special_doors[door] = 'Lobby Door'
+        self.special_doors[door] = lobby
 
     def get_loc_by_button(self: DoorPage, button):
         for name, loc in self.door_buttons.items():
@@ -689,23 +683,14 @@ def door_customizer_page(
     def show_door_icons(self: DoorPage, event):
         door = self.canvas.find_closest(event.x, event.y)
         loc_name = get_loc_by_button(self, door)
-        selected_item = doors_sprite_data.show_sprites(self, top, event)
-        if selected_item == "Lobby Door":
-            lobby_number = len(self.lobby_doors)
-            if self.sanc_dungeon:
-                lobby_number -= 1
-            if lobby_number == len(dungeon_lobbies[tab_world]):
-                return
-            for n, x in enumerate(dungeon_lobbies[tab_world]):
-                if x not in [y["lobby"] for y in self.lobby_doors]:
-                    lobby_number = n
-                    break
-            lobby = dungeon_lobbies[tab_world][lobby_number]
-            print(f"Adding lobby door for {loc_name} to {lobby} ({lobby_number}")
+        selected_item = doors_sprite_data.show_sprites(self, top, event, tab_world)
+        if selected_item in doors_sprite_data.all_dungeon_lobbies:
+            lobby = selected_item
+            print(f"Adding lobby door for {loc_name} to {lobby}")
             add_lobby_door(self, loc_name, lobby)
 
             x_loc, y_loc = get_final_door_coords(self, self.lobby_doors[-1], "source", self.x_offset, self.y_offset)
-            self.special_doors[loc_name] = 'Lobby Door'
+            self.special_doors[loc_name] = lobby
         else:
             _data = create_door_dict(loc_name)
             x_loc, y_loc = get_final_door_coords(self, _data, "source", self.x_offset, self.y_offset)
@@ -719,7 +704,7 @@ def door_customizer_page(
         # Place a new sprite
         if placed_icon == None:
             return
-        sprite_y, sprite_x = doors_sprite_data.item_table[placed_icon]
+        sprite_y, sprite_x = doors_sprite_data.all_icons[placed_icon]
         self.placed_icons[(x_loc, y_loc)]["sprite"] = ImageTk.PhotoImage(
             ImageOps.expand(
                 Image.open(item_sheet_path).crop(
@@ -747,7 +732,7 @@ def door_customizer_page(
         self.canvas.delete(item)  # type: ignore
         for loc, data in self.placed_icons.items():
             if data["image"] == item[0]:
-                if self.special_doors[data["name"]] == "Lobby Door":
+                if self.special_doors[data["name"]] in doors_sprite_data.all_dungeon_lobbies:
                     _lobby_doors = [x['door'] for x in self.lobby_doors]
                     del(self.lobby_doors[_lobby_doors.index(data['name'])])
                 del self.special_doors[data["name"]]
@@ -910,7 +895,6 @@ def door_customizer_page(
                     x1, y1 = get_final_door_coords(
                         self, self.lobby_doors[-1], "source", self.x_offset, tile_y - self.y_offset
                     )
-                    # place_door_icon(self, "Lobby Door", x1, y1)
 
                 _data = create_door_dict(door)
 
