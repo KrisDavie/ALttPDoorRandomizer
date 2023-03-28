@@ -75,7 +75,13 @@ def guiMain(args=None):
         elif self.settings["saveonexit"] == "always":
             save_settings_from_gui(False)
         if not skip_exit:
-            sys.exit(0)
+            try:
+                self.pages["randomizer"].pages["generation"].widgets["plandomizer"].window.destroy()
+                self.pages["randomizer"].pages["generation"].widgets["plandomizer"].window.eg_tile_window.destroy()
+            except:
+                pass
+            mainWindow.destroy()
+            # sys.exit(0)
 
     # make main window
     # add program title & version number

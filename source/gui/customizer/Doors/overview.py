@@ -126,6 +126,7 @@ def door_customizer_page(
     eg_selection_mode=False,
     vanilla_data=None,
     plando_window=None,
+    cdims=(2048, 1024)
 ) -> DoorPage:
     def init_page(self: DoorPage, redraw=False) -> None:
         self.select_state = SelectState.NoneSelected
@@ -802,6 +803,7 @@ def door_customizer_page(
         # print(lobby_doors)
         final_connections = {"doors": {}, "lobbies": {}}
         doors_type = "vanilla" if len(door_links) > 0 else False
+        special_doors_remaining = special_doors.copy()
 
         for data in door_links:
             door = data["door"]
@@ -812,7 +814,7 @@ def door_customizer_page(
             if door in special_doors:
                 door_type = special_doors[door]
                 final_connections["doors"][door] = {"dest": final_connections["doors"][door], "type": door_type}
-                special_doors.pop(door)
+                special_doors_remaining.pop(door)
 
         for lobby_data in lobby_doors:
             lobby = lobby_data["lobby"]
@@ -822,9 +824,9 @@ def door_customizer_page(
             else:
                 lobby_door = lobby_data["door"]
                 final_connections["lobbies"][lobby] = lobby_door
-            special_doors.pop(lobby_door)
+            special_doors_remaining.pop(lobby_door)
 
-        for door in special_doors:
+        for door in special_doors_remaining:
             final_connections["doors"][door] = {"type": special_doors[door]}
 
 
@@ -841,14 +843,14 @@ def door_customizer_page(
                 self.canvas.itemconfigure(self.door_buttons[data["linked_door"]], fill="#0f0")
                 break
 
-    def deactivate_tiles(self: DoorPage, eg_tile_multiuse, disabled_eg_tiles):
+    def deactivate_tiles(self: DoorPage, eg_tile_multiuse, disabled_eg_tiles, temp_disabled_eg_tiles=[]):
         for tile in self.tiles:
-            if eg_tile_multiuse[tile] > 0:
+            if eg_tile_multiuse[tile] > 0 and tile not in temp_disabled_eg_tiles:
                 if tile in disabled_eg_tiles:
                     self.canvas.delete(disabled_eg_tiles[tile])  # type: ignore
                     del disabled_eg_tiles[tile]
                 continue
-            elif tile in disabled_eg_tiles:
+            elif tile in disabled_eg_tiles and tile not in temp_disabled_eg_tiles:
                 continue
             tile_x, tile_y = self.tiles[tile]["map_tile"]
             tile_x += self.x_offset
@@ -871,8 +873,9 @@ def door_customizer_page(
 
     def select_tile(self: DoorPage, event):
         parent.setvar("selected_eg_tile", BooleanVar(value=False))  # type: ignore
+        tiles_in_dungeon = [tile for tile in self.tiles if 'map_tile' in self.tiles[tile]]
         for page in top.eg_tile_window.pages.values():
-            page.content.deactivate_tiles(page.content, top.eg_tile_multiuse, top.disabled_eg_tiles)
+            page.content.deactivate_tiles(page.content, top.eg_tile_multiuse, top.disabled_eg_tiles, temp_disabled_eg_tiles=tiles_in_dungeon)
 
         top.eg_tile_window.deiconify()
         top.eg_tile_window.focus_set()
@@ -968,10 +971,10 @@ def door_customizer_page(
     self: DoorPage = typing.cast(DoorPage, ttk.Frame(parent))
     self.eg_selection_mode = eg_selection_mode
     self.eg_tile_window = None
-    self.cwidth = 1024
-    self.cheight = 512
-    self.cwidth = 2048
-    self.cheight = 1024
+    # self.cwidth = 1024
+    # self.cheight = 512
+    self.cwidth = cdims[0]
+    self.cheight = cdims[1]
     self.select_state = SelectState.NoneSelected
     if not eg_selection_mode:
         redraw_canvas_button = ttk.Button(self, text="Redraw Canvas", command=lambda: redraw_canvas(self))

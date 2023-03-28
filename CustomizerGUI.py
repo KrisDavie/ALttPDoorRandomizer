@@ -263,11 +263,13 @@ def customizerGUI(top=None):
             top.widgets["plandomizer"].storageVar.set(yaml_data)
             top.widgets["customizer"].storageVar.set(yaml_data)
         else:
+            self.eg_tile_window.destroy()
             self.destroy()
 
     mainWindow.protocol("WM_DELETE_WINDOW", close_window)
 
-    mainWindow.mainloop()
+    if top is None:
+        mainWindow.mainloop()
 
 
 if __name__ == "__main__":
