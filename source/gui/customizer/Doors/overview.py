@@ -538,10 +538,6 @@ def door_customizer_page(
                 self.canvas.tag_lower(tile)
                 self.unusued_map_tiles[(col, row)] = tile
 
-    def select_location_and_add_eg_tile(self: DoorPage, top, event, plando_window):
-        select_location(self, event)
-        select_tile(self, event)
-
     def draw_map(self: DoorPage):
         # x is columns, y is rows
         icon_queue = []
@@ -617,7 +613,6 @@ def door_customizer_page(
             )
             self.unlinked_doors.add(door)
             self.canvas.tag_bind(self.door_buttons[door], "<Button-1>", lambda event: select_location(self, event))
-            self.canvas.tag_bind(self.door_buttons[door], "<Button-2>", lambda event: select_location_and_add_eg_tile(self, top, event, plando_window))
             self.canvas.tag_bind(self.door_buttons[door], "<Button-3>", lambda event: show_door_icons(self, event))
 
         # Display links between doors here
@@ -787,6 +782,8 @@ def door_customizer_page(
             self.select_state = SelectState.SourceSelected
             self.source_location = door
         elif self.select_state == SelectState.SourceSelected:
+            if door == self.source_location:
+                select_tile(self, event, find_unused=True)
             if has_target(self, loc_name) or self.source_location == door:
                 return
             add_door_link(self, get_loc_by_button(self, self.source_location), loc_name)
@@ -888,7 +885,7 @@ def door_customizer_page(
             )
             disabled_eg_tiles[tile] = rect
 
-    def select_tile(self: DoorPage, event):
+    def select_tile(self: DoorPage, event, find_unused=False):
         parent.setvar("selected_eg_tile", BooleanVar(value=False))  # type: ignore
         tiles_in_dungeon = [tile for tile in self.tiles if 'map_tile' in self.tiles[tile]]
         for page in top.eg_tile_window.pages.values():
@@ -904,11 +901,19 @@ def door_customizer_page(
         selected_eg_tile = parent.master.selected_eg_tile
 
         bg_tiles = self.canvas.find_withtag('background_select')
-        empty_tile_button = self.canvas.find_closest(event.x, event.y)[0]
-        if empty_tile_button not in bg_tiles:
-            while empty_tile_button not in bg_tiles:
-                empty_tile_button = self.canvas.find_below(empty_tile_button)
-        (tile_x, tile_y) = [k for k, v in self.unusued_map_tiles.items() if v == empty_tile_button][0]
+        if not find_unused:
+            empty_tile_button = self.canvas.find_closest(event.x, event.y)[0]
+            if empty_tile_button not in bg_tiles:
+                while empty_tile_button not in bg_tiles:
+                    empty_tile_button = self.canvas.find_below(empty_tile_button)
+            (tile_x, tile_y) = [k for k, v in self.unusued_map_tiles.items() if v == empty_tile_button][0]
+        else:
+            for tile in self.unusued_map_tiles:
+                if tile not in [self.tiles[tile]['map_tile'] for tile in self.tiles if 'map_tile' in self.tiles[tile]]:
+                    tile_x, tile_y = tile
+                    empty_tile_button = self.unusued_map_tiles[tile]
+                    break
+        
         x, y = selected_eg_tile
 
         # Add clicked EG tile to clicked empty tile, this function IS needed
