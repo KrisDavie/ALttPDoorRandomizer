@@ -133,9 +133,9 @@ dungeon_lobbies = {
    },
    World.TurtleRock: {
     'Turtle Rock Main': (8, 0),
-    'Turtle Rock Lazy Eyes': (8, 1),
-    'Turtle Rock Chest': (8, 2),
-    'Turtle Rock Eye Bridge': (8, 3),
+    'Turtle Rock Chest': (8, 1),
+    'Turtle Rock Eye Bridge': (8, 2),
+    'Turtle Rock Lazy Eyes': (8, 3),
    },
    World.GanonsTower: {
     'Ganons Tower': (8, 4),
