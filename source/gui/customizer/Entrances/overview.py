@@ -15,7 +15,7 @@ class SelectState(Enum):
 BORDER_SIZE = 20
 
 
-def entrance_customizer_page(top, parent):
+def entrance_customizer_page(top, parent, cdims=(1548, 768)):
 
     boilerplate = {
         "meta": {"players": 1, "algorithm": "balanced", "seed": 42, "names": "Lonk"},
@@ -284,19 +284,19 @@ def entrance_customizer_page(top, parent):
 
     # Custom Item Pool
     self = ttk.Frame(parent)
-    self.cwidth = 512
-    self.cheight = 512
+    self.cwidth = cdims[0]
+    self.cheight = cdims[1]
     self.select_state = SelectState.NoneSelected
     self.defined_connections = {}
     self.displayed_connections = {}
-    self.canvas = Canvas(self, width=self.cwidth * 2 + (BORDER_SIZE * 2), height=self.cheight + (BORDER_SIZE * 2))
+    self.canvas = Canvas(self, width=self.cwidth + (BORDER_SIZE * 2), height=self.cheight + (BORDER_SIZE * 2))
     self.canvas.pack()
 
     # Load in the world images
     worlds_data[World.LightWorld]["map_image"] = ImageTk.PhotoImage(
-        Image.open(worlds_data[World.LightWorld]["map_file"])
+        Image.open(worlds_data[World.LightWorld]["map_file"]).resize((self.cwidth // 2, self.cheight), Image.ANTIALIAS)
     )
-    worlds_data[World.DarkWorld]["map_image"] = ImageTk.PhotoImage(Image.open(worlds_data[World.DarkWorld]["map_file"]))
+    worlds_data[World.DarkWorld]["map_image"] = ImageTk.PhotoImage(Image.open(worlds_data[World.DarkWorld]["map_file"]).resize((self.cwidth // 2, self.cheight), Image.ANTIALIAS))
 
     worlds_data[World.LightWorld]["canvas_image"] = (
         self.canvas.create_image(BORDER_SIZE, BORDER_SIZE, anchor=NW, image=worlds_data[World.LightWorld]["map_image"]),
@@ -304,13 +304,20 @@ def entrance_customizer_page(top, parent):
 
     worlds_data[World.DarkWorld]["canvas_image"] = (
         self.canvas.create_image(
-            BORDER_SIZE + 512, BORDER_SIZE, anchor=NW, image=worlds_data[World.DarkWorld]["map_image"]
+            BORDER_SIZE + self.cwidth // 2, BORDER_SIZE, anchor=NW, image=worlds_data[World.DarkWorld]["map_image"]
         ),
     )
 
+    for world in [World.LightWorld, World.DarkWorld]:
+        if self.cwidth != 1024:
+            scale = self.cwidth / 2 / 512
+            for name, loc in worlds_data[world]["entrances"].items():
+                worlds_data[world]["entrances"][name]["x"] = worlds_data[world]["entrances"][name]["x"] * scale
+                worlds_data[world]["entrances"][name]["y"] = worlds_data[world]["entrances"][name]["y"] * scale
+
     # Offset darkworld locations
     for name, loc in worlds_data[World.DarkWorld]["entrances"].items():
-        worlds_data[World.DarkWorld]["entrances"][name]["x"] += self.cwidth
+        worlds_data[World.DarkWorld]["entrances"][name]["x"] += self.cwidth // 2
 
     # Display locations (and map?)
     for world in [World.LightWorld, World.DarkWorld]:

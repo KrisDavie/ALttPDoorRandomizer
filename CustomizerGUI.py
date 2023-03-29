@@ -1,3 +1,4 @@
+import argparse
 from pathlib import Path
 import pickle
 from tkinter import Tk, TOP, BOTH, Toplevel, ttk, filedialog
@@ -16,11 +17,20 @@ import yaml
 # This should be made better
 
 
-def customizerGUI(top=None):
+def customizerGUI(top=None, args=None):
     if top is None:
         mainWindow = Tk()
     else:
         mainWindow = Toplevel(top)
+
+    
+    window_size = (1548, 768)
+    
+    if args:
+        if args.size == 'small': 
+            window_size = (1024, 512)
+        elif args.size == 'large':
+            window_size = (2048, 1024) 
 
     self = mainWindow
 
@@ -187,7 +197,7 @@ def customizerGUI(top=None):
 
 
 
-    self.pages["entrances"].content = entrance_customizer_page(self, self.pages["entrances"])
+    self.pages["entrances"].content = entrance_customizer_page(self, self.pages["entrances"], cdims=window_size)
     self.pages["entrances"].content.pack(side=TOP, fill=BOTH, expand=True)
 
     eg_map = Path("resources") / "app" / "gui" / "plandomizer" / "maps" / "egmap.png"
@@ -208,7 +218,7 @@ def customizerGUI(top=None):
         self.pages["items"].pages[dungeon] = ttk.Frame(self.pages["items"].notebook)
         self.pages["items"].notebook.add(self.pages["items"].pages[dungeon], text=dungeon.replace("_", " "))
         self.pages["items"].pages[dungeon].content = item_customizer_page(
-            self, self.pages["items"].pages[dungeon], world, tab_item_type="standard", eg_img=eg_img
+            self, self.pages["items"].pages[dungeon], world, tab_item_type="standard", eg_img=eg_img, cdims=window_size
         )
         self.pages["items"].pages[dungeon].content.pack(side=TOP, fill=BOTH, expand=True)
 
@@ -218,7 +228,7 @@ def customizerGUI(top=None):
         self.pages["pots"].pages[dungeon] = ttk.Frame(self.pages["pots"].notebook)
         self.pages["pots"].notebook.add(self.pages["pots"].pages[dungeon], text=dungeon.replace("_", " "))
         self.pages["pots"].pages[dungeon].content = item_customizer_page(
-            self, self.pages["pots"].pages[dungeon], world, tab_item_type="pot", eg_img=eg_img
+            self, self.pages["pots"].pages[dungeon], world, tab_item_type="pot", eg_img=eg_img, cdims=window_size
         )
         self.pages["pots"].pages[dungeon].content.pack(side=TOP, fill=BOTH, expand=True)
 
@@ -228,7 +238,7 @@ def customizerGUI(top=None):
         self.pages["doors"].pages[dungeon] = ttk.Frame(self.pages["doors"].notebook)
         self.pages["doors"].notebook.add(self.pages["doors"].pages[dungeon], text=dungeon.replace("_", " "))
         self.pages["doors"].pages[dungeon].content = door_customizer_page(
-            self, self.pages["doors"].pages[dungeon], world, eg_img=eg_img
+            self, self.pages["doors"].pages[dungeon], world, eg_img=eg_img, cdims=window_size
         )
         self.pages["doors"].pages[dungeon].content.pack(side=TOP, fill=BOTH, expand=True)
 
@@ -239,7 +249,8 @@ def customizerGUI(top=None):
             eg_img=eg_img, 
             eg_selection_mode=True, 
             vanilla_data=vanilla_layout[dungeon],
-            plando_window=self.pages["doors"].notebook)
+            plando_window=self.pages["doors"].notebook,
+            cdims=window_size)
         self.eg_tile_window.pages[dungeon].content.pack(side=TOP, fill=BOTH, expand=True)
 
     self.pages["items"].notebook.pack()
@@ -273,4 +284,8 @@ def customizerGUI(top=None):
 
 
 if __name__ == "__main__":
-    customizerGUI()
+    parser = argparse.ArgumentParser(add_help=False)
+    parser.add_argument("--size", choices=['small', 'medium', 'large'], default='medium')
+
+    args, _ = parser.parse_known_args()
+    customizerGUI(args=args)

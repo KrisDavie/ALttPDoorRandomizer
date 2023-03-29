@@ -19,7 +19,7 @@ BORDER_SIZE = 20
 item_sheet_path = Path("resources") / "app" / "gui" / "plandomizer" / "Item_Sheet.png"
 
 
-def item_customizer_page(top, parent, tab_world, tab_item_type="standard", eg_img=None):
+def item_customizer_page(top, parent, tab_world, tab_item_type="standard", eg_img=None, cdims=(1548, 768)):
     def load_yaml(self, yaml_data):
         for loc_name, placed_item in yaml_data.items():
             if loc_name not in worlds_data[tab_world][f"locations_{tab_item_type}"] or not show_item_on_tab(
@@ -168,8 +168,8 @@ def item_customizer_page(top, parent, tab_world, tab_item_type="standard", eg_im
 
     # Custom Item Pool
     self = ttk.Frame(parent)
-    self.cwidth = 1024
-    self.cheight = 512
+    self.cwidth = cdims[0]
+    self.cheight = cdims[1]
     self.select_state = SelectState.NoneSelected
     self.placed_items = {}
     self.canvas = Canvas(self, width=self.cwidth + (BORDER_SIZE * 2), height=self.cheight + (BORDER_SIZE * 2))
@@ -177,14 +177,18 @@ def item_customizer_page(top, parent, tab_world, tab_item_type="standard", eg_im
 
     # Load in the world images
     if worlds_data[tab_world]["map_file"] != None:
-        worlds_data[tab_world]["map_image"] = ImageTk.PhotoImage(Image.open(worlds_data[tab_world]["map_file"]))
+        worlds_data[tab_world]["map_image"] = ImageTk.PhotoImage(Image.open(worlds_data[tab_world]["map_file"]).resize((self.cwidth, self.cheight), Image.ANTIALIAS))
         worlds_data[tab_world]["canvas_image"] = (
             self.canvas.create_image(BORDER_SIZE, BORDER_SIZE, anchor=NW, image=worlds_data[tab_world]["map_image"]),
         )
         worlds_data[tab_world][f"locations_{tab_item_type}"] = worlds_data[tab_world][f"locations"].copy()
+        if self.cwidth != 1024:
+            scale = self.cwidth / 2 / 512
+        else :
+            scale = 1
         for name, loc in worlds_data[tab_world][f"locations_{tab_item_type}"].items():
-            worlds_data[tab_world][f"locations_{tab_item_type}"][name]["x"] *= 2
-            worlds_data[tab_world][f"locations_{tab_item_type}"][name]["y"] *= 2
+            worlds_data[tab_world][f"locations_{tab_item_type}"][name]["x"] *= 2 * scale
+            worlds_data[tab_world][f"locations_{tab_item_type}"][name]["y"] *= 2 * scale
 
     elif worlds_data[tab_world]["map_file"] == None and "supertile_locs" in worlds_data[tab_world]:
         # If there is no image, we'll build the map dynamically here - this is long...
@@ -317,7 +321,7 @@ def item_customizer_page(top, parent, tab_world, tab_item_type="standard", eg_im
                 rows = i
                 cols = i * 2
                 total_tiles = rows * cols
-                tile_size = int(512 / rows)
+                tile_size = int((self.cwidth / 2) / rows)
                 scaling_factor = tile_size / 512
                 break
         supertiles_img = Image.new("RGBA", (cols * tile_size, rows * tile_size))
@@ -586,19 +590,6 @@ def item_customizer_page(top, parent, tab_world, tab_item_type="standard", eg_im
                 del cropped_tiles_data[s_tile4]
             s_tile1, s_tile2, s_tile3, s_tile4 = None, None, None, None
 
-        # Resize the final image if we still have space - This is ugly...
-        # if canvas_x < cols and canvas_y == 0:
-        #     current_width = (canvas_x + 1) * tile_size
-        #     current_height = tile_size
-        #     upscale_ratio_width = 1024 / current_width
-        #     upscale_ratio_height = 512 / current_height
-        #     upscale_ratio = min(upscale_ratio_width, upscale_ratio_height)
-        #     print(f"Upscaling to {upscale_ratio}")
-        #     supertiles_img = supertiles_img.resize((int(1024 * upscale_ratio), int(512 * upscale_ratio)), Image.ANTIALIAS)
-        #     for item in worlds_data[tab_world][f"locations_{tab_item_type}"]:
-        #         worlds_data[tab_world][f"locations_{tab_item_type}"][item]["x"] *= upscale_ratio
-        #         worlds_data[tab_world][f"locations_{tab_item_type}"][item]["y"] *= upscale_ratio
-
         for i in range(cols + 1):
             ImageDraw.Draw(supertiles_img).line(
                 ((tile_size * i, 0), (tile_size * i, tile_size * rows)), fill="#f0f0f0", width=3
@@ -613,73 +604,6 @@ def item_customizer_page(top, parent, tab_world, tab_item_type="standard", eg_im
         worlds_data[tab_world]["canvas_image"].append(
             self.canvas.create_image(BORDER_SIZE, BORDER_SIZE, anchor=NW, image=tile_img)
         )
-        # for item, item_data in all_locs[tile].items():
-        #     if (tab_item_type == "standard" and item_data["loc_type"] == "pot") or (
-        #         tab_item_type == "pot" and item_data["loc_type"] != "pot"
-        #     ):
-        #         continue
-        #     worlds_data[tab_world][f"locations_{tab_item_type}"][item] = {
-        #         "x": item_data["x"] * scaling_factor + canvas_x * tile_size,
-        #         "y": item_data["y"] * scaling_factor + canvas_y * tile_size,
-        #         "loc_type": item_data["loc_type"],
-        #     }
-
-        #     # Hacky resizing for now
-        #     # if len(quadrants_present) == 1:
-        #     #     tile_img = base_tile_img.resize((tile_size, tile_size))
-        #     # else:
-        #     tile_img = base_tile_img.crop((0, 0, 512, 512)).resize((tile_size, tile_size))
-        # else:
-        #     tile_img = base_tile_img.resize((tile_size, tile_size))
-
-        # tile_img = ImageTk.PhotoImage(tile_img)
-        # worlds_data[tab_world]["map_image"].append(tile_img)
-        # worlds_data[tab_world]["canvas_image"].append(
-        #     self.canvas.create_image(
-        #         canvas_x * tile_size + BORDER_SIZE, canvas_y * tile_size + BORDER_SIZE, anchor=NW, image=tile_img
-        #     )
-        # )
-        # for item, item_data in all_locs[tile].items():
-        #     if (tab_item_type == "standard" and item_data["loc_type"] == "pot") or (
-        #         tab_item_type == "pot" and item_data["loc_type"] != "pot"
-        #     ):
-        #         continue
-        #     worlds_data[tab_world][f"locations_{tab_item_type}"][item] = {
-        #         "x": item_data["x"] * scaling_factor + canvas_x * tile_size,
-        #         "y": item_data["y"] * scaling_factor + canvas_y * tile_size,
-        #         "loc_type": item_data["loc_type"],
-        #     }
-
-        ####################################
-
-        ############## METHOD2 - Whole supertiles #############
-
-        # tile_x, tile_y = tile
-        # canvas_x = tile_no % cols
-        # canvas_y = tile_no // cols
-        # tile_img = eg_img.crop((tile_x * 512, tile_y * 512, tile_x * 512 + 512, tile_y * 512 + 512)).resize(
-        #     (tile_size, tile_size)
-        # )
-        # tile_img = ImageTk.PhotoImage(tile_img)
-        # worlds_data[tab_world]["map_image"].append(tile_img)
-        # worlds_data[tab_world]["canvas_image"].append(
-        #     self.canvas.create_image(
-        #         canvas_x * tile_size + BORDER_SIZE, canvas_y * tile_size + BORDER_SIZE, anchor=NW, image=tile_img
-        #     )
-        # )
-
-        ####################################
-
-        # for item, item_data in all_locs[tile].items():
-        #     if (tab_item_type == "standard" and item_data["loc_type"] == "pot") or (
-        #         tab_item_type == "pot" and item_data["loc_type"] != "pot"
-        #     ):
-        #         continue
-        #     worlds_data[tab_world][f"locations_{tab_item_type}"][item] = {
-        #         "x": item_data["x"] * scaling_factor + canvas_x * tile_size,
-        #         "y": item_data["y"] * scaling_factor + canvas_y * tile_size,
-        #         "loc_type": item_data["loc_type"],
-        #     }
 
     display_world_locations(self)
 
