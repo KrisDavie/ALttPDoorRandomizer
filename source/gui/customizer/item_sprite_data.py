@@ -216,4 +216,5 @@ item_table = {
     "Green Potion": (8, 2),
     "Blue Potion": (8, 3),
     "Bee Trap": (8, 4),
+    "Fairy": (8, 5),
 }
