@@ -440,6 +440,7 @@ def door_customizer_page(
         eg_tile = get_tile_data_by_button(self.tiles, button)
         if not eg_tile or eg_tile in mandatory_tiles[tab_world]:
             return
+        self.canvas.delete(button)
         del(self.tiles[eg_tile])
         top.eg_tile_multiuse[eg_tile] += 1
         for page in top.eg_tile_window.pages.values():
@@ -449,6 +450,7 @@ def door_customizer_page(
         
         # find doors in this tile:
         for door in door_coordinates[eg_tile]:
+            self.unlinked_doors.remove(door['name'])
             if door['name'] in self.special_doors:
                 icon_idx = [k for k, v in self.placed_icons.items() if v['name'] == door['name']][0]
                 del(self.placed_icons[icon_idx])
@@ -474,8 +476,6 @@ def door_customizer_page(
                 for _d in [_door_link["door"], _door_link["linked_door"]]:
                     if _d in self.special_doors:
                         del(self.special_doors[_d])
-
-        draw_empty_map(self)
 
     def add_eg_tile_img(self: DoorPage, x, y, tile_x, tile_y, ci_kwargs={}):
         x1 = (tile_x * self.tile_size) + BORDER_SIZE + (((2 * tile_x + 1) - 1) * TILE_BORDER_SIZE)
@@ -524,11 +524,23 @@ def door_customizer_page(
                     y1 + self.tile_size,
                     outline="",
                     fill=f"#888",
-                    activefill=f"#800",
+                    activefill=f"#BBB",
+                    tags=['background_select']
                 )
+                # _ = self.canvas.create_text(
+                #     x1 + self.tile_size / 2,
+                #     y1 + self.tile_size / 2,
+                #     text=f"{tile} - {col - self.x_offset}, {row - self.y_offset}",
+                #     fill="white",
+                #     font=("TkDefaultFont", 8),
+                # )
                 self.canvas.tag_bind(tile, "<Button-1>", lambda event: select_tile(self, event))
                 self.canvas.tag_lower(tile)
                 self.unusued_map_tiles[(col, row)] = tile
+
+    def select_location_and_add_eg_tile(self: DoorPage, top, event, plando_window):
+        select_location(self, event)
+        select_tile(self, event)
 
     def draw_map(self: DoorPage):
         # x is columns, y is rows
@@ -605,6 +617,7 @@ def door_customizer_page(
             )
             self.unlinked_doors.add(door)
             self.canvas.tag_bind(self.door_buttons[door], "<Button-1>", lambda event: select_location(self, event))
+            self.canvas.tag_bind(self.door_buttons[door], "<Button-2>", lambda event: select_location_and_add_eg_tile(self, top, event, plando_window))
             self.canvas.tag_bind(self.door_buttons[door], "<Button-3>", lambda event: show_door_icons(self, event))
 
         # Display links between doors here
@@ -824,7 +837,11 @@ def door_customizer_page(
             else:
                 lobby_door = lobby_data["door"]
                 final_connections["lobbies"][lobby] = lobby_door
-            special_doors_remaining.pop(lobby_door)
+            try:
+                special_doors_remaining.pop(lobby_door)
+            except:
+                # We should never get here because nobody should link a door to a lobby
+                pass
 
         for door in special_doors_remaining:
             final_connections["doors"][door] = {"type": special_doors[door]}
@@ -850,7 +867,7 @@ def door_customizer_page(
                     self.canvas.delete(disabled_eg_tiles[tile])  # type: ignore
                     del disabled_eg_tiles[tile]
                 continue
-            elif tile in disabled_eg_tiles and tile not in temp_disabled_eg_tiles:
+            elif tile in disabled_eg_tiles:
                 continue
             tile_x, tile_y = self.tiles[tile]["map_tile"]
             tile_x += self.x_offset
@@ -884,14 +901,14 @@ def door_customizer_page(
         parent.master.wait_variable("selected_eg_tile")
         if not hasattr(parent.master, "selected_eg_tile"):
             return
-        selected_eg_tile =  parent.master.selected_eg_tile
+        selected_eg_tile = parent.master.selected_eg_tile
 
+        bg_tiles = self.canvas.find_withtag('background_select')
         empty_tile_button = self.canvas.find_closest(event.x, event.y)[0]
-        for (tile_x, tile_y), button in self.unusued_map_tiles.items():
-            if button == empty_tile_button:
-                break
-        else:
-            print(f'No empty tile found at {event.x}, {event.y}')
+        if empty_tile_button not in bg_tiles:
+            while empty_tile_button not in bg_tiles:
+                empty_tile_button = self.canvas.find_below(empty_tile_button)
+        (tile_x, tile_y) = [k for k, v in self.unusued_map_tiles.items() if v == empty_tile_button][0]
         x, y = selected_eg_tile
 
         # Add clicked EG tile to clicked empty tile, this function IS needed
