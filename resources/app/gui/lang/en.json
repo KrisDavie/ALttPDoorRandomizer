@@ -91,6 +91,17 @@
     "randomizer.dungeon.door_type_mode.all": "Adds Trap Doors",
     "randomizer.dungeon.door_type_mode.chaos": "Increases all door types",
 
+    "randomizer.dungeon.trap_door_mode": "Trap Door Removal",
+    "randomizer.dungeon.trap_door_mode.vanilla": "No Removal",
+    "randomizer.dungeon.trap_door_mode.optional": "Removed If Blocking Path",
+    "randomizer.dungeon.trap_door_mode.boss": "Also Remove Boss Traps",
+    "randomizer.dungeon.trap_door_mode.oneway": "Remove All Annoying Traps",
+
+    "randomizer.dungeon.key_logic_algorithm": "Key Logic Algorithm",
+    "randomizer.dungeon.key_logic_algorithm.default": "Default",
+    "randomizer.dungeon.key_logic_algorithm.partial": "Partial Protection",
+    "randomizer.dungeon.key_logic_algorithm.strict": "Strict",
+
     "randomizer.dungeon.experimental": "Enable Experimental Features",
 
     "randomizer.dungeon.dungeon_counters": "Dungeon Chest Counters",
@@ -213,6 +224,7 @@
     "randomizer.generation.print_custom_yaml": "Print Customizer File",
     "randomizer.generation.usestartinventory": "Use Starting Inventory",
     "randomizer.generation.usecustompool": "Use Custom Item Pool",
+    "randomizer.generation.race": "Generate \"Race\" ROM",
 
     "randomizer.generation.saveonexit": "Save Settings on Exit",
     "randomizer.generation.saveonexit.ask": "Ask Me",

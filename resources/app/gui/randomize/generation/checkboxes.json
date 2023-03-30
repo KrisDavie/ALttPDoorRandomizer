@@ -6,6 +6,7 @@
     "calcplaythrough":    { "type": "checkbox" },
     "print_custom_yaml":  { "type": "checkbox" },
     "usestartinventory":  { "type": "checkbox" },
-    "usecustompool":      { "type": "checkbox" }
+    "usecustompool":      { "type": "checkbox" },
+    "race":               { "type": "checkbox" }
   }
 }

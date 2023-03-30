@@ -29,6 +29,8 @@ class World(object):
         self.doorShuffle = doorShuffle.copy()
         self.intensity = {}
         self.door_type_mode = {}
+        self.trap_door_mode = {}
+        self.key_logic_algorithm = {}
         self.logic = logic.copy()
         self.mode = mode.copy()
         self.swords = swords.copy()
@@ -140,10 +142,12 @@ class World(object):
             set_player_attr('pot_contents', None)
             set_player_attr('pseudoboots', False)
             set_player_attr('collection_rate', False)
-            set_player_attr('colorizepots', False)
+            set_player_attr('colorizepots', True)
             set_player_attr('pot_pool', {})
             set_player_attr('decoupledoors', False)
             set_player_attr('door_type_mode', 'original')
+            set_player_attr('trap_door_mode', 'optional')
+            set_player_attr('key_logic_algorithm', 'default')
 
             set_player_attr('shopsanity', False)
             set_player_attr('mixed_travel', 'prevent')
@@ -506,6 +510,7 @@ class CollectionState(object):
         self.world = parent
         if not skip_init:
             self.prog_items = Counter()
+            self.forced_keys = Counter()
             self.reachable_regions = {player: dict() for player in range(1, parent.players + 1)}
             self.blocked_connections = {player: dict() for player in range(1, parent.players + 1)}
             self.events = []
@@ -538,12 +543,13 @@ class CollectionState(object):
         queue = deque(self.blocked_connections[player].items())
 
         self.traverse_world(queue, rrp, bc, player)
-        unresolved_events = [x for y in self.reachable_regions[player] for x in y.locations
-                             if x.event and x.item and (x.item.smallkey or x.item.bigkey or x.item.advancement)
-                             and x not in self.locations_checked and x.can_reach(self)]
-        unresolved_events = self._do_not_flood_the_keys(unresolved_events)
-        if len(unresolved_events) == 0:
-            self.check_key_doors_in_dungeons(rrp, player)
+        if self.world.key_logic_algorithm[player] == 'default':
+            unresolved_events = [x for y in self.reachable_regions[player] for x in y.locations
+                                 if x.event and x.item and (x.item.smallkey or x.item.bigkey or x.item.advancement)
+                                 and x not in self.locations_checked and x.can_reach(self)]
+            unresolved_events = self._do_not_flood_the_keys(unresolved_events)
+            if len(unresolved_events) == 0:
+                self.check_key_doors_in_dungeons(rrp, player)
 
     def traverse_world(self, queue, rrp, bc, player):
         # run BFS on all connections, and keep track of those blocked by missing items
@@ -635,6 +641,7 @@ class CollectionState(object):
 
     def check_key_doors_in_dungeons(self, rrp, player):
         for dungeon_name, checklist in self.dungeons_to_check[player].items():
+            # todo: optimization idea - abort exploration if there are unresolved events now
             if self.apply_dungeon_exploration(rrp, player, dungeon_name, checklist):
                 continue
             init_door_candidates = self.should_explore_child_state(self, dungeon_name, player)
@@ -743,6 +750,15 @@ class CollectionState(object):
                 rrp[k] = missing_regions[k]
                 possible_path = terminal_states[0].path[k]
                 self.path[k] = paths[k] = possible_path
+                for conn in k.exits:
+                    if self.is_small_door(conn):
+                        door = conn.door if conn.door.smallKey else conn.door.controller
+                        key_logic = self.world.key_logic[player][dungeon_name]
+                        if door.name not in self.reached_doors[player]:
+                            self.door_counter[player][0][dungeon_name] += 1
+                            self.reached_doors[player].add(door.name)
+                            if key_logic.sm_doors[door]:
+                                self.reached_doors[player].add(key_logic.sm_doors[door].name)
             missing_bc = {}
             for blocked, crystal in common_bc.items():
                 if (blocked not in bc and blocked.parent_region in rrp
@@ -825,6 +841,7 @@ class CollectionState(object):
     def copy(self):
         ret = CollectionState(self.world, skip_init=True)
         ret.prog_items = self.prog_items.copy()
+        ret.forced_keys = self.forced_keys.copy()
         ret.reachable_regions = {player: copy.copy(self.reachable_regions[player]) for player in range(1, self.world.players + 1)}
         ret.blocked_connections = {player: copy.copy(self.blocked_connections[player]) for player in range(1, self.world.players + 1)}
         ret.events = copy.copy(self.events)
@@ -1032,6 +1049,14 @@ class CollectionState(object):
             return (item, player) in self.prog_items
         return self.prog_items[item, player] >= count
 
+    def has_sm_key_strict(self, item, player, count=1):
+        if self.world.keyshuffle[player] == 'universal':
+            if self.world.mode[player] == 'standard' and self.world.doorShuffle[player] == 'vanilla' and item == 'Small Key (Escape)':
+                return True  # Cannot access the shop until escape is finished.  This is safe because the key is manually placed in make_custom_item_pool
+            return self.can_buy_unlimited('Small Key (Universal)', player)
+        obtained = self.prog_items[item, player] - self.forced_keys[item, player]
+        return obtained >= count
+
     def can_buy_unlimited(self, item, player):
         for shop in self.world.shops[player]:
             if shop.region.player == player and shop.has_unlimited(item) and shop.region.can_reach(self):
@@ -1228,6 +1253,8 @@ class CollectionState(object):
     def collect(self, item, event=False, location=None):
         if location:
             self.locations_checked.add(location)
+            if item and item.smallkey and location.forced_item is not None:
+                self.forced_keys[item.name, item.player] += 1
         if not item:
             return
         changed = False
@@ -1414,10 +1441,10 @@ class Region(object):
                                or (item.bigkey and not self.world.bigkeyshuffle[item.player])
                                or (item.map and not self.world.mapshuffle[item.player])
                                or (item.compass and not self.world.compassshuffle[item.player]))
-        sewer_hack = self.world.mode[item.player] == 'standard' and item.name == 'Small Key (Escape)'
-        if sewer_hack or inside_dungeon_item:
+        # not all small keys to escape must be in escape
+        # sewer_hack = self.world.mode[item.player] == 'standard' and item.name == 'Small Key (Escape)'
+        if inside_dungeon_item:
             return self.dungeon and self.dungeon.is_dungeon_item(item) and item.player == self.player
-
         return True
 
     def __str__(self):
@@ -1878,6 +1905,9 @@ class Door(object):
             return world.get_room(self.roomIndex, self.player).kind(self)
         return None
 
+    def dungeon_name(self):
+        return self.entrance.parent_region.dungeon.name if self.entrance.parent_region.dungeon else 'Cave'
+
     def __eq__(self, other):
         return isinstance(other, self.__class__) and self.name == other.name
 
@@ -2287,6 +2317,9 @@ class Item(object):
     def __unicode__(self):
         return self.world.get_name_string_for_object(self) if self.world else f'{self.name} (Player {self.player})'
 
+    def __eq__(self, other):
+        return self.name == other.name and self.player == other.player
+
 
 # have 6 address that need to be filled
 class Crystal(Item):
@@ -2422,6 +2455,8 @@ class Spoiler(object):
                          'door_shuffle': self.world.doorShuffle,
                          'intensity': self.world.intensity,
                          'door_type_mode': self.world.door_type_mode,
+                         'trap_door_mode': self.world.trap_door_mode,
+                         'key_logic': self.world.key_logic_algorithm,
                          'decoupledoors': self.world.decoupledoors,
                          'dungeon_counters': self.world.dungeon_counters,
                          'item_pool': self.world.difficulty,
@@ -2628,6 +2663,8 @@ class Spoiler(object):
                 if self.metadata['door_shuffle'][player] != 'vanilla':
                     outfile.write(f"Intensity:                       {self.metadata['intensity'][player]}\n")
                     outfile.write(f"Door Type Mode:                  {self.metadata['door_type_mode'][player]}\n")
+                    outfile.write(f"Trap Door Mode:                  {self.metadata['trap_door_mode'][player]}\n")
+                    outfile.write(f"Key Logic Algorithm:             {self.metadata['key_logic'][player]}\n")
                     outfile.write(f"Decouple Doors:                  {yn(self.metadata['decoupledoors'][player])}\n")
                     outfile.write(f"Experimental:                    {yn(self.metadata['experimental'][player])}\n")
                 outfile.write(f"Dungeon Counters:                {self.metadata['dungeon_counters'][player]}\n")
@@ -2643,6 +2680,7 @@ class Spoiler(object):
                 outfile.write('Enemy health:                    %s\n' % self.metadata['enemy_health'][player])
                 outfile.write('Enemy damage:                    %s\n' % self.metadata['enemy_damage'][player])
                 outfile.write(f"Hints:                           {yn(self.metadata['hints'][player])}\n")
+                outfile.write('Race:                            %s\n' % ('Yes' if self.world.settings.world_rep['meta']['race'] else 'No'))
 
             if self.startinventory:
                 outfile.write('Starting Inventory:'.ljust(line_width))
@@ -2918,15 +2956,19 @@ boss_mode = {"none": 0, "simple": 1, "full": 2, "chaos": 3, 'random': 3, 'unique
 
 
 # byte 10: settings_version
-# byte 11: FBBB, TTSS (flute_mode, bow_mode, take_any, small_key_mode)
+# byte 11: FBBB TTSS (flute_mode, bow_mode, take_any, small_key_mode)
 flute_mode = {'normal': 0, 'active': 1}
 keyshuffle_mode = {'none': 0, 'wild': 1, 'universal': 2}  # reserved 8 modes?
 take_any_mode = {'none': 0, 'random': 1, 'fixed': 2}
 bow_mode = {'progressive': 0, 'silvers': 1, 'retro': 2, 'retro_silvers': 3}
 
 # additions
-# psuedoboots does not effect code
-# sfx_shuffle and other adjust items does not effect settings code
+# byte 12: POOT TKKK (pseudoboots, overworld_map, trap_door_mode, key_logic_algo)
+overworld_map_mode = {'default': 0, 'compass': 1, 'map': 2}
+trap_door_mode = {'vanilla': 0, 'optional': 1, 'boss': 2, 'oneway': 3}
+key_logic_algo = {'default': 0, 'partial': 1, 'strict': 2}
+
+# sfx_shuffle and other adjust items does not affect settings code
 
 # Bump this when making changes that are not backwards compatible (nearly all of them)
 settings_version = 1
@@ -2970,7 +3012,10 @@ class Settings(object):
             settings_version,
 
             (flute_mode[w.flute_mode[p]] << 7 | bow_mode[w.bow_mode[p]] << 4
-            | take_any_mode[w.take_any[p]] << 2 | keyshuffle_mode[w.keyshuffle[p]])
+             | take_any_mode[w.take_any[p]] << 2 | keyshuffle_mode[w.keyshuffle[p]]),
+
+            ((0x80 if w.pseudoboots[p] else 0) | overworld_map_mode[w.overworld_map[p]] << 6
+             | trap_door_mode[w.trap_door_mode[p]] << 4 | key_logic_algo[w.key_logic_algorithm[p]]),
             ])
         return base64.b64encode(code, "+-".encode()).decode()
 
@@ -3038,6 +3083,11 @@ class Settings(object):
             args.bow_mode[p] = r(bow_mode)[(settings[11] & 0x70) >> 4]
             args.take_any[p] = r(take_any_mode)[(settings[11] & 0xC) >> 2]
             args.keyshuffle[p] = r(keyshuffle_mode)[settings[11] & 0x3]
+        if len(settings) > 12:
+            args.pseudoboots[p] = True if settings[12] & 0x80 else False
+            args.overworld_map[p] = r(overworld_map_mode)[(settings[12] & 0x60) >> 6]
+            args.trap_door_mode[p] = r(trap_door_mode)[(settings[12] & 0x14) >> 4]
+            args.key_logic_algorithm[p] = r(key_logic_algo)[settings[12] & 0x07]
 
 
 class KeyRuleType(FastEnum):

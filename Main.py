@@ -34,7 +34,9 @@ from source.overworld.EntranceShuffle2 import link_entrances_new
 from source.tools.BPS import create_bps_from_data
 from source.classes.CustomSettings import CustomSettings
 
-__version__ = '1.2.0.1-u'
+version_number = '1.2.0.14'
+version_branch = '-u'
+__version__ = f'{version_number}{version_branch}'
 
 from source.classes.BabelFish import BabelFish
 
@@ -110,6 +112,8 @@ def main(args, seed=None, fish=None):
     world.beemizer = args.beemizer.copy()
     world.intensity = {player: random.randint(1, 3) if args.intensity[player] == 'random' else int(args.intensity[player]) for player in range(1, world.players + 1)}
     world.door_type_mode = args.door_type_mode.copy()
+    world.trap_door_mode = args.trap_door_mode.copy()
+    world.key_logic_algorithm = args.key_logic_algorithm.copy()
     world.decoupledoors = args.decoupledoors.copy()
     world.experimental = args.experimental.copy()
     world.dungeon_counters = args.dungeon_counters.copy()
@@ -150,7 +154,7 @@ def main(args, seed=None, fish=None):
             world.player_names[player].append(name)
     logger.info('')
     world.settings = CustomSettings()
-    world.settings.create_from_world(world)
+    world.settings.create_from_world(world, args.race)
 
     outfilebase = f'DR_{args.outputname if args.outputname else world.seed}'
 
@@ -196,16 +200,6 @@ def main(args, seed=None, fish=None):
                 item = ItemFactory(inv_item.strip(), p)
                 if item:
                     world.push_precollected(item)
-                    if item.dungeon:
-                        d = world.get_dungeon(item.dungeon, item.player)
-                        match = next((i for i in d.all_items if i.name == item.name), None)
-                        if match:
-                            if match.map or match.compass:
-                                d.dungeon_items.remove(match)
-                            elif match.smallkey:
-                                d.small_keys.remove(match)
-                            elif match.bigkey:
-                                d.big_key.remove(match)
     if args.print_custom_yaml:
         world.settings.record_info(world)
 
@@ -258,6 +252,7 @@ def main(args, seed=None, fish=None):
         set_rules(world, player)
 
     district_item_pool_config(world)
+    fill_specific_items(world)
     for player in range(1, world.players + 1):
         if world.shopsanity[player]:
             sell_potions(world, player)
@@ -270,7 +265,6 @@ def main(args, seed=None, fish=None):
     if args.print_custom_yaml:
         world.settings.record_item_pool(world)
     dungeon_tracking(world)
-    fill_specific_items(world)
     logger.info(world.fish.translate("cli", "cli", "placing.dungeon.prizes"))
 
     fill_prizes(world)

@@ -37,7 +37,7 @@ from source.dungeon.RoomList import Room0127
 
 
 JAP10HASH = '03a63945398191337e896e5771f77173'
-RANDOMIZERBASEHASH = 'f204143853a58e55a5fbc4c5bc87045e'
+RANDOMIZERBASEHASH = '29863ca305a8474c452cd13b3f921898'
 
 
 class JsonRom(object):
@@ -572,7 +572,7 @@ class Sprite(object):
 
 def handle_native_dungeon(location, itemid):
     # Keys in their native dungeon should use the original item code for keys
-    if location.parent_region.dungeon:
+    if location.parent_region.dungeon and location.player == location.item.player:
         if location.parent_region.dungeon.name == location.item.dungeon:
             if location.item.bigkey:
                 return 0x32
@@ -1489,7 +1489,7 @@ def patch_rom(world, rom, player, team, enemized, is_mystery=False):
     rom.write_byte(0x1800A3, 0x01)  # enable correct world setting behaviour after agahnim kills
     rom.write_byte(0x1800A4, 0x01 if world.logic[player] != 'nologic' else 0x00)  # enable POD EG fix
     rom.write_byte(0x180042, 0x01 if world.save_and_quit_from_boss else 0x00)  # Allow Save and Quit after boss kill
-    rom.write_byte(0x180358, 0x01 if world.logic[player] == 'nologic' else 0x00)
+    rom.write_byte(0x180358, 0x01 if (world.logic[player] in ['owglitches', 'nologic']) else 0x00)
 
     # remove shield from uncle
     rom.write_bytes(0x6D253, [0x00, 0x00, 0xf6, 0xff, 0x00, 0x0E])
@@ -1585,13 +1585,13 @@ def patch_rom(world, rom, player, team, enemized, is_mystery=False):
         Room0127.write_to_rom(snes_to_pc(0x2B8000), rom)
 
     if world.pot_contents[player]:
-        colorize_pots = is_mystery or (world.pottery[player] not in ['vanilla', 'lottery']
-                                       and (world.colorizepots[player]
-                                            or world.pottery[player] in ['reduced', 'clustered']))
+        colorize_pots = (world.pottery[player] != 'vanilla'
+                         and (world.colorizepots[player] or world.pottery[player] in ['reduced', 'clustered']))
         if world.pot_contents[player].size() > 0x2800:
             raise Exception('Pot table is too big for current area')
         world.pot_contents[player].write_pot_data_to_rom(rom, colorize_pots)
 
+    write_enemizer_tweaks(rom, world, player)
     write_strings(rom, world, player, team)
 
     # write initial sram
@@ -1607,6 +1607,8 @@ def patch_rom(world, rom, player, team, enemized, is_mystery=False):
     rom.name = bytearray(f'ER{__version__.split("-")[0].replace(".","")[0:3]}_{team+1}_{player}_{seedstring}\0', 'utf8')[:21]
     rom.name.extend([0] * (21 - len(rom.name)))
     rom.write_bytes(0x7FC0, rom.name)
+
+    rom.write_bytes(0x138010, bytearray(__version__, 'utf8'))
 
     # set player names
     for p in range(1, min(world.players, 255) + 1):
@@ -1681,6 +1683,11 @@ def write_custom_shops(rom, world, player):
     items_data.extend([0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF])
     rom.write_bytes(0x184900, items_data)
 
+
+def write_enemizer_tweaks(rom, world, player):
+    if world.enemy_shuffle[player] != 'none':
+        rom.write_byte(snes_to_pc(0x1DF6D8), 0)  # lets enemies walk on water instead of clipping into infinity?
+        rom.write_byte(snes_to_pc(0x0DB6B3), 0x82)  # hovers don't need water necessarily?
 
 def hud_format_text(text):
     output = bytes()
@@ -2221,44 +2228,42 @@ def write_strings(rom, world, player, team):
         hint_candidates = []
         for name, district in world.districts[player].items():
             hint_type = 'foolish'
-            choice_set = set()
+            choices = []
             item_count, item_type = 0, 'useful'
             for loc_name in district.locations:
                 location_item = world.get_location(loc_name, player).item
                 if location_item.advancement:
-                    if 'Heart Container' in location_item.name:
+                    if 'Heart Container' in location_item.name or location_item.compass or location_item.map:
                         continue
                     itm_type = 'useful' if useful_item_for_hint(location_item, world) else 'vital'
                     hint_type = 'path'
                     if item_type == itm_type:
-                        choice_set.add(location_item)
+                        choices.append(location_item)
                         item_count += 1
                     elif itm_type == 'vital':
                         item_type = 'vital'
                         item_count = 1
-                        choice_set.clear()
-                        choice_set.add(location_item)
+                        choices.clear()
+                        choices.append(location_item)
             if hint_type == 'foolish':
                 if district.dungeons and world.shuffle[player] != 'vanilla':
-                    choice_set.update(district.dungeons)
+                    choices.extend(district.dungeons)
                     hint_type = 'dungeon_path'
                 elif district.access_points and world.shuffle[player] not in ['vanilla', 'dungeonssimple',
                                                                               'dungeonsfull']:
-                    choice_set.update([x.hint_text for x in district.access_points])
+                    choices.extend([x.hint_text for x in district.access_points])
                     hint_type = 'connector'
             if hint_type == 'foolish':
                 hint_candidates.append((hint_type, f'{name} is a foolish choice'))
             elif hint_type == 'dungeon_path':
-                choices = sorted(list(choice_set))
                 dungeon_choice = random.choice(choices)  # prefer required dungeons...
                 hint_candidates.append((hint_type, f'{name} is on the path to {dungeon_choice}'))
             elif hint_type == 'connector':
-                choices = sorted(list(choice_set))
                 access_point = random.choice(choices)  # prefer required access...
                 hint_candidates.append((hint_type, f'{name} can reach {access_point}'))
             elif hint_type == 'path':
                 if item_count == 1:
-                    the_item = text_for_item(next(iter(choice_set)), world, player, team)
+                    the_item = text_for_item(next(iter(choices)), world, player, team)
                     hint_candidates.append((hint_type, f'{name} conceals only {the_item}'))
                 else:
                     hint_candidates.append((hint_type, f'{name} conceals {item_count} {item_type} items'))

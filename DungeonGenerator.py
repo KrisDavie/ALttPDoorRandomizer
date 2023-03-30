@@ -772,6 +772,13 @@ def connect_simple_door(exit_door, region):
 
 
 special_big_key_doors = ['Hyrule Dungeon Cellblock Door', "Thieves Blind's Cell Door"]
+std_special_big_key_doors = ['Hyrule Castle Throne Room Tapestry'] + special_big_key_doors
+
+
+def get_special_big_key_doors(world, player):
+    if world.mode[player] == 'standard':
+        return std_special_big_key_doors
+    return special_big_key_doors
 
 
 class ExplorationState(object):
@@ -1002,7 +1009,8 @@ class ExplorationState(object):
             if self.can_traverse(door):
                 if door.controller:
                     door = door.controller
-                if (door in big_key_door_proposal or door.name in special_big_key_doors) and not self.big_key_opened:
+                if (door in big_key_door_proposal
+                   or door.name in get_special_big_key_doors(world, player)) and not self.big_key_opened:
                     if not self.in_door_list(door, self.big_doors):
                         self.append_door_to_list(door, self.big_doors)
                 elif door.req_event is not None and door.req_event not in self.events:
@@ -1816,6 +1824,7 @@ def ensure_crystal_switches_reachable(dungeon_map, crystal_switches, polarized_s
     for name, builder in dungeon_map.items():
         if builder.c_switch_present and builder.c_switch_required and not builder.c_locked:
             invalid_builders.append(builder)
+    random.shuffle(invalid_builders)
     while len(invalid_builders) > 0:
         valid_builders = []
         for builder in invalid_builders:
@@ -1841,6 +1850,7 @@ def ensure_crystal_switches_reachable(dungeon_map, crystal_switches, polarized_s
                     if eq.c_switch:
                         reachable_crystals[hook_from_door(eq.door)] = True
             valid_ent_sectors = []
+            random.shuffle(entrance_sectors)
             for entrance_sector in entrance_sectors:
                 other_sectors = [x for x in builder.sectors if x != entrance_sector]
                 reachable, access = is_c_switch_reachable(entrance_sector, reachable_crystals, other_sectors)
@@ -1858,7 +1868,12 @@ def ensure_crystal_switches_reachable(dungeon_map, crystal_switches, polarized_s
                     while not valid:
                         if len(candidates) <= 0:
                             raise GenerationException(f'need to provide more sophisticated crystal connection for {entrance_sector}')
-                        sector, which_list = random.choice(list(candidates.items()))
+                        # prioritize candidates
+                        if any(x == 'Crystals' for x in candidates.values()):
+                            cand_list = [x for x in candidates.items() if x[1] == 'Crystals']
+                        else:
+                            cand_list = list(candidates.items())
+                        sector, which_list = random.choice(cand_list)
                         del candidates[sector]
                         valid = global_pole.is_valid_choice(dungeon_map, builder, [sector])
                     if which_list == 'Polarized':
@@ -3509,6 +3524,8 @@ def identify_branching_issues(dungeon_map, builder_info):
             unconnected_builders[name] = builder
             for hook, door_list in unreached_doors.items():
                 builder.unfulfilled[hook] += len(door_list)
+        elif package:
+            builder.throne_door, builder.throne_sector, builder.chosen_lobby = package
     return unconnected_builders
 
 
@@ -3554,7 +3571,8 @@ def check_for_valid_layout(builder, sector_list, builder_info):
                 split_list['Sewers'].remove(temp_builder.throne_door.entrance.parent_region.name)
             builder.exception_list = list(sector_list)
             return True, {}, package
-        except (GenerationException, NeutralizingException, OtherGenException):
+        except (GenerationException, NeutralizingException, OtherGenException) as e:
+            logging.getLogger('').debug(f'Bailing on this layout for {builder.name}', exc_info=1)
             builder.split_dungeon_map = None
             builder.valid_proposal = None
             if temp_builder.name == 'Hyrule Castle' and temp_builder.throne_door:

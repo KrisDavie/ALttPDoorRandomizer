@@ -109,6 +109,81 @@ These are now independent of retro mode and have three options: None, Random, an
 
 # Bug Fixes and Notes
 
+* 1.2.0.14u
+  * Small fix for key logic validation (got rid of a false negative)
+  * Customized doors in ice cross work properly now
+* 1.2.0.13u
+  * Allow green/blue potion refills to be customized
+  * OW Map showing dungeon entrance at Snitch Lady (West) fixed (instead of @ HC Courtyard)
+  * Standing item data is cleared on transition to overworld (enemy drops won't bleed to overworld sprites)
+  * Escape assist won't give you a free quiver in retro bow mode 
+  * Fixed an issue where a door would be opened magically (due to original pairing)
+  * MultiServer can now disable forfeits if desired
+* 1.2.0.12u
+  * Fix for mirror portal in inverted
+  * Yet another fix for blocked door in Standard ER
+* 1.2.0.11u
+  * Fixed an issue with lower layer doors in Standard
+  * Fix for doors in cave state (will no longer be vanilla)
+  * Added a logic rule for th murderdactyl near bumper ledge for OHKO purposes
+  * Enemizer alteration for Hovers and normal enemies in shallow water
+  * Fix for beemizer including modes with an increased item pool 
+  * Fix for district algorithm
+* 1.2.0.10u
+  * Fixed overrun issues with edge transitions
+  * Better support for customized start_inventory with dungeon items
+  * Colorized pots now available with lottery. Default is on.
+  * Dungeon_only support pottery
+  * Fix AllowAccidentalGlitches flag in OWG
+  * Potential fix for mirror portal and entering cave on same frame
+  * A few other minor issues, generation and graphical
+* 1.2.0.9-u
+  * Disallowed standard exits (due to ER) are now graphically half blocked instead of missing
+  * Graphical issues with Sanctuary and Swamp Hub lobbies are fixed
+  * Fixes an issue surrounding door state and decoupled doors leading to blocked doors
+  * Customizer improvements:
+    * Better logic around customized lobbies
+    * Better logic around customized door types
+  * Fix to key doors that was causing extra key doors
+  * Generation improvement around crystal switches
+  * Fix bug in dungeon_only that wasn't using pot key locations (known issue still exists in pottery modes)
+  * Fixes for multiworld:
+    * Fixes an issue when keys are found in own dungeon for another player when using the bizhawk plugin.
+    * Fixes an issue with absorbables for another player also being received by the player picking it up.
+* 1.2.0.8-u
+  * New Features: trap_door_mode and key_logic_algorithm 
+  * Change S&Q in door shuffle + standard during escape to spawn as Uncle
+  * Fix for vanilla doors + certain ER modes
+  * Fix for unintentional decoupled door in standard
+  * Fix a problem with BK doors being one-sided
+  * Change to how wilds keys are placed in standard, better randomization
+  * Removed a Triforce text
+  * Fix for Desert Tiles 1 key door
+* 1.2.0.7-u
+  * Fix for some misery mire key logic
+  * Minor standard generation fix
+  * Fix for inactive flute start
+  * Settingsfile for multiworld generation support
+  * Fix for duped HC/AT Maps/Compasses
+* 1.2.0.6-u
+  * Fix for light cone in Escape when entering from Dark World post-zelda
+  * Fix for light cone in Escape when lighting a torch with fire rod
+* 1.2.0.5.u
+  * Logic fix for Sanctuary mirror (it wasn't resetting the crystal state) 
+  * Minor bugfixes for customizer
+* 1.2.0.4-u
+  * Starting inventory fixes if item not present in the item pool.
+  * Support for Assured sword setting and OWG Boots when using a custom item pool. (Customizer or GUI)
+  * Logic fix for the skull woods star tile that lets you into the X pot room. Now accounts for small key or big key door there blocking the way from the star tile. A trap door is not allowed there.
+  * Standard logic improvement that requires a path from Zelda to the start so that you cannot get softlocked by rescuing Zelda. Standard mirror scroll change may need to be reverted if impossible seed are still generated.
+* 1.2.0.3-u
+  * Starting inventory taken into account with default item pool. (Custom pools must do this themselves)
+  * Fast ROM update
+  * Fix for restricted boss item counting maps & compasses as vital 
+  * Bug fix for vanilla ER + inverted + experimental
+* 1.2.0.2-u
+  * Fixed a bug with certain trap doors missing
+  * Added a hint reference for district hints
 * 1.2.0.1-u
   * Added new ganonhunt and completionist goals 
   * Fixed the issue when defeating Agahnim and standing in the doorway can cause door state to linger.

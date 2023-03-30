@@ -239,6 +239,19 @@
       "all:      Adds traps doors (and any future supported door types)",
       "chaos:    Increases the number of door types in all dungeon pools"
     ],
+    "trap_door_mode" : [
+      "Trap Door Removal (default: %(default)s)",
+      "vanilla:  No trap door removal",
+      "optional: Trap doors removed if blocking",
+      "boss:     Also remove boss traps",
+      "oneway:   Remove all annoying trap doors"
+    ],
+    "key_logic_algorithm": [
+      "Key Logic Algorithm (default: %(default)s)",
+      "default: Balance between safety and randomization",
+      "partial: Partial protection when using certain minor glitches",
+      "strict:  Ensure small keys are available"
+    ],
     "decoupledoors" : [ "Door entrances and exits are decoupled" ],
     "experimental": [ "Enable experimental features. (default: %(default)s)" ],
     "dungeon_counters": [ "Enable dungeon chest counters. (default: %(default)s)" ],

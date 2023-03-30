@@ -22,6 +22,14 @@
     big: 2
     all: 1
     chaos: 1
+  trap_door_mode:
+    vanilla: 1
+    boss: 0
+    oneway: 0
+  key_logic_algorithm:
+    default: 1
+    partial: 0
+    strict: 0
   decoupledoors: off
   dropshuffle:
     on: 1

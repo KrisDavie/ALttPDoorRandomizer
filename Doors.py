@@ -66,7 +66,7 @@ def create_doors(world, player):
         create_door(player, 'Hyrule Castle Back Hall Down Stairs', Sprl).dir(Dn, 0x01, 0, HTL).ss(A, 0x2a, 0x00),
         create_door(player, 'Hyrule Castle Throne Room Tapestry', Lgcl),
         create_door(player, 'Hyrule Castle Tapestry Backwards', Lgcl),
-        create_door(player, 'Hyrule Castle Throne Room N', Nrml).dir(No, 0x51, Mid, High).pos(1),
+        create_door(player, 'Hyrule Castle Throne Room N', Nrml).dir(No, 0x51, Mid, High).pos(0),
         create_door(player, 'Hyrule Castle Throne Room South Stairs', StrS).dir(So, 0x51, Mid, Low),
 
         # hyrule dungeon level
@@ -207,7 +207,7 @@ def create_doors(world, player):
         create_door(player, 'Desert East Wing ES', Intr).dir(Ea, 0x85, Bot, High).pos(3),
         create_door(player, 'Desert East Wing Key Door EN', Intr).dir(Ea, 0x85, Top, High).small_key().pos(1),
         create_door(player, 'Desert Compass Key Door WN', Intr).dir(We, 0x85, Top, High).small_key().pos(1),
-        create_door(player, 'Desert Compass NW', Nrml).dir(No, 0x85, Right, High).trap(0x4).pos(0),
+        create_door(player, 'Desert Compass NE', Nrml).dir(No, 0x85, Right, High).trap(0x4).pos(0),
         create_door(player, 'Desert Cannonball S', Nrml).dir(So, 0x75, Right, High).pos(1).portal(X, 0x02),
         create_door(player, 'Desert Arrow Pot Corner S Edge', Open).dir(So, 0x75, None, High).edge(6, Z, 0x20),
         create_door(player, 'Desert Arrow Pot Corner W Edge', Open).dir(We, 0x75, None, High).edge(2, Z, 0x20),
@@ -775,7 +775,7 @@ def create_doors(world, player):
         create_door(player, 'Ice Freezors Hole', Hole),
         create_door(player, 'Ice Freezors Bomb Hole', Hole), # combine these two? -- they have to lead to the same spot
         create_door(player, 'Ice Freezors Ledge Hole', Hole),
-        create_door(player, 'Ice Freezors Ledge ES', Intr).dir(Ea, 0x7e, Bot, High).pos(2),
+        create_door(player, 'Ice Freezors Ledge ES', Intr).dir(Ea, 0x7e, Bot, High).pos(1),
         create_door(player, 'Ice Tall Hint WS', Intr).dir(We, 0x7e, Bot, High).pos(1),
         create_door(player, 'Ice Tall Hint EN', Nrml).dir(Ea, 0x7e, Top, High).pos(2),
         create_door(player, 'Ice Tall Hint SE', Nrml).dir(So, 0x7e, Right, High).small_key().pos(0).portal(X, 0x02),
@@ -1473,6 +1473,8 @@ def create_doors(world, player):
     world.get_door('GT Spike Crystal Right to Left Barrier - Orange', player).barrier(CrystalBarrier.Orange)
     world.get_door('GT Spike Crystal Left to Right Bypass', player).barrier(CrystalBarrier.Blue)
 
+    world.get_door('Sanctuary Mirror Route', player).barrier(CrystalBarrier.Orange)
+
     # kill certain doors
     if world.intensity[player] == 1:  # due to ladder & warp being fixed
         world.get_door('PoD Mimics 2 SW', player).kill()
@@ -1519,6 +1521,7 @@ def create_doors(world, player):
     world.get_door("GT Bob\'s Room SE", player).passage = False
     world.get_door('Desert Tiles 2 SE', player).bk_shuffle_req = True  # key-drop note: allows this to be a portal
     world.get_door('Swamp Lobby S', player).standard_restricted = True
+    world.get_door('Sanctuary S', player).standard_restricted = True
     world.get_door('PoD Mimics 2 SW', player).rupee_bow_restricted = True  # bow statue
     # enemizer logic could get rid of the following restriction
     world.get_door('PoD Pit Room S', player).rupee_bow_restricted = True  # so mimics 1 shouldn't be required

@@ -338,7 +338,7 @@ def create_dungeon_regions(world, player):
         create_dungeon_region(player, 'Desert Dead End', 'Desert Palace', None, ['Desert Dead End Edge']),
         create_dungeon_region(player, 'Desert East Lobby', 'Desert Palace', None, ['Desert East Lobby WS', 'Desert East Lobby S']),
         create_dungeon_region(player, 'Desert East Wing', 'Desert Palace', None, ['Desert East Wing ES', 'Desert East Wing Key Door EN', 'Desert East Wing W Edge', 'Desert East Wing N Edge']),
-        create_dungeon_region(player, 'Desert Compass Room', 'Desert Palace', ['Desert Palace - Compass Chest'], ['Desert Compass Key Door WN', 'Desert Compass NW']),
+        create_dungeon_region(player, 'Desert Compass Room', 'Desert Palace', ['Desert Palace - Compass Chest'], ['Desert Compass Key Door WN', 'Desert Compass NE']),
         create_dungeon_region(player, 'Desert Cannonball', 'Desert Palace', ['Desert Palace - Big Key Chest'], ['Desert Cannonball S']),
         create_dungeon_region(player, 'Desert Arrow Pot Corner', 'Desert Palace', None, ['Desert Arrow Pot Corner S Edge', 'Desert Arrow Pot Corner W Edge', 'Desert Arrow Pot Corner NW']),
         create_dungeon_region(player, 'Desert Trap Room', 'Desert Palace', None, ['Desert Trap Room SW']),

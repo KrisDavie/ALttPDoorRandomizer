@@ -66,6 +66,8 @@ def link_entrances_new(world, player):
         default_map['Old Man Cave (East)'] = 'Death Mountain Return Cave Exit (West)'
         one_way_map['Bumper Cave (Top)'] = 'Dark Death Mountain Healer Fairy'
         del default_map['Bumper Cave (Top)']
+        del one_way_map['Big Bomb Shop']
+        one_way_map['Inverted Big Bomb Shop'] = 'Inverted Big Bomb Shop'
     avail_pool.default_map = default_map
     avail_pool.one_way_map = one_way_map
 
@@ -273,7 +275,7 @@ def do_main_shuffle(entrances, exits, avail, mode_def):
         # OM Cave entrance in lw/dw if cross_world off
         if 'Old Man Cave Exit (West)' in rem_exits:
             world_limiter = DW_Entrances if avail.inverted else LW_Entrances
-            om_cave_options = [x for x in rem_entrances if x in world_limiter and bonk_fairy_exception(x)]
+            om_cave_options = sorted([x for x in rem_entrances if x in world_limiter and bonk_fairy_exception(x)])
             om_cave_choice = random.choice(om_cave_options)
             if not avail.coupled:
                 connect_exit('Old Man Cave Exit (West)', om_cave_choice, avail)
@@ -302,14 +304,15 @@ def do_main_shuffle(entrances, exits, avail, mode_def):
     unused_entrances = set()
     if not cross_world:
         lw_entrances, dw_entrances = [], []
-        for x in rem_entrances:
+        left = sorted(rem_entrances)
+        for x in left:
             if bonk_fairy_exception(x):
                 lw_entrances.append(x) if x in LW_Entrances else dw_entrances.append(x)
         do_same_world_connectors(lw_entrances, dw_entrances, multi_exit_caves, avail)
         unused_entrances.update(lw_entrances)
         unused_entrances.update(dw_entrances)
     else:
-        entrance_list = [x for x in rem_entrances if bonk_fairy_exception(x)]
+        entrance_list = sorted([x for x in rem_entrances if bonk_fairy_exception(x)])
         do_cross_world_connectors(entrance_list, multi_exit_caves, avail)
         unused_entrances.update(entrance_list)
 
@@ -630,7 +633,7 @@ def do_fixed_shuffle(avail, entrance_list):
         rules = Restrictions()
         rules.size = size
         if ('Hyrule Castle Entrance (South)' in entrances and
-           avail.world.doorShuffle[avail.player] in ['basic', 'crossed']):
+           avail.world.doorShuffle[avail.player] != 'vanilla'):
             rules.must_exit_to_lw = True
         if 'Inverted Ganons Tower' in entrances and not avail.world.shuffle_ganon:
             rules.fixed = True
@@ -1020,12 +1023,15 @@ def connect_custom(avail_pool, world, player):
     if world.customizer and world.customizer.get_entrances():
         custom_entrances = world.customizer.get_entrances()
         player_key = player
-        for ent_name, exit_name in custom_entrances[player_key]['two-way'].items():
-            connect_two_way(ent_name, exit_name, avail_pool)
-        for ent_name, exit_name in custom_entrances[player_key]['entrances'].items():
-            connect_entrance(ent_name, exit_name, avail_pool)
-        for ent_name, exit_name in custom_entrances[player_key]['exits'].items():
-            connect_exit(exit_name, ent_name, avail_pool)
+        if 'two-way' in custom_entrances[player_key]:
+            for ent_name, exit_name in custom_entrances[player_key]['two-way'].items():
+                connect_two_way(ent_name, exit_name, avail_pool)
+        if 'entrances' in custom_entrances[player_key]:
+            for ent_name, exit_name in custom_entrances[player_key]['entrances'].items():
+                connect_entrance(ent_name, exit_name, avail_pool)
+        if 'exits' in custom_entrances[player_key]:
+            for ent_name, exit_name in custom_entrances[player_key]['exits'].items():
+                connect_exit(exit_name, ent_name, avail_pool)
 
 
 def connect_simple(world, exit_name, region_name, player):
@@ -1624,7 +1630,7 @@ default_dw = {
     'Palace of Darkness Exit', 'Swamp Palace Exit', 'Turtle Rock Exit (Front)', 'Turtle Rock Ledge Exit (West)',
     'Turtle Rock Ledge Exit (East)', 'Turtle Rock Isolated Ledge Exit', 'Bumper Cave Exit (Top)',
     'Bumper Cave Exit (Bottom)', 'Superbunny Cave Exit (Top)', 'Superbunny Cave Exit (Bottom)',
-    'Hookshot Cave Front Exit', 'Hookshot Cave Back Exit', 'Ganons Tower Exit', 'Pyramid Exit',
+    'Hookshot Cave Front Exit', 'Hookshot Cave Back Exit', 'Ganons Tower Exit', 'Pyramid Exit', 'Bonk Fairy (Dark)',
     'Dark Lake Hylia Healer Fairy', 'Dark Lake Hylia Ledge Healer Fairy', 'Dark Desert Healer Fairy',
     'Dark Death Mountain Healer Fairy', 'Cave Shop (Dark Death Mountain)', 'Pyramid Fairy', 'East Dark World Hint',
     'Palace of Darkness Hint', 'Big Bomb Shop', 'Village of Outcasts Shop', 'Dark Lake Hylia Shop',
@@ -1647,7 +1653,7 @@ default_lw = {
     'Spectacle Rock Cave Exit (Top)', 'Spectacle Rock Cave Exit (Peak)', 'Paradox Cave Exit (Bottom)',
     'Paradox Cave Exit (Middle)', 'Paradox Cave Exit (Top)', 'Fairy Ascension Cave Exit (Bottom)',
     'Fairy Ascension Cave Exit (Top)', 'Spiral Cave Exit', 'Spiral Cave Exit (Top)', 'Waterfall of Wishing', 'Dam',
-    'Blinds Hideout', 'Lumberjack House', 'Bonk Fairy (Light)', 'Bonk Fairy (Dark)', 'Lake Hylia Healer Fairy',
+    'Blinds Hideout', 'Lumberjack House', 'Bonk Fairy (Light)', 'Lake Hylia Healer Fairy',
     'Swamp Healer Fairy', 'Desert Healer Fairy', 'Fortune Teller (Light)', 'Lake Hylia Fortune Teller', 'Kings Grave', 'Tavern',
     'Chicken House', 'Aginahs Cave', 'Sahasrahlas Hut', 'Cave Shop (Lake Hylia)', 'Capacity Upgrade', 'Blacksmiths Hut',
     'Sick Kids House', 'Lost Woods Gamble', 'Snitch Lady (East)', 'Snitch Lady (West)', 'Bush Covered House',
@@ -1692,7 +1698,7 @@ DW_Entrances = ['Bumper Cave (Bottom)', 'Superbunny Cave (Top)',  'Superbunny Ca
                 'Dark Lake Hylia Ledge Hint', 'Chest Game', 'Dark Desert Fairy', 'Dark Lake Hylia Ledge Fairy',
                 'Fortune Teller (Dark)', 'Dark World Hammer Peg Cave', 'Pyramid Entrance',
                 'Skull Woods First Section Door', 'Skull Woods Second Section Door (East)',
-                'Skull Woods Second Section Door (West)',
+                'Skull Woods Second Section Door (West)', 'Ganons Tower',
                 'Inverted Dark Sanctuary', 'Inverted Links House', 'Inverted Agahnims Tower']
 
 LW_Must_Exit = ['Desert Palace Entrance (East)']
@@ -2995,7 +3001,7 @@ ow_prize_table = {'Links House': (0x8b1, 0xb2d), 'Inverted Big Bomb Shop': (0x8b
                   'Lost Woods Gamble': (0x240, 0x080),
                   'Fortune Teller (Light)': (0x2c0, 0x4c0),
                   'Snitch Lady (East)': (0x310, 0x7a0),
-                  'Snitch Lady (West)': (0x800, 0x7a0),
+                  'Snitch Lady (West)': (0x080, 0x7a0),
                   'Bush Covered House': (0x2e0, 0x880),
                   'Tavern (Front)': (0x270, 0x980),
                   'Light World Bomb Hut': (0x070, 0x980),

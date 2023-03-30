@@ -84,6 +84,8 @@ def roll_settings(weights):
     ret.door_shuffle = door_shuffle if door_shuffle != 'none' else 'vanilla'
     ret.intensity = get_choice('intensity')
     ret.door_type_mode = get_choice('door_type_mode')
+    ret.trap_door_mode = get_choice('trap_door_mode')
+    ret.key_logic_algorithm = get_choice('key_logic_algorithm')
     ret.decoupledoors = get_choice('decoupledoors') == 'on'
     ret.experimental = get_choice('experimental') == 'on'
     ret.collection_rate = get_choice('collection_rate') == 'on'
@@ -100,7 +102,7 @@ def roll_settings(weights):
     ret.dropshuffle = get_choice('dropshuffle') == 'on' or keydropshuffle
     ret.pottery = get_choice('pottery') if 'pottery' in weights else 'none'
     ret.pottery = 'keys' if ret.pottery == 'none' and keydropshuffle else ret.pottery
-    ret.colorizepots = get_choice('colorizepots') == 'on'
+    ret.colorizepots = get_choice_default('colorizepots', default='on') == 'on'
     ret.shufflepots = get_choice('pot_shuffle') == 'on'
     ret.mixed_travel = get_choice('mixed_travel') if 'mixed_travel' in weights else 'prevent'
     ret.standardize_palettes = (get_choice('standardize_palettes') if 'standardize_palettes' in weights

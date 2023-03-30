@@ -12,13 +12,15 @@ See https://alttpr.com/ for more details on the normal randomizer.
       1. [Dungeon Door Shuffle](#door-shuffle)
       2. [Intensity Level](#intensity---intensity-number)
       3. [Key Drop Shuffle (Legacy)](#key-drop-shuffle-legacy---keydropshuffle)
-      4. [Door Type Shuffle](#door-type_shuffle)
-      5. [Decouple Doors](#decouple-doors)
-      6. [Pottery](#pottery)
-      7. [Small Key Shuffle](#small-key-shuffle)
-      8. [Shuffle Enemy Key Drops](#shuffle-enemy-key-drops)
-      9. [Experimental Features](#experimental-features)
-      10. [Crossed Dungeon Specific Settings](#crossed-dungeon-specific-settings)
+      4. [Door Type Shuffle](#door-type-shuffle)
+      5. [Trap Door Removal](#trap-door-removal)
+      6. [Key Logic Algorithm](#key-logic-algorithm)
+      7. [Decouple Doors](#decouple-doors)
+      8. [Pottery](#pottery)
+      9. [Small Key Shuffle](#small-key-shuffle)
+      10. [Shuffle Enemy Key Drops](#shuffle-enemy-key-drops)
+      11. [Experimental Features](#experimental-features)
+      12. [Crossed Dungeon Specific Settings](#crossed-dungeon-specific-settings)
    2. [Item Randomization Changes](#item-randomization)
       1. [New "Items"](#new-items)
       2. [Shopsanity](#shopsanity)
@@ -40,7 +42,7 @@ See https://alttpr.com/ for more details on the normal randomizer.
 
 ### Feedback and Bug Reports
 
-Please just DM me on discord for now. I (Aerinon) can be found at the [ALTTP Randomizer discord](https://discordapp.com/invite/alttprandomizer).
+You can use the #bug-reports or #door-rando channel at the [ALTTP Randomizer discord](https://discordapp.com/invite/alttprandomizer) to provide feedback or bug reports.
 
 ### Installation
 
@@ -73,15 +75,14 @@ Most of these apply only when the door shuffle is not vanilla.
 
 ### Starting Item
 
-You start with a “Mirror Scroll”, a dumbed-down mirror that only works in dungeons, not the overworld and can’t erase blocks like the Mirror.
+You start with a “Mirror Scroll” (it looks like a map), a dumbed-down mirror that only works in dungeons, not the overworld, and can’t erase blocks like the Mirror.
 
 ### Navigation
 
-* The Pinball Room’s trap door can be removed in the case where it is required to go through to get to the back of Skull Woods.
 * Holes in Mire Torches Top and Mire Torches Bottom fall through to rooms below (you only need fire to get the chest)
 * You can Hookshot from the left Mire wooden Bridge to the right one.
 * In the PoD Arena, you can bonk with Boots between the two blue crystal barriers against the ladder to reach the Arena Bridge chest and door. (Bomb Jump also possible but not in logic - Boots are required)
-* Flooded Rooms in Swamp can be traversed backward and may be required.
+* Flooded Rooms in Swamp can be traversed backward and may be required. The flippers are needed to get out of the water.
 
 ### Other Logic
 
@@ -139,10 +140,35 @@ Four options here, and all of them only take effect if Dungeon Door Shuffle is n
 
 * Small Key Doors, Bomb Doors, Dash Doors: This is what was normally shuffled previously
 * Adds Big Keys Doors: Big key doors are now shuffled in addition to those above, and Big Key doors are enabled to be on in both vertical directions thanks to a graphic that ended up on the cutting room floor. This does change
-* Adds Trap Doors: All trap doors that are permanently shut in vanilla are shuffled.
+* Adds Trap Doors: All trap doors that are permanently shut in vanilla are shuffled, excluding those by bosses.
 * Increases all Door Types: This is a chaos mode where each door type per dungeon is randomized between 1 less and 4 more.
 
 CLI: `--door_type_mode [original|big|all|chaos]`
+
+### Trap Door Removal
+
+Options here for making dungeon traversal nicer. Only applies if door shuffle is not vanilla.
+
+* No Removal: This does not remove any trap doors.
+* Removed If Blocking Path: Dungeon generation is relaxed to allow annoying trap doors to be removed if necessary. Note that boss trap doors are never shuffled in this mode.
+* Remove Boss Traps: Boss traps are removed, this includes the one near Mothula.
+* Remove All Annoying Traps: This removes all trap doors that are annoying, including boss traps.
+
+If trap doors are shuffled the first two option behave the same. The last option overrides the shuffle because there is nothing left to shuffle. Boss traps are never shuffled.
+
+In all cases, that the trap door near the mire cutscene chest (Mire Warping Pool ES) is left alone because it enforces the use of fire to get to the chest.
+
+CLI: `--trap_door_mode [vanilla|optional|boss|oneway]`
+
+### Key Logic Algorithm
+
+Determines how small key door logic works.
+
+* Default: Current key logic. Assumes worse case usage, placement checks, but assumes you can't get to a chest until you have sufficient keys. (May assume items are unreachable)
+* Partial Protection: Assumes you always have full inventory and worse case usage. This should account for dark room and bunny revival glitches.
+* Strict: For those would like to glitch and be protected from yourselves. Small keys door require all small keys to be available to be in logic.
+
+CLI: `--key_logic [default|partial|strict]`
 
 ### Decouple Doors
 
