@@ -264,7 +264,7 @@ door_coordinates = {
         {"x": 222, "y": 393, "loc_type": "door", "button": 199, "name": "Desert East Wing ES"},
         {"x": 222, "y": 135, "loc_type": "door", "button": 200, "name": "Desert East Wing Key Door EN"},
         {"x": 290, "y": 136, "loc_type": "door", "button": 201, "name": "Desert Compass Key Door WN"},
-        {"x": 383, "y": 50, "loc_type": "door", "button": 202, "name": "Desert Compass NW"},
+        {"x": 383, "y": 50, "loc_type": "door", "button": 202, "name": "Desert Compass NE"},
     ],
     (5, 7): [
         {"x": 384, "y": 479, "loc_type": "door", "button": 204, "name": "Desert Cannonball S"},
