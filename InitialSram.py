@@ -214,7 +214,7 @@ class InitialSram:
         self._initial_sram_bytes[0x422] = self._initial_sram_bytes[0x35A]
         self._initial_sram_bytes[0x46E] = self._initial_sram_bytes[0x35B]
 
-        if world.swords[player] == "swordless":
+        if world.swords == "swordless":
             self._initial_sram_bytes[0x359] = 0xFF
             self._initial_sram_bytes[0x417] = 0x00
 
