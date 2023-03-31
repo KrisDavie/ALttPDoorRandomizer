@@ -1384,6 +1384,7 @@ eg_tile_multiuse_override = {
     (13, 9): 2,  # GT invisible bridge
     (2, 10): 2,  # Mire left right bridge
     (9, 10): 2,  # Eastern Big Chest Overlook
+    (10, 10): 2,  # Eastern Compass Chest
     (2, 11): 2,  # Mire BK door overlook
     (6, 11): 2,  # TR trap room
     (9, 11): 2,  # Eastern cannonball room
