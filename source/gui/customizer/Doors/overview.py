@@ -442,7 +442,6 @@ def door_customizer_page(
             return
         self.canvas.delete(button)
         del(self.tiles[eg_tile])
-        top.eg_tile_multiuse[eg_tile] += 1
         for page in top.eg_tile_window.pages.values():
             if eg_tile in page.content.tiles:
                 page.content.deactivate_tiles(page.content, top.eg_tile_multiuse, top.disabled_eg_tiles)
@@ -480,9 +479,6 @@ def door_customizer_page(
     def add_eg_tile_img(self: DoorPage, x, y, tile_x, tile_y, ci_kwargs={}):
         x1 = (tile_x * self.tile_size) + BORDER_SIZE + (((2 * tile_x + 1) - 1) * TILE_BORDER_SIZE)
         y1 = (tile_y * self.tile_size) + BORDER_SIZE + (((2 * tile_y + 1) - 1) * TILE_BORDER_SIZE)
-        if not eg_selection_mode and 'img_obj' not in self.tiles[(x, y)]:
-            if top.eg_tile_multiuse[(x, y)] > 0:
-                top.eg_tile_multiuse[(x, y)] -= 1
 
         img = ImageTk.PhotoImage(
             eg_img.crop((x * 512, y * 512, (x + 1) * 512, (y + 1) * 512)).resize(
@@ -858,8 +854,13 @@ def door_customizer_page(
                 break
 
     def deactivate_tiles(self: DoorPage, eg_tile_multiuse, disabled_eg_tiles, temp_disabled_eg_tiles=[]):
+        total_used_tiles = defaultdict(int)
+        for page in top.pages["doors"].pages.values():
+            for tile, tile_data in page.content.tiles.items():
+                if 'map_tile' in tile_data:
+                    total_used_tiles[tile] += 1 
         for tile in self.tiles:
-            if eg_tile_multiuse[tile] > 0 and tile not in temp_disabled_eg_tiles:
+            if total_used_tiles[tile] < eg_tile_multiuse[tile] and tile not in temp_disabled_eg_tiles:
                 if tile in disabled_eg_tiles:
                     self.canvas.delete(disabled_eg_tiles[tile])  # type: ignore
                     del disabled_eg_tiles[tile]
