@@ -38,6 +38,10 @@ def main(args, seed=None):
 
     if args.securerandom:
         world.seed = None
+    if world.goal in ['all_items', 'completionist'] and world.accessibility != 'locations':
+        raise Exception("Goals requiring all items must use 'locations' accessibility")
+    if args.huditemcounter:
+        world.item_counter_hud = {player: True for player in range(1, world.players + 1)}
 
     world.crystals_needed_for_ganon = random.randint(0, 7) if args.crystals_ganon == 'random' else int(args.crystals_ganon)
     world.crystals_needed_for_gt = random.randint(0, 7) if args.crystals_gt == 'random' else int(args.crystals_gt)

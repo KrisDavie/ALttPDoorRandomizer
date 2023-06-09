@@ -55,7 +55,7 @@ def start():
                                         Palace, to allow for an alternative to firerod.
                              Vanilla:   Swords are in vanilla locations.
                              ''')
-    parser.add_argument('--goal', default='ganon', const='ganon', nargs='?', choices=['ganon', 'pedestal', 'dungeons', 'triforcehunt', 'crystals'],
+    parser.add_argument('--goal', default='ganon', const='ganon', nargs='?', choices=['ganon', 'pedestal', 'dungeons', 'triforcehunt', 'crystals', 'all_items', 'completionist'],
                         help='''\
                              Select completion goal. (default: %(default)s)
                              Ganon:         Collect all crystals, beat Agahnim 2 then
@@ -66,6 +66,8 @@ def start():
                                             Agahnim fights and then defeat Ganon.
                              Triforce Hunt: Places 30 Triforce Pieces in the world, collect
                                             20 of them to beat the game.
+                             All Items:     Requires collecting 216 items to defeat Ganon.
+                             Completionist:  Same as above, plus All Dungeons
                              ''')
     parser.add_argument('--difficulty', default='normal', const='normal', nargs='?', choices=['normal', 'hard', 'expert'],
                         help='''\
@@ -240,6 +242,10 @@ def start():
                              Alternatively, can be a ALttP Rom patched with a Link
                              sprite that will be extracted.
                              ''')
+    parser.add_argument('--huditemcounter', default=False, help='''\
+                             Displays a (number of items collected) / (total items available) counter
+                             on the HUD.
+                             ''', action='store_true')
     parser.add_argument('--suppress_rom', help='Do not create an output rom file.', action='store_true')
     parser.add_argument('--gui', help='Launch the GUI', action='store_true')
     parser.add_argument('--jsonout', action='store_true', help='''\

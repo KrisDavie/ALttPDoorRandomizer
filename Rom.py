@@ -19,7 +19,7 @@ from EntranceShuffle import door_addresses
 
 
 JAP10HASH = '03a63945398191337e896e5771f77173'
-RANDOMIZERBASEHASH = '86370c0770e368b7f863c5b7399d93a6'
+RANDOMIZERBASEHASH = '3ede1a12d9a8c6a915e45d60da8b4913'
 
 
 class JsonRom(object):
@@ -901,6 +901,10 @@ def patch_rom(world, player, rom):
         rom.write_byte(0x18003E, 0x02)  # make ganon invincible until all dungeons are beat
     elif world.goal in ['crystals']:
         rom.write_byte(0x18003E, 0x04)  # make ganon invincible until all crystals
+    elif world.goal in ['all_items']:
+        rom.write_byte(0x18003E, 0x0A)  # make ganon invincible until all items
+    elif world.goal in ['completionist']:
+        rom.write_byte(0x18003E, 0x0B)  # make ganon invincible until all items and dungeons
     else:
         rom.write_byte(0x18003E, 0x03)  # make ganon invincible until all crystals and aga 2 are collected
 
@@ -1032,6 +1036,14 @@ def patch_rom(world, player, rom):
     # fix trock doors for reverse entrances
     if world.fix_trock_doors:
         rom.initial_sram.pre_open_tr_bomb_doors()  # preopen bombable exits
+    
+    # write total item count and item counter hud mode
+    item_total = len(world.get_filled_locations()) - 18 # minus non-item locations
+    rom.write_int16(0x180196, item_total+1)
+    if world.item_counter_hud[player] and world.goal != 'triforcehunt':
+        rom.write_byte(0x180039, 0x01)
+    else:
+        rom.write_byte(0x180039, 0x00)
 
     write_strings(rom, world, player)
 
