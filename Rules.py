@@ -466,7 +466,10 @@ def global_rules(world, player):
         forbid_item(world.get_location(location, player), 'Big Key (Ganons Tower)', player)
 
     set_rule(world.get_location('Ganon', player), lambda state: state.has_beam_sword(player) and state.has_fire_source(player) and state.has_crystals(world.crystals_needed_for_ganon, player)
-                                                        and (state.has('Tempered Sword', player) or state.has('Golden Sword', player) or (state.has('Silver Arrows', player) and state.can_shoot_arrows(player)) or state.has('Lamp', player) or state.can_extend_magic(player, 12)))  # need to light torch a sufficient amount of times
+                                                        and (state.has('Tempered Sword', player) or state.has('Golden Sword', player) or (state.has('Silver Arrows', player) and state.can_shoot_arrows(player)) or state.has('Lamp', player) or state.can_extend_magic(player, 12))
+                                                        and (False if world.goal == 'completionist' and (world.accessibility != 'locations') else True)
+                                                        and (False if (world.goal == 'ganonhunt' and not state.has('Triforce Piece', player, world.treasure_hunt_count)) else True)
+                                                        )
     set_rule(world.get_entrance('Ganon Drop', player), lambda state: state.has_beam_sword(player))  # need to damage ganon to get tiles to drop
 
     set_rule(world.get_entrance('Ganons Tower', player), lambda state: False) # This is a safety for the TR function below to not require GT entrance in its key logic.
@@ -876,7 +879,10 @@ def inverted_rules(world, player):
         forbid_item(world.get_location(location, player), 'Big Key (Ganons Tower)', player)
 
     set_rule(world.get_location('Ganon', player), lambda state: state.has_beam_sword(player) and state.has_fire_source(player) and state.has_crystals(world.crystals_needed_for_ganon, player)
-                                                        and (state.has('Tempered Sword', player) or state.has('Golden Sword', player) or (state.has('Silver Arrows', player) and state.can_shoot_arrows(player)) or state.has('Lamp', player) or state.can_extend_magic(player, 12)))  # need to light torch a sufficient amount of times
+                                                        and (state.has('Tempered Sword', player) or state.has('Golden Sword', player) or (state.has('Silver Arrows', player) and state.can_shoot_arrows(player)) or state.has('Lamp', player) or state.can_extend_magic(player, 12))
+                                                        and (False if world.goal == 'completionist' and (world.accessibility != 'locations') else True)
+                                                        and (False if (world.goal == 'ganonhunt' and not state.has('Triforce Piece', player, world.treasure_hunt_count)) else True)
+                                                        )
     set_rule(world.get_entrance('Ganon Drop', player), lambda state: state.has_beam_sword(player))  # need to damage ganon to get tiles to drop
 
     set_rule(world.get_entrance('Inverted Ganons Tower', player), lambda state: False) # This is a safety for the TR function below to not require GT entrance in its key logic.
@@ -1055,7 +1061,7 @@ def set_trock_key_rules(world, player):
     # No matter what, the Big Key cannot be in the Big Chest or held by Trinexx.
     non_big_key_locations = ['Turtle Rock - Big Chest', 'Turtle Rock - Boss']
 
-    def tr_big_key_chest_keys_needed(world, state):
+    def tr_big_key_chest_keys_needed(state):
         # This function handles the key requirements for the TR Big Chest in the situations it having the Big Key should logically require 2 keys, small key
         # should logically require no keys, and anything else should logically require 4 keys.
         item = item_name(state, 'Turtle Rock - Big Key Chest', player)

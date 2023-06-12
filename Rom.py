@@ -905,6 +905,8 @@ def patch_rom(world, player, rom):
         rom.write_byte(0x18003E, 0x0A)  # make ganon invincible until all items
     elif world.goal in ['completionist']:
         rom.write_byte(0x18003E, 0x0B)  # make ganon invincible until all items and dungeons
+    elif world.goal in ['ganonhunt']:
+        rom.write_byte(0x18003E, 0x05)  # make ganon invincible until goal triforce pieces
     else:
         rom.write_byte(0x18003E, 0x03)  # make ganon invincible until all crystals and aga 2 are collected
 
@@ -1040,7 +1042,7 @@ def patch_rom(world, player, rom):
     # write total item count and item counter hud mode
     item_total = len(world.get_filled_locations()) - 18 # minus non-item locations
     rom.write_int16(0x180196, item_total+1)
-    if world.item_counter_hud[player] and world.goal != 'triforcehunt':
+    if world.item_counter_hud[player] and world.goal not in ['triforcehunt', 'ganonhunt']:
         rom.write_byte(0x180039, 0x01)
     else:
         rom.write_byte(0x180039, 0x00)
@@ -1337,10 +1339,11 @@ def write_strings(rom, world, player):
     if world.goal == 'ganon':
         ganon_crystals_singular = 'To beat Ganon you must collect %d crystal and defeat his minion at the top of his tower.'
         ganon_crystals_plural = 'To beat Ganon you must collect %d crystals and defeat his minion at the top of his tower.'
-
-    tt['sign_ganon'] = (ganon_crystals_singular if world.crystals_needed_for_ganon == 1 else ganon_crystals_plural) % world.crystals_needed_for_ganon
-
-    
+        tt['sign_ganon'] = (ganon_crystals_singular if world.crystals_needed_for_ganon == 1 else ganon_crystals_plural) % world.crystals_needed_for_ganon
+    if world.goal == 'ganonhunt':
+        ganon_triforce_singular = 'To beat Ganon you must collect %d triforce pieces and defeat his minion at the top of his tower.'
+        ganon_triforce_plural = 'To beat Ganon you must collect %d triforce pieces and defeat his minion at the top of his tower.'
+        tt['sign_ganon'] = (ganon_triforce_singular if world.treasure_hunt_count == 1 else ganon_triforce_plural) % world.treasure_hunt_count
 
     if world.goal in ['dungeons']:
         tt['sign_ganon'] = 'You need to complete all the dungeons.'
@@ -1358,6 +1361,11 @@ def write_strings(rom, world, player):
         tt['ganon_phase_3_alt'] = 'Seriously? Go Away, I will not Die.'
         tt['sign_ganon'] = 'Go find the Triforce pieces... Ganon is invincible!'
         tt['murahdahla'] = "Hello @. I\nam Murahdahla, brother of\nSahasrahla and Aginah. Behold the power of\ninvisibility.\n\n\n\n… … …\n\nWait! you can see me? I knew I should have\nhidden in  a hollow tree. If you bring\n%d triforce pieces, I can reassemble it." % world.treasure_hunt_count
+    elif world.goal in ['ganonhunt']:
+        tt['ganon_fall_in'] = Ganon1_texts[random.randint(0, len(Ganon1_texts) - 1)]
+        tt['ganon_fall_in_alt'] = 'Why are you even here?\n You can\'t even hurt me! Get the Triforce Pieces.'
+        tt['ganon_phase_3_alt'] = 'Seriously? Go Away, I will not Die.'
+        tt['sign_ganon'] = 'You need %d triforce pieces to beat Ganon.'
     elif world.goal in ['pedestal']:
         tt['ganon_fall_in_alt'] = 'Why are you even here?\n You can\'t even hurt me! Your goal is at the pedestal.'
         tt['ganon_phase_3_alt'] = 'Seriously? Go Away, I will not Die.'

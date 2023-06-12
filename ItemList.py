@@ -35,8 +35,8 @@ Difficulty = namedtuple('Difficulty',
                         ['baseitems', 'bottles', 'bottle_count', 'same_bottle', 'progressiveshield',
                          'basicshield', 'progressivearmor', 'basicarmor', 'swordless',
                          'progressivesword', 'basicsword', 'basicbow', 'timedohko', 'timedother',
-                         'triforcehunt', 'triforce_pieces_required', 'retro',
-                         'extras', 'progressive_sword_limit', 'progressive_shield_limit',
+                         'triforcehunt', 'ganonhunt', 'triforce_pieces_required', 'ganonhunt_pieces_required',
+                         'retro', 'extras', 'progressive_sword_limit', 'progressive_shield_limit',
                          'progressive_armor_limit', 'progressive_bottle_limit', 
                          'progressive_bow_limit', 'heart_piece_limit', 'boss_heart_container_limit'])
 
@@ -59,7 +59,9 @@ difficulties = {
         timedohko = ['Green Clock'] * 25,
         timedother = ['Green Clock'] * 20 + ['Blue Clock'] * 10 + ['Red Clock'] * 10,
         triforcehunt = ['Triforce Piece'] * 30,
+        ganonhunt = ['Triforce Piece'] * 50,
         triforce_pieces_required = 20,
+        ganonhunt_pieces_required = 40,
         retro = ['Small Key (Universal)'] * 17 + ['Rupees (20)'] * 10,
         extras = [normalfirst15extra, normalsecond15extra, normalthird10extra, normalfourth5extra, normalfinal25extra],
         progressive_sword_limit = 4,
@@ -86,7 +88,9 @@ difficulties = {
         timedohko = ['Green Clock'] * 25,
         timedother = ['Green Clock'] * 20 + ['Blue Clock'] * 10 + ['Red Clock'] * 10,
         triforcehunt = ['Triforce Piece'] * 30,
+        ganonhunt = ['Triforce Piece'] * 50,
         triforce_pieces_required = 20,
+        ganonhunt_pieces_required = 40,
         retro = ['Small Key (Universal)'] * 12 + ['Rupees (5)'] * 15,
         extras = [normalfirst15extra, normalsecond15extra, normalthird10extra, normalfourth5extra, normalfinal25extra],
         progressive_sword_limit = 3,
@@ -113,7 +117,9 @@ difficulties = {
         timedohko = ['Green Clock'] * 20 + ['Red Clock'] * 5,
         timedother = ['Green Clock'] * 20 + ['Blue Clock'] * 10 + ['Red Clock'] * 10,
         triforcehunt = ['Triforce Piece'] * 30,
+        ganonhunt = ['Triforce Piece'] * 50,
         triforce_pieces_required = 20,
+        ganonhunt_pieces_required = 40,
         retro = ['Small Key (Universal)'] * 12 + ['Rupees (5)'] * 15,
         extras = [normalfirst15extra, normalsecond15extra, normalthird10extra, normalfourth5extra, normalfinal25extra],
         progressive_sword_limit = 2,
@@ -127,7 +133,7 @@ difficulties = {
 }
 
 def generate_itempool(world, player):
-    if (world.difficulty not in ['normal', 'hard', 'expert'] or world.goal not in ['ganon', 'pedestal', 'dungeons', 'triforcehunt', 'crystals', 'all_items', 'completionist']
+    if (world.difficulty not in ['normal', 'hard', 'expert'] or world.goal not in ['ganon', 'pedestal', 'dungeons', 'triforcehunt', 'ganonhunt', 'crystals', 'all_items', 'completionist']
             or world.mode not in ['open', 'standard', 'inverted'] or world.timer not in ['none', 'display', 'timed', 'timed-ohko', 'ohko', 'timed-countdown'] or world.progressive not in ['on', 'off', 'random']):
         raise NotImplementedError('Not supported yet')
 
@@ -457,10 +463,15 @@ def get_pool_core(progressive, shuffle, difficulty, timer, goal, mode, swords, r
         pool.extend(diff.timedohko)
         extraitems -= len(diff.timedohko)
         clock_mode = 'countdown-ohko'
-    if goal == 'triforcehunt':
+    if goal in ['triforcehunt']:
         pool.extend(diff.triforcehunt)
         extraitems -= len(diff.triforcehunt)
         treasure_hunt_count = diff.triforce_pieces_required
+        treasure_hunt_icon = 'Triforce Piece'
+    if goal in ['ganonhunt']:
+        pool.extend(diff.ganonhunt)
+        extraitems -= len(diff.ganonhunt)
+        treasure_hunt_count = diff.ganonhunt_pieces_required
         treasure_hunt_icon = 'Triforce Piece'
 
     for extra in diff.extras:
@@ -582,7 +593,7 @@ def make_custom_item_pool(progressive, shuffle, difficulty, timer, goal, mode, s
         treasure_hunt_count = max(min(customitemarray[65], 99), 1) #To display, count must be between 1 and 99.
         treasure_hunt_icon = 'Triforce Piece'
         # Ensure game is always possible to complete here, force sufficient pieces if the player is unwilling.
-        if (customitemarray[64] < treasure_hunt_count) and (goal == 'triforcehunt') and (customitemarray[66] == 0):
+        if (customitemarray[64] < treasure_hunt_count) and (goal in ['triforcehunt', 'ganonhunt']) and (customitemarray[66] == 0):
             extrapieces = treasure_hunt_count - customitemarray[64]
             pool.extend(['Triforce Piece'] * extrapieces)
             itemtotal = itemtotal + extrapieces
