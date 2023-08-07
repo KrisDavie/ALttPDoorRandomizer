@@ -462,14 +462,6 @@ def patch_rom(world, player, rom):
             continue
 
         if not location.crystal:
-            # Keys in their native dungeon should use the orignal item code for keys
-            if location.parent_region.dungeon:
-                dungeon = location.parent_region.dungeon
-                if location.item is not None and location.item.key and dungeon.is_dungeon_item(location.item):
-                    if location.item.type == "BigKey":
-                        itemid = 0x32
-                    if location.item.type == "SmallKey":
-                        itemid = 0x24
             rom.write_byte(location.address, itemid)
         else:
             # crystals
@@ -882,6 +874,7 @@ def patch_rom(world, player, rom):
     rom.write_byte(0x18017E, 0x01) # Fairy fountains only trade in bottles
     if world.pseudoboots[player]:
         rom.write_byte(0x18008E, 0x01)
+    rom.write_byte(0x159A8, 0x04 if world.logic == 'noglitches' else 0x02) # Zelda escape mirror fix
     rom.initial_sram.set_starting_equipment(world, player)
 
     rom.write_byte(0x18004A, 0x00 if world.mode != 'inverted' else 0x01)  # Inverted mode
