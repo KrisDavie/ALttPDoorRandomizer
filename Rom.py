@@ -19,7 +19,7 @@ from EntranceShuffle import door_addresses
 
 
 JAP10HASH = '03a63945398191337e896e5771f77173'
-RANDOMIZERBASEHASH = 'b6eb29e17578abc96b0651e0f6fe47ce'
+RANDOMIZERBASEHASH = '55e396cbd4b92e0200d957c0896252f6'
 
 
 class JsonRom(object):
@@ -1150,7 +1150,7 @@ def apply_rom_settings(rom, beep, color, quickswap, fastmenu, disable_music, spr
     rom.write_byte(0x6FA2C, {'red': 0x24, 'blue': 0x2C, 'green': 0x3C, 'yellow': 0x28}[color])
     rom.write_byte(0x6FA2E, {'red': 0x24, 'blue': 0x2C, 'green': 0x3C, 'yellow': 0x28}[color])
     rom.write_byte(0x6FA30, {'red': 0x24, 'blue': 0x2C, 'green': 0x3C, 'yellow': 0x28}[color])
-    rom.write_byte(0x65561, {'red': 0x05, 'blue': 0x0D, 'green': 0x19, 'yellow': 0x09}[color])
+    rom.write_byte(0x65561, {'red': 0x06, 'blue': 0x0E, 'green': 0x1A, 'yellow': 0x0A}[color])
 
     # write link sprite if required
     if sprite is not None:

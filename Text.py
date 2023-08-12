@@ -825,6 +825,7 @@ class CharTextMapper(object):
 
 class RawMBTextMapper(CharTextMapper):
     char_map = {' ': 0xFF,
+                '≥': 0x99, # Cursor
                 '『': 0xC4,
                 '』': 0xC5,
                 '?': 0xC6,
@@ -839,16 +840,8 @@ class RawMBTextMapper(CharTextMapper):
                 '～': 0xCE,
                 '@': [0x6A], # Links name (only works if compressed)
                 '>': [0x00, 0xD2, 0x00, 0xD3], # Link's face
-                "'": 0xD8,
+                "'": 0x9D,
                 '’': 0xD8,
-                '%': 0xDD, # Hylian Bird
-                '^': 0xDE, # Hylian Ankh
-                '=': 0xDF, # Hylian Wavy Lines
-                '↑': 0xE0,
-                '↓': 0xE1,
-                '→': 0xE2,
-                '←': 0xE3,
-                '≥': 0xE4, # Cursor
                 '¼': [0x00, 0xE5, 0x00, 0xE7], # ¼ heart
                 '½': [0x00, 0xE6, 0x00, 0xE7], # ½ heart
                 '¾': [0x00, 0xE8, 0x00, 0xE9], # ¾ heart
@@ -1033,22 +1026,29 @@ class RawMBTextMapper(CharTextMapper):
              "司": 0x0D,
              "書": 0x0E,
              "戻": 0x0F,
-             "様": 0x10,
-             "子": 0x11,
-             "湖": 0x12,
-             "達": 0x13,
-             "彼": 0x14,
-             "女": 0x15,
-             "言": 0x16,
-             "祭": 0x17,
-             "早": 0x18,
-             "雨": 0x19,
-             "剣": 0x1A,
-             "盾": 0x1B,
-             "解": 0x1C,
-             "抜": 0x1D,
-             "者": 0x1E,
-             "味": 0x1F,
+             "%": 0x10, # Hylian Bird
+             "^": 0x11, # Hylian Ankh
+             "=": 0x12, # Hylian Wavy Lines
+             "↑": 0x13,
+             "↓": 0x14,
+             "→": 0x15,
+             "←": 0x16,
+             #"様": 0x10,
+             #"子": 0x11,
+             #"湖": 0x12,
+             #"達": 0x13,
+             #"彼": 0x14,
+             #"女": 0x15,
+             #"言": 0x16,
+             #"祭": 0x17,
+             #"早": 0x18,
+             #"雨": 0x19,
+             #"剣": 0x1A,
+             #"盾": 0x1B,
+             #"解": 0x1C,
+             #"抜": 0x1D,
+             #"者": 0x1E,
+             #"味": 0x1F,
              "方": 0x20,
              "無": 0x21,
              "事": 0x22,
@@ -1274,7 +1274,7 @@ class RawMBTextMapper(CharTextMapper):
              "月": 0xFE,
              "姫": 0xFF}
     alpha_offset = 0x49
-    alpha_lower_offset = -0x31
+    alpha_lower_offset = 0x6F
     number_offset = 0x70
 
     @classmethod
@@ -1297,7 +1297,7 @@ class RawMBTextMapper(CharTextMapper):
 
 class GoldCreditMapper(CharTextMapper):
     char_map = {' ': 0x9F,
-                ',': 0x34,
+                ',': 0x34, # apostrophe/comma top
                 "'": 0x35,
                 '-': 0x36,
                 '.': 0x37,}
@@ -1318,21 +1318,23 @@ class RedCreditMapper(CharTextMapper):
 
 class LargeCreditTopMapper(CharTextMapper):
     char_map = {' ': 0x9F,
-                "'": 0x77,
-                '!': 0x78,
-                '.': 0xA0,
-                '#': 0xA1,
-                '/': 0xA2,
-                ':': 0xA3,
-                ',': 0xA4,
-                '?': 0xA5,
-                '=': 0xA6,
-                '"': 0xA7,
-                '-': 0xA8,
-                '·': 0xA9,
-                '•': 0xA9,
-                '◢': 0xAA,
-                '◣': 0xAB,}
+                "'": 0xD9,
+                '"': 0xDA,
+                '/': 0xDB,
+                '.': 0xDC,
+                ':': 0xDD,
+                '_': 0xDE,
+                '·': 0xDF,
+                '•': 0xDF,
+                '…': 0xE0,
+                '#': 0xE1,
+                '@': 0xE2,
+                '>': 0xE3,
+                '?': 0xE4,
+                '!': 0xE5,
+                '~': 0xE6,
+                ',': 0xE7,
+                '-': 0xE8,}
     alpha_offset = -0x04
     alpha_lower_offset = -0x04
     number_offset = 0x23
@@ -1340,21 +1342,23 @@ class LargeCreditTopMapper(CharTextMapper):
 
 class LargeCreditBottomMapper(CharTextMapper):
     char_map = {' ': 0x9F,
-                "'": 0x9D,
-                '!': 0x9E,
-                '.': 0xC0,
-                '#': 0xC1,
-                '/': 0xC2,
-                ':': 0xC3,
-                ',': 0xC4,
-                '?': 0xC5,
-                '=': 0xC6,
-                '"': 0xC7,
-                '-': 0xC8,
-                '·': 0xC9,
-                '•': 0xC9,
-                '◢': 0xCA,
-                '◣': 0xCB,}
+                "'": 0xEC,
+                '"': 0xED,
+                '/': 0xEE,
+                '.': 0xEF,
+                ':': 0xF0,
+                '_': 0xF1,
+                '·': 0xF2,
+                '•': 0xF2,
+                '…': 0xF3,
+                '#': 0xF4,
+                '@': 0xF5,
+                '>': 0xF6,
+                '?': 0xF7,
+                '!': 0xF8,
+                '~': 0xF9,
+                ',': 0xFA,
+                '-': 0xFB,}
     alpha_offset = 0x22
     alpha_lower_offset = 0x22
     number_offset = 0x49
@@ -1567,16 +1571,16 @@ class TextTable(object):
 
     def setDefaultText(self):
         text = self._text
-        text['set_cursor'] = bytearray([0xFB, 0xFC, 0x00, 0xF9, 0xFF, 0xFF, 0xFF, 0xF8, 0xFF, 0xFF, 0xE4, 0xFE, 0x68])
-        text['set_cursor2'] = bytearray([0xFB, 0xFC, 0x00, 0xF8, 0xFF, 0xFF, 0xFF, 0xF9, 0xFF, 0xFF, 0xE4, 0xFE, 0x68])
+        text['set_cursor'] = bytearray([0xFB, 0xFC, 0x00, 0xF9, 0xFF, 0xFF, 0xFF, 0xF8, 0xFF, 0xFF, 0x99, 0xFE, 0x68])
+        text['set_cursor2'] = bytearray([0xFB, 0xFC, 0x00, 0xF8, 0xFF, 0xFF, 0xFF, 0xF9, 0xFF, 0xFF, 0x99, 0xFE, 0x68])
         text['game_over_menu'] = CompressedTextMapper.convert("{SPEED0}\nSave-Continue\nSave-Quit\nContinue", False)
         text['var_test'] = CompressedTextMapper.convert("0= ᚋ, 1= ᚌ\n2= ᚍ, 3= ᚎ", False)
         text['follower_no_enter'] = CompressedTextMapper.convert("Can't you take me some place nice.")
-        text['choice_1_3'] = bytearray([0xFB, 0xFC, 0x00, 0xF7, 0xE4, 0xF8, 0xFF, 0xF9, 0xFF, 0xFE, 0x71])
-        text['choice_2_3'] = bytearray([0xFB, 0xFC, 0x00, 0xF7, 0xFF, 0xF8, 0xE4, 0xF9, 0xFF, 0xFE, 0x71])
-        text['choice_3_3'] = bytearray([0xFB, 0xFC, 0x00, 0xF7, 0xFF, 0xF8, 0xFF, 0xF9, 0xE4, 0xFE, 0x71])
-        text['choice_1_2'] = bytearray([0xFB, 0xFC, 0x00, 0xF7, 0xE4, 0xF8, 0xFF, 0xFE, 0x72])
-        text['choice_2_2'] = bytearray([0xFB, 0xFC, 0x00, 0xF7, 0xFF, 0xF8, 0xE4, 0xFE, 0x72])
+        text['choice_1_3'] = bytearray([0xFB, 0xFC, 0x00, 0xF7, 0x99, 0xF8, 0xFF, 0xF9, 0xFF, 0xFE, 0x71])
+        text['choice_2_3'] = bytearray([0xFB, 0xFC, 0x00, 0xF7, 0xFF, 0xF8, 0x99, 0xF9, 0xFF, 0xFE, 0x71])
+        text['choice_3_3'] = bytearray([0xFB, 0xFC, 0x00, 0xF7, 0xFF, 0xF8, 0xFF, 0xF9, 0x99, 0xFE, 0x71])
+        text['choice_1_2'] = bytearray([0xFB, 0xFC, 0x00, 0xF7, 0x99, 0xF8, 0xFF, 0xFE, 0x72])
+        text['choice_2_2'] = bytearray([0xFB, 0xFC, 0x00, 0xF7, 0xFF, 0xF8, 0x99, 0xFE, 0x72])
         text['uncle_leaving_text'] = CompressedTextMapper.convert("I'm just going out for a pack of smokes.")
         text['uncle_dying_sewer'] = CompressedTextMapper.convert("I've fallen and I can't get up, take this.")
         text['tutorial_guard_1'] = CompressedTextMapper.convert("Only adults should travel at night.")
@@ -1639,7 +1643,7 @@ class TextTable(object):
         text['sign_outside_magic_shop'] = CompressedTextMapper.convert("Welcome to the Magic Shoppe")
         # 40
         text['sign_death_mountain_cave_back'] = CompressedTextMapper.convert("Cave away from sky cabbages")
-        text['sign_east_of_links_house'] = CompressedTextMapper.convert("↓ Lake Hylia\n\n Also, a shop")
+        text['sign_east_of_links_house'] = CompressedTextMapper.convert("↓Lake Hylia\n\n Also, a shop")
         text['sign_south_of_lumberjacks'] = CompressedTextMapper.convert("← Kakariko\n  Village")
         text['sign_east_of_desert'] = CompressedTextMapper.convert("← Desert\n\n     It's hot.")
         text['sign_east_of_sanctuary'] = CompressedTextMapper.convert("↑→ Potions!\n\nWish waterfall")
