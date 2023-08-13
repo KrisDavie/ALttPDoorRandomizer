@@ -834,7 +834,7 @@ class RawMBTextMapper(CharTextMapper):
                 '-': 0xC9,
                 "🡄": 0xCA,
                 "🡆": 0xCB,
-                '…': 0xCC,
+                '…': 0x9F,
                 '.': 0xCD,
                 '~': 0xCE,
                 '～': 0xCE,

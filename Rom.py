@@ -19,7 +19,7 @@ from EntranceShuffle import door_addresses
 
 
 JAP10HASH = '03a63945398191337e896e5771f77173'
-RANDOMIZERBASEHASH = '55e396cbd4b92e0200d957c0896252f6'
+RANDOMIZERBASEHASH = 'de33f79ec25f50b662f452fdba987fe5'
 
 
 class JsonRom(object):
@@ -1140,17 +1140,7 @@ def apply_rom_settings(rom, beep, color, quickswap, fastmenu, disable_music, spr
     # set heart color
     if color == 'random':
         color = random.choice(['red', 'blue', 'green', 'yellow'])
-    rom.write_byte(0x6FA1E, {'red': 0x24, 'blue': 0x2C, 'green': 0x3C, 'yellow': 0x28}[color])
-    rom.write_byte(0x6FA20, {'red': 0x24, 'blue': 0x2C, 'green': 0x3C, 'yellow': 0x28}[color])
-    rom.write_byte(0x6FA22, {'red': 0x24, 'blue': 0x2C, 'green': 0x3C, 'yellow': 0x28}[color])
-    rom.write_byte(0x6FA24, {'red': 0x24, 'blue': 0x2C, 'green': 0x3C, 'yellow': 0x28}[color])
-    rom.write_byte(0x6FA26, {'red': 0x24, 'blue': 0x2C, 'green': 0x3C, 'yellow': 0x28}[color])
-    rom.write_byte(0x6FA28, {'red': 0x24, 'blue': 0x2C, 'green': 0x3C, 'yellow': 0x28}[color])
-    rom.write_byte(0x6FA2A, {'red': 0x24, 'blue': 0x2C, 'green': 0x3C, 'yellow': 0x28}[color])
-    rom.write_byte(0x6FA2C, {'red': 0x24, 'blue': 0x2C, 'green': 0x3C, 'yellow': 0x28}[color])
-    rom.write_byte(0x6FA2E, {'red': 0x24, 'blue': 0x2C, 'green': 0x3C, 'yellow': 0x28}[color])
-    rom.write_byte(0x6FA30, {'red': 0x24, 'blue': 0x2C, 'green': 0x3C, 'yellow': 0x28}[color])
-    rom.write_byte(0x65561, {'red': 0x06, 'blue': 0x0E, 'green': 0x1A, 'yellow': 0x0A}[color])
+    rom.write_byte(0x187020, {'red': 0x00, 'blue': 0x01, 'green': 0x02, 'yellow': 0x03}[color])
 
     # write link sprite if required
     if sprite is not None:
