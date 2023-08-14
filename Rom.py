@@ -1035,7 +1035,7 @@ def patch_rom(world, player, rom):
     # write total item count and item counter hud mode
     item_total = len(world.get_filled_locations()) - 18 # minus non-item locations
     rom.write_int16(0x180196, item_total+1)
-    if world.item_counter_hud[player] and world.goal not in ['triforcehunt', 'ganonhunt']:
+    if world.goal not in ['triforcehunt', 'ganonhunt'] and (world.item_counter_hud[player] or world.goal in ['completionist']):
         rom.write_byte(0x180039, 0x01)
     else:
         rom.write_byte(0x180039, 0x00)
