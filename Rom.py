@@ -462,6 +462,13 @@ def patch_rom(world, player, rom):
             continue
 
         if not location.crystal:
+            if location.parent_region.dungeon and (world.logic == 'nologic' and not world.keysanity):
+                dungeon = location.parent_region.dungeon
+                if location.item is not None and location.item.key and dungeon.is_dungeon_item(location.item):
+                    if location.item.type == "BigKey":
+                        itemid = 0x32
+                    if location.item.type == "SmallKey":
+                        itemid = 0x24
             rom.write_byte(location.address, itemid)
         else:
             # crystals
