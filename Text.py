@@ -1783,7 +1783,7 @@ class TextTable(object):
                 "  ~~~Season 4~~~\nThe Titan's Mitts:\n    SailorNep\n     Relkin\n     Daaanty\n\n" \
                 "  ~~~Season 3~~~\nPhenandra Drifters:\n     Megawott\n   Frostbite3030\n      Jet082\n\n" \
                 "  ~~~Season 2~~~\n    Team すごい:\n    IIYoshiII\n   Hitsuyan1337\n     Ramond\n\n" \
-                "  ~~~Season 1~~~\n 4k 4th and 4head:\n   Acktheboker\n       Jem\n      Kohrek\n" \
+                "  ~~~Season 1~~~\n    Team すごい:\n    IIYoshiII\n      Thalane\n   Hitsuyan1337\n\n" \
             )
         text['telepathic_tile_palace_of_darkness'] = CompressedTextMapper.convert("{NOBORDER}\nThis is a funny looking Enemizer")
         # C0
