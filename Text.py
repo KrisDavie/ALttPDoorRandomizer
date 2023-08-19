@@ -838,6 +838,7 @@ class RawMBTextMapper(CharTextMapper):
                 '.': 0xCD,
                 '~': 0xCE,
                 '～': 0xCE,
+                ':': 0xEA,
                 '@': [0x6A], # Links name (only works if compressed)
                 '>': [0x00, 0xD2, 0x00, 0xD3], # Link's face
                 "'": 0x9D,
@@ -1775,7 +1776,15 @@ class TextTable(object):
         text['telepathic_tile_misery_mire'] = CompressedTextMapper.convert("{NOBORDER}\nLighting 4 torches will open your way forward!")
         text['hylian_text_2'] = CompressedTextMapper.convert("%%^= %==%\n ^ =%^=\n==%= ^^%^")
         text['desert_entry_translated'] = CompressedTextMapper.convert("Kneel before this stone, and magic will move around you.")
-        text['telepathic_tile_under_ganon'] = CompressedTextMapper.convert("Doors Async League winners\n{HARP}\n  ~~~2022~~~\nAndy\n\n  ~~~2021~~~\nprdwong")
+        text['telepathic_tile_under_ganon'] = CompressedTextMapper.convert(
+                "   ALTTPR League" \
+                "          Winners\n{HARP}\n\n" \
+                "  ~~~Season 5~~~\n     OKDUDES: \n  GanonsGoneWild\n     Telethar\n   Hitsuyan1337\n\n" \
+                "  ~~~Season 4~~~\nThe Titan's Mitts:\n    SailorNep\n     Relkin\n     Daaanty\n\n" \
+                "  ~~~Season 3~~~\nPhenandra Drifters:\n     Megawott\n   Frostbite3030\n      Jet082\n\n" \
+                "  ~~~Season 2~~~\n    Team すごい:\n    IIYoshiII\n   Hitsuyan1337\n     Ramond\n\n" \
+                "  ~~~Season 1~~~\n 4k 4th and 4head:\n   Acktheboker\n       Jem\n      Kohrek\n" \
+            )
         text['telepathic_tile_palace_of_darkness'] = CompressedTextMapper.convert("{NOBORDER}\nThis is a funny looking Enemizer")
         # C0
         text['telepathic_tile_desert_bonk_torch_room'] = CompressedTextMapper.convert("{NOBORDER}\nThings can be knocked down, if you fancy yourself a dashing dude.")
@@ -1785,7 +1794,15 @@ class TextTable(object):
         text['telepathic_tile_ice_entrance'] = CompressedTextMapper.convert("{NOBORDER}\nYou can use Fire Rod or Bombos to pass.")
         text['telepathic_tile_ice_stalfos_knights_room'] = CompressedTextMapper.convert("{NOBORDER}\nKnock 'em down and then bomb them dead.")
         text['telepathic_tile_tower_of_hera_entrance'] = CompressedTextMapper.convert("{NOBORDER}\nThis is a bad place, with a guy who will make you fall…\n\n\na lot.")
-        text['houlihan_room'] = CompressedTextMapper.convert("Randomizer tournament winners\n{HARP}\n  ~~~2021~~~\nDaaanty\n\n  ~~~2019~~~\nJet082\n\n  ~~~2018~~~\nAndy\n\n  ~~~2017~~~\nA: ajneb174\nS: ajneb174")
+        text['houlihan_room'] = CompressedTextMapper.convert(
+                "    Crosskeys\n" \
+                "    Tournament\n" \
+                "    Winners\n{HARP}\n" \
+                "    ~~~2022~~~\n     Schulzer\n\n" \
+                "    ~~~2021~~~\n      Goomba\n\n" \
+                "    ~~~2020~~~\n    Linlinlin\n\n" \
+                "    ~~~2019~~~\n      Kohrek\n" \
+                )
         text['caught_a_bee'] = CompressedTextMapper.convert("Caught a Bee\n  ≥ Keep\n    Release\n{CHOICE}")
         text['caught_a_fairy'] = CompressedTextMapper.convert("Caught Fairy!\n  ≥ Keep\n    Release\n{CHOICE}")
         text['no_empty_bottles'] = CompressedTextMapper.convert("Whoa, bucko!\nNo empty bottles.")
