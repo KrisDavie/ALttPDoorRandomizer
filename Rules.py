@@ -290,9 +290,6 @@ def global_rules(world, player):
     set_defeat_dungeon_boss_rule(world.get_location('Tower of Hera - Prize', player))
     for location in ['Tower of Hera - Boss', 'Tower of Hera - Big Chest', 'Tower of Hera - Compass Chest']:
         forbid_item(world.get_location(location, player), 'Big Key (Tower of Hera)', player)
-    if world.accessibility == 'locations':
-        for location in ['Tower of Hera - Big Key Chest']:
-            forbid_item(world.get_location(location, player), 'Small Key (Tower of Hera)', player)
 
     set_rule(world.get_entrance('Swamp Palace Moat', player), lambda state: state.has('Flippers', player) and state.has('Open Floodgate', player))
     add_rule(world.get_location('Sunken Treasure', player), lambda state: state.has('Open Floodgate', player))
@@ -307,9 +304,6 @@ def global_rules(world, player):
     set_defeat_dungeon_boss_rule(world.get_location('Swamp Palace - Prize', player))
     for location in ['Swamp Palace - Entrance']:
         forbid_item(world.get_location(location, player), 'Big Key (Swamp Palace)', player)
-    if world.accessibility == 'locations':
-        for location in ['Swamp Palace - Big Chest']:
-            forbid_item(world.get_location(location, player), 'Big Key (Swamp Palace)', player)
 
     set_rule(world.get_entrance('Thieves Town Big Key Door', player), lambda state: state.has('Big Key (Thieves Town)', player))
     set_rule(world.get_entrance('Blind Fight', player), lambda state: state.has_key('Small Key (Thieves Town)', player))
@@ -323,9 +317,6 @@ def global_rules(world, player):
         forbid_item(world.get_location(location, player), 'Big Key (Thieves Town)', player)
     for location in ['Thieves\' Town - Attic', 'Thieves\' Town - Boss']:
         forbid_item(world.get_location(location, player), 'Small Key (Thieves Town)', player)
-    if world.accessibility == 'locations':
-        for location in ['Thieves\' Town - Big Chest']:
-            forbid_item(world.get_location(location, player), 'Small Key (Thieves Town)', player)
 
     set_rule(world.get_entrance('Skull Woods First Section South Door', player), lambda state: state.has_key('Small Key (Skull Woods)', player))
     set_rule(world.get_entrance('Skull Woods First Section (Right) North Door', player), lambda state: state.has_key('Small Key (Skull Woods)', player))
@@ -339,9 +330,6 @@ def global_rules(world, player):
     set_defeat_dungeon_boss_rule(world.get_location('Skull Woods - Prize', player))
     for location in ['Skull Woods - Boss']:
         forbid_item(world.get_location(location, player), 'Small Key (Skull Woods)', player)
-    if world.accessibility == 'locations':
-        for location in ['Skull Woods - Big Chest']:
-            forbid_item(world.get_location(location, player), 'Big Key (Skull Woods)', player)
 
     set_rule(world.get_entrance('Ice Palace Entrance Room', player), lambda state: state.can_melt_things(player))
     set_rule(world.get_location('Ice Palace - Big Chest', player), lambda state: state.has('Big Key (Ice Palace)', player))
@@ -413,9 +401,6 @@ def global_rules(world, player):
     set_rule(world.get_entrance('Palace of Darkness Maze Door', player), lambda state: state.has_key('Small Key (Palace of Darkness)', player, 6))
     set_defeat_dungeon_boss_rule(world.get_location('Palace of Darkness - Boss', player))
     set_defeat_dungeon_boss_rule(world.get_location('Palace of Darkness - Prize', player))
-    if world.accessibility == 'locations':
-        for location in ['Palace of Darkness - Big Key Chest', 'Palace of Darkness - Harmless Hellway']:
-            forbid_item(world.get_location(location, player), 'Small Key (Palace of Darkness)', player)
 
     # these key rules are conservative, you might be able to get away with more lenient rules
     randomizer_room_chests = ['Ganons Tower - Randomizer Room - Top Left', 'Ganons Tower - Randomizer Room - Top Right', 'Ganons Tower - Randomizer Room - Bottom Left', 'Ganons Tower - Randomizer Room - Bottom Right']
@@ -428,8 +413,6 @@ def global_rules(world, player):
     set_rule(world.get_entrance('Ganons Tower (Map Room)', player), lambda state: state.has_key('Small Key (Ganons Tower)', player, 4) or (item_name(state, 'Ganons Tower - Map Chest', player) in [('Big Key (Ganons Tower)', player), ('Small Key (Ganons Tower)', player)] and state.has_key('Small Key (Ganons Tower)', player, 3)))
     if world.accessibility != 'locations':
         set_always_allow(world.get_location('Ganons Tower - Map Chest', player), lambda state, item: item.name == 'Small Key (Ganons Tower)' and item.player == player and state.has_key('Small Key (Ganons Tower)', player, 3))
-    elif world.accessibility == 'locations':
-        forbid_item(world.get_location('Ganons Tower - Map Chest', player), 'Small Key (Ganons Tower)', player)
 
     # It is possible to need more than 2 keys to get through this entrance if you spend keys elsewhere. We reflect this in the chest requirements.
     # However we need to leave these at the lower values to derive that with 3 keys it is always possible to reach Bob and Ice Armos.
@@ -701,9 +684,6 @@ def inverted_rules(world, player):
     set_defeat_dungeon_boss_rule(world.get_location('Tower of Hera - Prize', player))
     for location in ['Tower of Hera - Boss', 'Tower of Hera - Big Chest', 'Tower of Hera - Compass Chest']:
         forbid_item(world.get_location(location, player), 'Big Key (Tower of Hera)', player)
-    if world.accessibility == 'locations':
-        for location in ['Tower of Hera - Big Key Chest']:
-            forbid_item(world.get_location(location, player), 'Small Key (Tower of Hera)', player)
 
     set_rule(world.get_entrance('Swamp Palace Moat', player), lambda state: state.has('Flippers', player) and state.has('Open Floodgate', player))
     add_rule(world.get_location('Sunken Treasure', player), lambda state: state.has('Open Floodgate', player))
@@ -718,9 +698,6 @@ def inverted_rules(world, player):
     set_defeat_dungeon_boss_rule(world.get_location('Swamp Palace - Prize', player))
     for location in ['Swamp Palace - Entrance']:
         forbid_item(world.get_location(location, player), 'Big Key (Swamp Palace)', player)
-    if world.accessibility == 'locations':
-        for location in ['Swamp Palace - Big Chest']:
-            forbid_item(world.get_location(location, player), 'Big Key (Swamp Palace)', player)
 
     set_rule(world.get_entrance('Thieves Town Big Key Door', player), lambda state: state.has('Big Key (Thieves Town)', player))
     set_rule(world.get_entrance('Blind Fight', player), lambda state: state.has_key('Small Key (Thieves Town)', player))
@@ -734,9 +711,6 @@ def inverted_rules(world, player):
         forbid_item(world.get_location(location, player), 'Big Key (Thieves Town)', player)
     for location in ['Thieves\' Town - Attic', 'Thieves\' Town - Boss']:
         forbid_item(world.get_location(location, player), 'Small Key (Thieves Town)', player)
-    if world.accessibility == 'locations':
-        for location in ['Thieves\' Town - Big Chest']:
-            forbid_item(world.get_location(location, player), 'Small Key (Thieves Town)', player)
 
     set_rule(world.get_entrance('Skull Woods First Section South Door', player), lambda state: state.has_key('Small Key (Skull Woods)', player))
     set_rule(world.get_entrance('Skull Woods First Section (Right) North Door', player), lambda state: state.has_key('Small Key (Skull Woods)', player))
@@ -751,9 +725,6 @@ def inverted_rules(world, player):
     set_defeat_dungeon_boss_rule(world.get_location('Skull Woods - Prize', player))
     for location in ['Skull Woods - Boss']:
         forbid_item(world.get_location(location, player), 'Small Key (Skull Woods)', player)
-    if world.accessibility == 'locations':
-        for location in ['Skull Woods - Big Chest']:
-            forbid_item(world.get_location(location, player), 'Big Key (Skull Woods)', player)
 
     set_rule(world.get_entrance('Ice Palace Entrance Room', player), lambda state: state.can_melt_things(player))
     set_rule(world.get_location('Ice Palace - Big Chest', player), lambda state: state.has('Big Key (Ice Palace)', player))
@@ -826,9 +797,6 @@ def inverted_rules(world, player):
     set_rule(world.get_entrance('Palace of Darkness Maze Door', player), lambda state: state.has_key('Small Key (Palace of Darkness)', player, 6))
     set_defeat_dungeon_boss_rule(world.get_location('Palace of Darkness - Boss', player))
     set_defeat_dungeon_boss_rule(world.get_location('Palace of Darkness - Prize', player))
-    if world.accessibility == 'locations':
-        for location in ['Palace of Darkness - Big Key Chest', 'Palace of Darkness - Harmless Hellway']:
-            forbid_item(world.get_location(location, player), 'Small Key (Palace of Darkness)', player)
 
     # these key rules are conservative, you might be able to get away with more lenient rules
     randomizer_room_chests = ['Ganons Tower - Randomizer Room - Top Left', 'Ganons Tower - Randomizer Room - Top Right', 'Ganons Tower - Randomizer Room - Bottom Left', 'Ganons Tower - Randomizer Room - Bottom Right']
@@ -841,8 +809,6 @@ def inverted_rules(world, player):
     set_rule(world.get_entrance('Ganons Tower (Map Room)', player), lambda state: state.has_key('Small Key (Ganons Tower)', player, 4) or (item_name(state, 'Ganons Tower - Map Chest', player) in [('Big Key (Ganons Tower)', player), ('Small Key (Ganons Tower)', player)] and state.has_key('Small Key (Ganons Tower)', player, 3)))
     if world.accessibility != 'locations':
         set_always_allow(world.get_location('Ganons Tower - Map Chest', player), lambda state, item: item.name == 'Small Key (Ganons Tower)' and item.player == player and state.has_key('Small Key (Ganons Tower)', player, 3))
-    elif world.accessibility == 'locations':
-        forbid_item(world.get_location('Ganons Tower - Map Chest', player), 'Small Key (Ganons Tower)', player)
 
     # It is possible to need more than 2 keys to get through this entance if you spend keys elsewhere. We reflect this in the chest requirements.
     # However we need to leave these at the lower values to derive that with 3 keys it is always possible to reach Bob and Ice Armos.
