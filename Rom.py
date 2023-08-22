@@ -19,7 +19,7 @@ from EntranceShuffle import door_addresses
 
 
 JAP10HASH = '03a63945398191337e896e5771f77173'
-RANDOMIZERBASEHASH = 'a06c454ad78f6565491d6a1a71a61149'
+RANDOMIZERBASEHASH = 'dddc3cf439f523b25429447d4ae2c9c6'
 
 
 class JsonRom(object):
@@ -896,22 +896,23 @@ def patch_rom(world, player, rom):
     rom.write_byte(0x18004D, 0x00) # Escape assist (off)
 
     if world.goal in ['pedestal', 'triforcehunt']:
-        rom.write_byte(0x18003E, 0x01)  # make ganon invincible
+        rom.write_byte(0x1801A8, 0x01)  # make ganon invincible
     elif world.goal in ['dungeons']:
-        rom.write_byte(0x18003E, 0x02)  # make ganon invincible until all dungeons are beat
+        rom.write_byte(0x1801A8, 0x02)  # make ganon invincible until all dungeons are beat
     elif world.goal in ['crystals']:
-        rom.write_byte(0x18003E, 0x04)  # make ganon invincible until all crystals
+        rom.write_byte(0x1801A8, 0x04)  # make ganon invincible until all crystals
     elif world.goal in ['all_items']:
-        rom.write_byte(0x18003E, 0x0A)  # make ganon invincible until all items
+        rom.write_byte(0x1801A8, 0x0A)  # make ganon invincible until all items
     elif world.goal in ['completionist']:
-        rom.write_byte(0x18003E, 0x0B)  # make ganon invincible until all items and dungeons
+        rom.write_byte(0x1801A8, 0x0B)  # make ganon invincible until all items and dungeons
     elif world.goal in ['ganonhunt']:
-        rom.write_byte(0x18003E, 0x05)  # make ganon invincible until goal triforce pieces
+        rom.write_byte(0x1801A8, 0x05)  # make ganon invincible until goal triforce pieces
     else:
-        rom.write_byte(0x18003E, 0x03)  # make ganon invincible until all crystals and aga 2 are collected
+        rom.write_byte(0x1801A8, 0x03)  # make ganon invincible until all crystals and aga 2 are collected
 
-    rom.write_byte(0x18005E, world.crystals_needed_for_gt)
-    rom.write_byte(0x18005F, world.crystals_needed_for_ganon)
+    rom.write_byte(0x18019A, world.crystals_needed_for_gt)
+    rom.write_byte(0x1801A6, world.crystals_needed_for_ganon)
+    rom.write_byte(0x1801A2, 0x00) # Make ped check requirement vanilla
     rom.write_byte(0x18008A, 0x01 if world.block_side_exits_escape else 0x00) # block HC upstairs doors in rain state in standard mode
 
      # Bitfield - enable text box to show with free roaming items
