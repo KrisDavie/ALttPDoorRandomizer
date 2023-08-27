@@ -42,6 +42,8 @@ def main(args, seed=None):
         raise Exception("Goals requiring all items must use 'locations' accessibility")
     if args.huditemcounter:
         world.item_counter_hud = {player: True for player in range(1, world.players + 1)}
+    if args.nofastrom:
+        world.fastrom = False
 
     world.crystals_needed_for_ganon = random.randint(0, 7) if args.crystals_ganon == 'random' else int(args.crystals_ganon)
     world.crystals_needed_for_gt = random.randint(0, 7) if args.crystals_gt == 'random' else int(args.crystals_gt)

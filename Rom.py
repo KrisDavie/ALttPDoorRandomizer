@@ -19,7 +19,7 @@ from EntranceShuffle import door_addresses
 
 
 JAP10HASH = '03a63945398191337e896e5771f77173'
-RANDOMIZERBASEHASH = 'c9b88e9a10f9f0c9ad732962825cb1d8'
+RANDOMIZERBASEHASH = 'bcbe116984dbfe4ea90a2dda17755f60'
 
 
 class JsonRom(object):
@@ -1047,6 +1047,8 @@ def patch_rom(world, player, rom):
         rom.write_byte(0x180039, 0x01)
     else:
         rom.write_byte(0x180039, 0x00)
+
+    rom.write_byte(0x187032, 0x01 if world.fastrom else 0x00)
 
     write_strings(rom, world, player)
 

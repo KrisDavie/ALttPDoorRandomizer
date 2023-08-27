@@ -85,6 +85,7 @@ class World(object):
         self.lamps_needed_for_dark_rooms = 1
         self.pseudoboots = {player: False for player in range(1, players + 1)}
         self.item_counter_hud = {player: False for player in range(1, players + 1)}
+        self.fastrom = True
 
     def intialize_regions(self):
         for region in self.regions:

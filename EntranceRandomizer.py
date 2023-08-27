@@ -248,6 +248,10 @@ def start():
                              Displays a (number of items collected) / (total items available) counter
                              on the HUD.
                              ''', action='store_true')
+    parser.add_argument('--nofastrom', default=False, help='''\
+                             Displays a (number of items collected) / (total items available) counter
+                             on the HUD.
+                             ''', action='store_true')
     parser.add_argument('--suppress_rom', help='Do not create an output rom file.', action='store_true')
     parser.add_argument('--gui', help='Launch the GUI', action='store_true')
     parser.add_argument('--jsonout', action='store_true', help='''\
