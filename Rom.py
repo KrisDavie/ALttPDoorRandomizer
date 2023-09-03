@@ -19,7 +19,7 @@ from EntranceShuffle import door_addresses
 
 
 JAP10HASH = '03a63945398191337e896e5771f77173'
-RANDOMIZERBASEHASH = '27477ef6c1b24b347109cf154edaf8fc'
+RANDOMIZERBASEHASH = '0dd7807e82378889d41f2e0c1f00e543'
 
 
 class JsonRom(object):
@@ -1041,9 +1041,9 @@ def patch_rom(world, player, rom):
         rom.initial_sram.pre_open_tr_bomb_doors()  # preopen bombable exits
     
     # write total item count and item counter hud mode
-    item_total = len(world.get_filled_locations()) - 18 # minus non-item locations
-    rom.write_int16(0x180196, item_total+1)
-    if world.goal not in ['triforcehunt', 'ganonhunt'] and (world.item_counter_hud[player] or world.goal in ['completionist']):
+    item_total = len(world.get_filled_locations()) - 17 # minus non-item locations
+    rom.write_int16(0x180196, item_total)
+    if (world.goal not in ['triforcehunt', 'ganonhunt'] or world.treasure_hunt_count == 0) and (world.item_counter_hud[player] or world.goal in ['completionist']):
         rom.write_byte(0x180039, 0x01)
     else:
         rom.write_byte(0x180039, 0x00)
