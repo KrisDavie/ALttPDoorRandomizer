@@ -1322,7 +1322,6 @@ def write_strings(rom, world, player):
 
     greenpendant = world.find_items('Green Pendant', player)[0]
     tt['sahasrahla_bring_courage'] = 'I lost my family heirloom in %s' % greenpendant.hint_text
-
     tt['sign_ganons_tower'] = ('You need %d crystal to enter.' if world.crystals_needed_for_gt == 1 else 'You need %d crystals to enter.') % world.crystals_needed_for_gt
     
 
@@ -1333,13 +1332,18 @@ def write_strings(rom, world, player):
         ganon_crystals_singular = 'To beat Ganon you must collect %d crystal and defeat his minion at the top of his tower.'
         ganon_crystals_plural = 'To beat Ganon you must collect %d crystals and defeat his minion at the top of his tower.'
         tt['sign_ganon'] = (ganon_crystals_singular if world.crystals_needed_for_ganon == 1 else ganon_crystals_plural) % world.crystals_needed_for_ganon
+    if world.goal == 'crystals':
+        ganon_crystals_singular = 'To beat Ganon you must collect %d crystal.'
+        ganon_crystals_plural = 'To beat Ganon you must collect %d crystals.'
+        tt['sign_ganon'] = (ganon_crystals_singular if world.crystals_needed_for_ganon == 1 else ganon_crystals_plural) % world.crystals_needed_for_ganon
     if world.goal == 'ganonhunt':
         ganon_triforce_singular = 'To beat Ganon you must collect %d triforce pieces and defeat his minion at the top of his tower.'
         ganon_triforce_plural = 'To beat Ganon you must collect %d triforce pieces and defeat his minion at the top of his tower.'
         tt['sign_ganon'] = (ganon_triforce_singular if world.treasure_hunt_count == 1 else ganon_triforce_plural) % world.treasure_hunt_count
-
     if world.goal in ['dungeons']:
         tt['sign_ganon'] = 'You need to complete all the dungeons.'
+    if world.goal in ['completionist']:
+        tt['sign_ganon'] = 'You need to complete all the dungeons and collect all items.'
 
     tt['uncle_leaving_text'] = Uncle_texts[random.randint(0, len(Uncle_texts) - 1)]
     tt['end_triforce'] = "{NOBORDER}\n" + Triforce_texts[random.randint(0, len(Triforce_texts) - 1)]
