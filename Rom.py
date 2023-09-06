@@ -1339,7 +1339,6 @@ def write_strings(rom, world, player):
     if world.goal == 'ganonhunt':
         ganon_triforce_singular = 'To beat Ganon you must collect %d triforce pieces and defeat his minion at the top of his tower.'
         ganon_triforce_plural = 'To beat Ganon you must collect %d triforce pieces and defeat his minion at the top of his tower.'
-        tt['sign_ganon'] = (ganon_triforce_singular if world.treasure_hunt_count == 1 else ganon_triforce_plural) % world.treasure_hunt_count
     if world.goal in ['dungeons']:
         tt['sign_ganon'] = 'You need to complete all the dungeons.'
     if world.goal in ['completionist']:
