@@ -842,7 +842,7 @@ class RawMBTextMapper(CharTextMapper):
                 '@': [0x6A], # Links name (only works if compressed)
                 '>': [0x00, 0x9B, 0x00, 0x9C], # Link's face
                 "'": 0x9D,
-                '’': 0xD8,
+                '’': 0x9D,
                 '¼': [0x00, 0xE5, 0x00, 0xE7], # ¼ heart
                 '½': [0x00, 0xE6, 0x00, 0xE7], # ½ heart
                 '¾': [0x00, 0xE8, 0x00, 0xE9], # ¾ heart
