@@ -959,7 +959,7 @@ def patch_rom(world, player, rom):
         "Skull Woods": 0x0080,
         "Swamp Palace": 0x0400,
         "Ice Palace": 0x0040,
-        "Misery Mire'": 0x0100,
+        "Misery Mire": 0x0100,
         "Turtle Rock": 0x0008,
     }
 
