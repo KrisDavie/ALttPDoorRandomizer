@@ -89,7 +89,11 @@ def door_customizer_page(top, parent, tab_world, eg_img=None):
                 self.door_links_to_make.add(next_door)
 
             else:
-                queue_regions_doors(self, self.doors[next_door], region=True)
+                try:
+                    queue_regions_doors(self, self.doors[next_door], region=True)
+                except KeyError:
+                    print(f"  Couldn't find region for {next_door}")
+                    continue
 
             # Find the door that this door is linked to
             linked_door = None
