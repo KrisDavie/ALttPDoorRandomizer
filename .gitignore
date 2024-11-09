@@ -4,12 +4,15 @@
 *.bmbp
 *.log
 *_Spoiler.json
+*_custom.yaml
+*_meta.txt
+*.bps
 *.pyc
 *.sfc
 *.srm
 *.bst
 *.wixobj
-build
+/build
 bundle/components.wxs
 dist
 README.html
@@ -36,6 +39,10 @@ resources/user/*
 get-pip.py
 
 venv
+/test
 test_games/
 data/sprites/official/selan.1.zspr
 *.zspr
+
+*errors.txt
+*success.txt

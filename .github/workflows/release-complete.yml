@@ -1,0 +1,47 @@
+# workflow name
+name: 🏷️Tag Repositories
+
+# Fine-grained personal access token
+#  https://github.com/settings/tokens?type=beta
+#  token needs perms:
+#   actions:         read/write
+#   commit statuses: read/write
+#   contents:        read/write
+#   workflows:       read/write
+#  copy token
+# Actions secrets and variables
+# github.com/<owner>/<repo>/settings/secrets/actions
+#  repository secret
+#   name a new secret "ALTTPER_TAGGER"
+#   value set to copied token
+
+# fire on
+on:
+  release:
+    types:
+      - released
+
+jobs:
+  # Tag Baserom
+  tag-baserom:
+    name: 🖳Tag Baserom
+    runs-on: ${{ matrix.os-name }}
+    strategy:
+      matrix:
+        os-name: [
+          # ubuntu-latest
+          "ubuntu-22.04"
+        ]
+
+    steps:
+      # call checkout
+      - name: ✔️Checkout commit
+        uses: actions/checkout@v4.1.4
+      - name: 🏷️Tag Repository
+        uses: ./.github/actions/tag-repo
+        env:
+          FINE_PAT: ${{ secrets.ALTTPER_TAGGER }}
+        with:
+          repository: ${{ github.repository_owner }}/z3randomizer
+          ref-name:   heads/DRUnstable
+          github-tag: ${{ github.event.release.tag_name }}

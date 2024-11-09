@@ -3,7 +3,7 @@ import logging
 from collections import defaultdict
 
 from source.item.District import resolve_districts
-from BaseClasses import PotItem, PotFlags
+from BaseClasses import PotItem, PotFlags, LocationType
 from DoorShuffle import validate_vanilla_reservation
 from Dungeons import dungeon_table
 from Items import item_table, ItemFactory
@@ -18,6 +18,11 @@ class ItemPoolConfig(object):
         self.item_pool = None
         self.placeholders = None
         self.reserved_locations = defaultdict(set)
+        self.restricted = {}
+        self.preferred = {}
+        self.verify = {}
+        self.verify_count = 0
+        self.verify_target = 0
 
         self.recorded_choices = []
 
@@ -65,7 +70,7 @@ def create_item_pool_config(world):
         for player in range(1, world.players + 1):
             config.static_placement[player] = defaultdict(list)
             config.static_placement[player].update(vanilla_mapping)
-            if world.dropshuffle[player]:
+            if world.dropshuffle[player] != 'none':
                 for item, locs in keydrop_vanilla_mapping.items():
                     config.static_placement[player][item].extend(locs)
             if world.pottery[player] not in ['none', 'cave']:
@@ -77,20 +82,21 @@ def create_item_pool_config(world):
                         if pot.item not in [PotItem.Key, PotItem.Hole, PotItem.Switch]:
                             item = pot_items[pot.item]
                             descriptor = 'Large Block' if pot.flags & PotFlags.Block else f'Pot #{pot_index+1}'
-                            location = f'{pot.room} {descriptor}'
-                            config.static_placement[player][item].append(location)
+                            loc = f'{pot.room} {descriptor}'
+                            config.static_placement[player][item].append(loc)
             if world.shopsanity[player]:
                 for item, locs in shop_vanilla_mapping.items():
                     config.static_placement[player][item].extend(locs)
-            if world.retro[player]:
+            if world.take_any[player] != 'none':
                 for item, locs in retro_vanilla_mapping.items():
                     config.static_placement[player][item].extend(locs)
                 # universal keys
+            if world.keyshuffle[player] == 'universal':
                 universal_key_locations = []
                 for item, locs in vanilla_mapping.items():
                     if 'Small Key' in item:
                         universal_key_locations.extend(locs)
-                if world.dropshuffle[player]:
+                if world.dropshuffle[player] != 'none':
                     for item, locs in keydrop_vanilla_mapping.items():
                         if 'Small Key' in item:
                             universal_key_locations.extend(locs)
@@ -98,12 +104,13 @@ def create_item_pool_config(world):
                     for item, locs in potkeys_vanilla_mapping.items():
                         universal_key_locations.extend(locs)
                 if world.shopsanity[player]:
-                    single_arrow_placement = list(shop_vanilla_mapping['Red Potion'])
-                    single_arrow_placement.append('Red Shield Shop - Right')
-                    config.static_placement[player]['Single Arrow'] = single_arrow_placement
                     universal_key_locations.extend(shop_vanilla_mapping['Small Heart'])
                     universal_key_locations.extend(shop_vanilla_mapping['Blue Shield'])
                 config.static_placement[player]['Small Key (Universal)'] = universal_key_locations
+            if world.bow_mode[player].startswith('retro') and world.shopsanity[player]:
+                single_arrow_placement = list(shop_vanilla_mapping['Red Potion'])
+                single_arrow_placement.append('Red Shield Shop - Right')
+                config.static_placement[player]['Single Arrow'] = single_arrow_placement
             config.location_groups[player] = [
                 LocationGroup('Major').locs(mode_grouping['Overworld Major'] + mode_grouping['Big Chests'] + mode_grouping['Heart Containers']),
                 LocationGroup('bkhp').locs(mode_grouping['Heart Pieces']),
@@ -124,7 +131,7 @@ def create_item_pool_config(world):
                 groups.locations.extend(mode_grouping['Big Keys'])
                 if world.dropshuffle[player] != 'none':
                     groups.locations.extend(mode_grouping['Big Key Drops'])
-            if world.keyshuffle[player]:
+            if world.keyshuffle[player] != 'none':
                 groups.locations.extend(mode_grouping['Small Keys'])
                 if world.dropshuffle[player] != 'none':
                     groups.locations.extend(mode_grouping['Key Drops'])
@@ -137,16 +144,13 @@ def create_item_pool_config(world):
             if world.shopsanity[player]:
                 groups.locations.append('Capacity Upgrade - Left')
                 groups.locations.append('Capacity Upgrade - Right')
-            if world.retro[player]:
+            if world.take_any[player] != 'none':
                 if world.shopsanity[player]:
                     groups.locations.extend(retro_vanilla_mapping['Heart Container'])
                     groups.locations.append('Old Man Sword Cave Item 1')
             config.item_pool[player] = determine_major_items(world, player)
             config.location_groups[0].locations = set(groups.locations)
             config.reserved_locations[player].update(groups.locations)
-            backup = (mode_grouping['Heart Pieces'] + mode_grouping['Dungeon Trash'] + mode_grouping['Shops']
-                      + mode_grouping['Overworld Trash'] + mode_grouping['GT Trash'] + mode_grouping['RetroShops'])
-            config.location_groups[1].locations = set(backup)
     elif world.algorithm == 'dungeon_only':
         config.location_groups = [
             LocationGroup('Dungeons'),
@@ -156,13 +160,14 @@ def create_item_pool_config(world):
         dungeon_set = (mode_grouping['Big Chests'] + mode_grouping['Dungeon Trash'] + mode_grouping['Big Keys'] +
                        mode_grouping['Heart Containers'] + mode_grouping['GT Trash'] + mode_grouping['Small Keys'] +
                        mode_grouping['Compasses'] + mode_grouping['Maps'] + mode_grouping['Key Drops'] +
-                       mode_grouping['Big Key Drops'])
+                       mode_grouping['Pot Keys'] + mode_grouping['Big Key Drops'])
+        dungeon_set = set(dungeon_set)
+        for loc in world.get_locations():
+            if loc.parent_region.dungeon and loc.type in [LocationType.Pot, LocationType.Drop]:
+                dungeon_set.add(loc.name)
         for player in range(1, world.players + 1):
             config.item_pool[player] = determine_major_items(world, player)
             config.location_groups[0].locations = set(dungeon_set)
-            backup = (mode_grouping['Heart Pieces'] + mode_grouping['Overworld Major']
-                      + mode_grouping['Overworld Trash'] + mode_grouping['Shops'] + mode_grouping['RetroShops'])
-            config.location_groups[1].locations = set(backup)
 
 
 def district_item_pool_config(world):
@@ -185,36 +190,38 @@ def district_item_pool_config(world):
                 if district.dungeon:
                     adjustment = len([i for i in world.get_dungeon(name, p).all_items
                                       if i.is_inside_dungeon_item(world)])
-                dist_len = len(district.locations) - adjustment
+                dist_adj = adjustment
                 if name not in district_choices:
-                    district_choices[name] = (district.sphere_one, dist_len)
+                    district_choices[name] = (district.sphere_one, dist_adj)
                 else:
                     so, amt = district_choices[name]
-                    district_choices[name] = (so or district.sphere_one, amt + dist_len)
+                    district_choices[name] = (so or district.sphere_one, amt + dist_adj)
 
         chosen_locations = defaultdict(set)
-        location_cnt = 0
+        adjustment_cnt = 0
 
         # choose a sphere one district
         sphere_one_choices = [d for d, info in district_choices.items() if info[0]]
         sphere_one = random.choice(sphere_one_choices)
-        so, amt = district_choices[sphere_one]
-        location_cnt += amt
+        so, adj = district_choices[sphere_one]
         for player in range(1, world.players + 1):
             for location in world.districts[player][sphere_one].locations:
                 chosen_locations[location].add(player)
         del district_choices[sphere_one]
         config.recorded_choices.append(sphere_one)
+        adjustment_cnt += adj
+        location_cnt = len(chosen_locations) - adjustment_cnt
 
         scale_factors = defaultdict(int)
         scale_total = 0
         for p in range(1, world.players + 1):
-            ent = 'Inverted Ganons Tower' if world.mode[p] == 'inverted' else 'Ganons Tower'
+            ent = 'Agahnims Tower' if world.is_atgt_swapped(p) else 'Ganons Tower'
             dungeon = world.get_entrance(ent, p).connected_region.dungeon
             if dungeon:
                 scale = world.crystals_needed_for_gt[p]
-                scale_total += scale
-                scale_factors[dungeon.name] += scale
+                if scale > 0:
+                    scale_total += scale
+                    scale_factors[dungeon.name] += scale
         scale_total = max(1, scale_total)
         scale_divisors = defaultdict(lambda: 1)
         scale_divisors.update(scale_factors)
@@ -222,13 +229,15 @@ def district_item_pool_config(world):
         while location_cnt < item_cnt:
             weights = [scale_total / scale_divisors[d] for d in district_choices.keys()]
             choice = random.choices(list(district_choices.keys()), weights=weights, k=1)[0]
-            so, amt = district_choices[choice]
-            location_cnt += amt
+            so, adj = district_choices[choice]
+
             for player in range(1, world.players + 1):
                 for location in world.districts[player][choice].locations:
                     chosen_locations[location].add(player)
             del district_choices[choice]
             config.recorded_choices.append(choice)
+            adjustment_cnt += adj
+            location_cnt = len(chosen_locations) - adjustment_cnt
         config.placeholders = location_cnt - item_cnt
         config.location_groups[0].locations = chosen_locations
 
@@ -249,9 +258,27 @@ def previously_reserved(location, world, player):
         if world.restrict_boss_items[player] == 'dungeon' and (not world.compassshuffle[player]
                                                                or not world.mapshuffle[player]
                                                                or not world.bigkeyshuffle[player]
-                                                               or not (world.keyshuffle[player] or world.retro[player])):
+                                                               or world.keyshuffle[player] == 'none'):
             return True
     return False
+
+
+def verify_item_pool_config(world):
+    if world.algorithm == 'major_only':
+        major_pool = defaultdict(list)
+        for item in world.itempool:
+            if item.name in world.item_pool_config.item_pool[item.player]:
+                major_pool[item.player].append(item)
+        for player in major_pool:
+            available_locations = [world.get_location(l, player) for l in world.item_pool_config.location_groups[0].locations]
+            available_locations = [l for l in available_locations if l.item is None]
+            if len(available_locations) < len(major_pool[player]):
+                if len(major_pool[player]) - len(available_locations) <= len(mode_grouping['Heart Pieces Visible']):
+                    logging.getLogger('').warning('Expanding location pool for extra major items')
+                    world.item_pool_config.location_groups[1].locations = set(mode_grouping['Heart Pieces Visible'])
+                else:
+                    raise Exception(f'Major only: there are only {len(available_locations)} locations'
+                                    f' for {len(major_pool[player])} major items for player {player}. Cannot generate.')
 
 
 def massage_item_pool(world):
@@ -335,7 +362,7 @@ def determine_major_items(world, player):
         pass  # now what?
     if world.bigkeyshuffle[player]:
         major_item_set.update({x for x, y in item_table.items() if y[2] == 'BigKey'})
-    if world.keyshuffle[player]:
+    if world.keyshuffle[player] != 'none':
         major_item_set.update({x for x, y in item_table.items() if y[2] == 'SmallKey'})
     if world.compassshuffle[player]:
         major_item_set.update({x for x, y in item_table.items() if y[2] == 'Compass'})
@@ -344,10 +371,11 @@ def determine_major_items(world, player):
     if world.shopsanity[player]:
         major_item_set.add('Bomb Upgrade (+5)')
         major_item_set.add('Arrow Upgrade (+5)')
-    if world.retro[player]:
+    if world.bow_mode[player].startswith('retro'):
         major_item_set.add('Single Arrow')
+    if world.keyshuffle[player] == 'universal':
         major_item_set.add('Small Key (Universal)')
-    if world.goal == 'triforcehunt':
+    if world.goal[player] in {'triforcehunt', 'ganonhunt', 'trinity'}:
         major_item_set.add('Triforce Piece')
     if world.bombbag[player]:
         major_item_set.add('Bomb Upgrade (+10)')
@@ -377,9 +405,16 @@ def vanilla_fallback(item_to_place, locations, world):
 
 
 def filter_locations(item_to_place, locations, world, vanilla_skip=False, potion=False):
-    if world.algorithm == 'vanilla_fill':
-        config, filtered = world.item_pool_config, []
+    config = world.item_pool_config
+    if not isinstance(item_to_place, str):
         item_name = 'Bottle' if item_to_place.name.startswith('Bottle') else item_to_place.name
+        item_name = 'Ocarina' if item_name.startswith('Ocarina') else item_name
+    else:
+        item_name = item_to_place
+    if world.algorithm == 'vanilla_fill':
+        filtered = []
+        item_name = 'Bottle' if item_to_place.name.startswith('Bottle') else item_to_place.name
+        item_name = 'Ocarina' if item_name.startswith('Ocarina') else item_name
         if item_name in config.static_placement[item_to_place.player]:
             restricted = config.static_placement[item_to_place.player][item_name]
             filtered = [l for l in locations if l.player == item_to_place.player and l.name in restricted]
@@ -398,37 +433,47 @@ def filter_locations(item_to_place, locations, world, vanilla_skip=False, potion
         if item_to_place.name in config.item_pool[item_to_place.player]:
             restricted = config.location_groups[0].locations
             filtered = [l for l in locations if l.name in restricted]
-            if len(filtered) == 0:
+            if len(filtered) == 0 and len(config.location_groups[1].locations) > 0:
                 restricted = config.location_groups[1].locations
                 filtered = [l for l in locations if l.name in restricted]
-                # bias toward certain location in overflow? (thinking about this for major_bias)
-            return filtered if len(filtered) > 0 else locations
+            return filtered
     if world.algorithm == 'district':
         config = world.item_pool_config
-        if item_to_place == 'Placeholder' or item_to_place.name in config.item_pool[item_to_place.player]:
+        if ((isinstance(item_to_place, str) and item_to_place == 'Placeholder')
+           or item_to_place.name in config.item_pool[item_to_place.player]):
             restricted = config.location_groups[0].locations
             filtered = [l for l in locations if l.name in restricted and l.player in restricted[l.name]]
-            return filtered if len(filtered) > 0 else locations
+            return filtered
         elif potion:
             restricted = config.location_groups[0].locations
             filtered = [l for l in locations if l.name not in restricted or l.player not in restricted[l.name]]
             if len(filtered) == 0:
                 raise RuntimeError('Can\'t sell potion of a certain type due to district restriction')
             return filtered
+    if (item_name, item_to_place.player) in config.restricted:
+        locs = config.restricted[(item_name, item_to_place.player)]
+        return sorted(locations, key=lambda l: 1 if l.name in locs else 0)
+    if (item_name, item_to_place.player) in config.preferred:
+        locs = config.preferred[(item_name, item_to_place.player)]
+        return sorted(locations, key=lambda l: 0 if l.name in locs else 1)
+    if (item_name, item_to_place.player) in config.verify:
+        locs = config.verify[(item_name, item_to_place.player)].keys()
+        return sorted(locations, key=lambda l: 0 if l.name in locs else 1)
     return locations
 
 
-def filter_pot_locations(locations, world):
+
+
+def filter_special_locations(locations, world, vanilla_matcher):
     if world.algorithm == 'district':
         config = world.item_pool_config
         restricted = config.location_groups[0].locations
         filtered = [l for l in locations if l.name not in restricted or l.player not in restricted[l.name]]
         return filtered if len(filtered) > 0 else locations
     if world.algorithm == 'vanilla_fill':
-        filtered = [l for l in locations if l.pot and l.pot.item in [PotItem.Chicken, PotItem.BigMagic]]
+        filtered = [l for l in locations if vanilla_matcher(l)]
         return filtered if len(filtered) > 0 else locations
     return locations
-
 
 
 vanilla_mapping = {
@@ -454,6 +499,7 @@ vanilla_mapping = {
     'Hookshot': ['Swamp Palace - Big Chest'],
     'Magic Mirror': ['Old Man'],
     'Ocarina': ['Flute Spot'],
+    'Ocarina (Activated)': ['Flute Spot'],
     'Pegasus Boots': ['Sahasrahla'],
     'Power Glove': ['Desert Palace - Big Chest'],
     'Cape': ["King's Tomb"],
@@ -666,6 +712,12 @@ mode_grouping = {
         'Graveyard Cave', 'Kakariko Well - Top', "Blind's Hideout - Top", 'Bonk Rock Cave', "Aginah's Cave",
         'Chest Game', 'Digging Game', 'Mire Shed - Left', 'Mimic Cave'
     ],
+    'Heart Pieces Visible': [
+        'Bumper Cave Ledge', 'Desert Ledge', 'Lake Hylia Island', 'Floating Island',  # visible on OW
+        'Maze Race', 'Pyramid', "Zora's Ledge", 'Sunken Treasure', 'Spectacle Rock',
+        'Lumberjack Tree',  'Spectacle Rock Cave', 'Lost Woods Hideout', 'Checkerboard Cave',
+        'Peg Cave', 'Cave 45', 'Graveyard Cave'
+    ],
     'Big Keys': [
         'Eastern Palace - Big Key Chest', 'Ganons Tower - Big Key Chest',
         'Desert Palace - Big Key Chest', 'Tower of Hera - Big Key Chest', 'Palace of Darkness - Big Key Chest',
@@ -737,7 +789,7 @@ mode_grouping = {
         'Castle Tower - Dark Archer Key Drop', 'Castle Tower - Circle of Pots Key Drop',
         'Skull Woods - Spike Corner Key Drop',  'Ice Palace - Jelly Key Drop', 'Ice Palace - Conveyor Key Drop',
         'Misery Mire - Conveyor Crystal Key Drop', 'Turtle Rock - Pokey 1 Key Drop',
-        'Turtle Rock - Pokey 2 Key Drop', 'Ganons Tower - Mini Helmasuar Key Drop',
+        'Turtle Rock - Pokey 2 Key Drop', 'Ganons Tower - Mini Helmasaur Key Drop',
     ],
     'Pot Keys': [
         'Eastern Palace - Dark Square Pot Key', 'Desert Palace - Desert Tiles 1 Pot Key',
@@ -779,7 +831,7 @@ major_items = {'Bombos', 'Book of Mudora', 'Cane of Somaria', 'Ether', 'Fire Rod
                'Bug Catching Net', 'Cane of Byrna', 'Blue Boomerang', 'Red Boomerang', 'Progressive Glove',
                'Power Glove', 'Titans Mitts', 'Bottle', 'Bottle (Red Potion)', 'Bottle (Green Potion)', 'Magic Mirror',
                'Bottle (Blue Potion)', 'Bottle (Fairy)', 'Bottle (Bee)', 'Bottle (Good Bee)', 'Magic Upgrade (1/2)',
-               'Sanctuary Heart Container', 'Boss Heart Container', 'Progressive Shield',
+               'Sanctuary Heart Container', 'Boss Heart Container', 'Progressive Shield', 'Ocarina (Activated)',
                'Mirror Shield', 'Progressive Armor', 'Blue Mail', 'Red Mail', 'Progressive Sword', 'Fighter Sword',
                'Master Sword', 'Tempered Sword', 'Golden Sword', 'Bow', 'Silver Arrows', 'Triforce Piece', 'Moon Pearl',
                'Progressive Bow', 'Progressive Bow (Alt)'}
@@ -810,3 +862,26 @@ pot_items = {
 }
 
 valid_pot_items = {y: x for x, y in pot_items.items()}
+
+
+if __name__ == '__main__':
+    import yaml
+    from yaml.representer import Representer
+    advanced_placements = {'advanced_placements': {}}
+    player_map = advanced_placements['advanced_placements']
+    placement_list = []
+    player_map[1] = placement_list
+    for item, location_list in vanilla_mapping.items():
+        for location in location_list:
+            placement = {}
+            placement['type'] = 'LocationGroup'
+            placement['item'] = item
+            locations = placement['locations'] = []
+            locations.append(location)
+            locations.append('Random')
+            placement_list.append(placement)
+    yaml.add_representer(defaultdict, Representer.represent_dict)
+    with open('fillgen.yaml', 'w') as file:
+        yaml.dump(advanced_placements, file)
+
+

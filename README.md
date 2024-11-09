@@ -4,15 +4,53 @@ This is a door randomizer for _The Legend of Zelda: A Link to the Past_ for the 
 based on the Entrance Randomizer found at [KevinCathcart's Github Project.](https://github.com/KevinCathcart/ALttPEntranceRandomizer)
 See https://alttpr.com/ for more details on the normal randomizer.
 
-# Known Issues
+# Documentation
+1. [Setup and Installation](#setup-and-installation)
+2. [Commonly Missed Things](#commonly-missed-things)  (** **Read This If New** **)
+3. [Settings](#settings)
+   1. [Dungeon Randomization](#dungeon-settings)
+      1. [Dungeon Door Shuffle](#door-shuffle)
+      2. [Intensity Level](#intensity---intensity-number)
+      3. [Key Drop Shuffle (Legacy)](#key-drop-shuffle-legacy---keydropshuffle)
+      4. [Door Type Shuffle](#door-type-shuffle)
+      5. [Trap Door Removal](#trap-door-removal)
+      6. [Key Logic Algorithm](#key-logic-algorithm)
+      7. [Dungeon Items](#dungeon-items)
+      7. [Decouple Doors](#decouple-doors)
+      1. [Allow Self-Looping Spiral Stairs](#allow-self-looping-spiral-stairs)
+      8. [Experimental Features](#experimental-features)
+      9. [Crossed Dungeon Specific Settings](#crossed-dungeon-specific-settings)
+   2. [Pool Expansions](#pool-expansions)
+      1. [Pottery](#pottery)
+      2. [Small Key Shuffle](#small-key-shuffle)
+      3. [Shuffle Enemy Drops](#shuffle-enemy-drops) 
+      4. [Take Any Caves](#take-any-caves)
+   3. [Item Randomization Changes](#item-randomization)
+      1. [New "Items"](#new-items)
+      2. [Shopsanity](#shopsanity)
+      3. [Logic Level](#logic-level)
+      4. [Goal](#goal)
+      5. [Item Sorting](#item-sorting)
+      6. [Forbidden Boss Items](#forbidden-boss-items)
+   4. [Customizer](#customizer)
+   5. [Entrance Randomization](#entrance-randomization)
+      1. [Shuffle Links House](#shuffle-links-house)
+      2. [Overworld Map](#overworld-map)
+   6. [Enemizer](#enemizer)
+   7. [Glitched Logic](#glitched-logic)
+   8. [Retro Changes](#retro-changes)
+   8. [Standard Changes](#standard-changes)
+   9. [Game Options](#game-options)
+   10. [Generation Setup & Miscellaneous](#generation-setup--miscellaneous)
+   
 
-[List of Known Issues and Their Status](https://docs.google.com/document/d/1Bk-m-QRvH5iF60ndptKYgyaV7P93D3TiG8xmdxp_bdQ/edit?usp=sharing)
+## Setup and Installation
 
-# Feedback and Bug Reports
+### Feedback and Bug Reports
 
-Please just DM me on discord for now. I (Aerinon) can be found at the [ALTTP Randomizer discord](https://discordapp.com/invite/alttprandomizer).
+You can use the #bug-reports or #door-rando channel at the [ALTTP Randomizer discord](https://discordapp.com/invite/alttprandomizer) to provide feedback or bug reports.
 
-# Installation
+### Installation
 
 Click on 
 
@@ -22,7 +60,7 @@ Go down to Assets and find a build for your system (Windows, Mac, or Linux)
 
 Download and unzip. Find the DungeonRandomizer.exe or equivalent
 
-# Installation from source
+### Installation from source
 
 See these instructions.
 
@@ -36,21 +74,21 @@ To use the CLI, run ```DungeonRandomizer.py```.
 
 Alternatively, run ```Gui.py``` for a simple graphical user interface.
 
-# Commonly Missed Things and Differences from other Randomizers
+# Commonly Missed Things 
+#### and Differences from other Randomizers
 
 Most of these apply only when the door shuffle is not vanilla.
 
 ### Starting Item
 
-You start with a “Mirror Scroll”, a dumbed-down mirror that only works in dungeons, not the overworld and can’t erase blocks like the Mirror.
+You start with a “Mirror Scroll” (it looks like a map), a dumbed-down mirror that only works in dungeons, not the overworld, and can’t erase blocks like the Mirror.
 
 ### Navigation
 
-* The Pinball Room’s trap door can be removed in the case where it is required to go through to get to the back of Skull Woods.
 * Holes in Mire Torches Top and Mire Torches Bottom fall through to rooms below (you only need fire to get the chest)
 * You can Hookshot from the left Mire wooden Bridge to the right one.
 * In the PoD Arena, you can bonk with Boots between the two blue crystal barriers against the ladder to reach the Arena Bridge chest and door. (Bomb Jump also possible but not in logic - Boots are required)
-* Flooded Rooms in Swamp can be traversed backward and may be required.
+* Flooded Rooms in Swamp can be traversed backward and may be required. The flippers are needed to get out of the water.
 
 ### Other Logic
 
@@ -76,69 +114,210 @@ You start with a “Mirror Scroll”, a dumbed-down mirror that only works in du
 
 # Settings
 
+## Dungeon Settings
+
 Only extra settings are found here. All entrance randomizer settings are supported. See their [readme](https://github.com/KevinCathcart/ALttPEntranceRandomizer/blob/master/README.md)
 
-## Door Shuffle (--doorShuffle)
+### Door Shuffle
 
-### Basic
+* Vanilla - Doors are not shuffled
+* Basic - Doors are shuffled only within a single dungeon.
+* Paritioned - Dungeons are shuffled in 3 pools: Light World, Early Dark World, Late Dark World. (Late Dark are the four dungeons that require Mitts in vanilla, including Ganons Tower)
+* Crossed - Doors are shuffled between dungeons as well.
 
-Doors are shuffled only within a single dungeon.
+CLI: `--doorShuffle [vanilla|basic|partitioned|crossed]`
 
-### Crossed
+### Intensity (--intensity number)
 
-Doors are shuffled between dungeons as well.
+* Level 1 - Normal door and spiral staircases are shuffled
+* Level 2 - Same as Level 1 plus open edges and both types of straight staircases are shuffled.
+* Level 3 -  Same as Level 2 plus Dungeon Lobbies are shuffled
 
-### Vanilla
+### Door Type Shuffle
 
-Doors are not shuffled.
+Four options here, and all of them only take effect if Dungeon Door Shuffle is not vanilla:
 
-## Intensity (--intensity number)
+* Small Key Doors, Bomb Doors, Dash Doors: This is what was normally shuffled previously
+* Adds Big Keys Doors: Big key doors are now shuffled in addition to those above, and Big Key doors are enabled to be on in both vertical directions thanks to a graphic that ended up on the cutting room floor. This does change
+* Adds Trap Doors: All trap doors that are permanently shut in vanilla are shuffled, excluding those by bosses.
+* Increases all Door Types: This is a chaos mode where each door type per dungeon is randomized between 1 less and 4 more.
 
-#### Level 1
-Normal door and spiral staircases are shuffled
-#### Level 2
-Same as Level 1 plus open edges and both types of straight staircases are shuffled.
-#### Level 3
-Same as Level 2 plus Dungeon Lobbies are shuffled
+CLI: `--door_type_mode [original|big|all|chaos]`
 
-## KeyDropShuffle (--keydropshuffle)
+### Trap Door Removal
 
-Adds 33 new locations to the randomization pool. The 32 small keys found under pots and dropped by enemies and the Big
-Key drop location are added to the pool. The keys normally found there are added to the item pool. Retro adds 
-32 generic keys to the pool instead.
+Options here for making dungeon traversal nicer. Only applies if door shuffle is not vanilla.
 
-## Crossed Dungeon Specific Settings
+* No Removal: This does not remove any trap doors.
+* Removed If Blocking Path: Dungeon generation is relaxed to allow annoying trap doors to be removed if necessary. Note that boss trap doors are never shuffled in this mode.
+* Remove Boss Traps: Boss traps are removed, this includes the one near Mothula.
+* Remove All Annoying Traps: This removes all trap doors that are annoying, including boss traps.
 
-### Mixed Travel (--mixed_travel value)
+If trap doors are shuffled the first two option behave the same. The last option overrides the shuffle because there is nothing left to shuffle. Boss traps are never shuffled.
 
-Due to Hammerjump, Hovering in PoD Arena, and the Mire Big Key Chest bomb jump two sections of a supertile that are
+In all cases, that the trap door near the mire cutscene chest (Mire Warping Pool ES) is left alone because it enforces the use of fire to get to the chest.
+
+CLI: `--trap_door_mode [vanilla|optional|boss|oneway]`
+
+### Dungeon Items
+
+#### Small Keys
+
+* In Dungeon: Small keys are restricted to their own dungeon
+* Randomized: Small keys to dungeon can be found anywhere 
+* Universal: Small keys are not specific to their own dungeon, can be found anywhere, and there will be at least one shop that sells keys. Hearkens back to the original Legend of Zelda.
+
+CLI: `--keyshuffle [none|wild|universal]`
+
+All other dungeon items can be restricted to their own dungeon or shuffled in the general pool. This includes maps, compasses and Big Keys.
+
+### Key Logic Algorithm
+
+Determines how small key door logic works.
+
+* Partial Protection: Assumes you always have full inventory and worse case usage. This should account for dark room and bunny revival glitches.
+* Strict: For those would like to glitch and be protected from yourselves. Small keys door require all small keys to be available to be in logic.
+* Dangerous: Assumes you never use keys out of logic. This is the most dangerous setting and not recommend for use.
+
+CLI: `--key_logic [partial|strict|dangerous]`
+
+### Decouple Doors
+
+This is similar to insanity mode in ER where door entrances and exits are not paired anymore. Tends to remove more logic from dungeons as many rooms will not be required to traverse to explore. Hope you like transitions.
+
+CLI: `--decoupledoors`
+
+### Allow Self-Looping Spiral Stairs
+
+If enabled, spiral stairs are allowed to lead to themselves.
+
+CLI: `--door_self_loops`
+
+### Experimental Features
+
+You will start as a bunny if your spawn point is in the dark world. CLI: `--experimental`
+
+### Crossed Dungeon Specific Settings
+
+#### Dungeon Chest Counters
+
+* Auto - picks an appropriate setting based on other settings. Generally will be pickup if the number of item in a dungeon changes.
+* On - Dungeon counters on hud always displayed
+* Off - Dungeon counters on hud never displayer
+* On Compass Pickup - Dungeons with a compass item will display the counter once the compass is found. Dungeons without a compass item will display always unless the number of items in the dungeon is completely vanilla.
+
+CLI: `--dungeon_counters` from `auto, on, off, pickup`
+
+#### Mixed Travel (--mixed_travel value)
+
+Due to Hammerjump, Hovering in PoD Arena, and the Mire Big Key Chest bomb jump, two sections of a supertile that are
 otherwise unconnected logically can be reached using these glitches. To prevent the player from unintentionally changing
-dungeons while doing these tricks, you may use one of the following options.
+dungeons while doing these tricks, you may use one of the following options:
 
-#### Prevent (default)
+* Prevent (default):
+  Rails are added the 3 spots to prevent these tricks. This setting is recommend for those learning crossed dungeon mode to learn what is dangerous and what is not. No logic seeds ignore this setting.
+* Allow: The rooms are left alone and it is up to the discretion of the player whether to use these tricks or not.
+* Force: The two disjointed sections are forced to be in the same dungeon but the glitches are never logically required to complete that game.
 
-Rails are added the 3 spots to prevent this tricks. This setting is recommend for those learning crossed dungeon mode to
-learn what is dangerous and what is not. No logic seeds ignore this setting.
-
-#### Allow
-
-The rooms are left alone and it is up to the discretion of the player whether to use these tricks or not.
-
-#### Force
-
-The two disjointed sections are forced to be in the same dungeon but the glitches are never logically required to complete that game.cause then you would need time to check the map in a d
-
-### Standardize Palettes (--standardize_palettes)
+#### Standardize Palettes (--standardize_palettes)
 No effect if door shuffle is not on crossed
 
-#### Standardize (default)
-Rooms in the same dungeon have their palettes changed to match. Hyrule Castle is split between Sewer and HC palette.
-Rooms adjacent to sanctuary get their coloring to match the Sanctuary's original palette.
+* Standardize (default): Rooms in the same dungeon have their palettes changed to match. Hyrule Castle is split between Sewer and HC palette.
+  Rooms adjacent to sanctuary get their coloring to match the Sanctuary's original palette.
+* Original: Rooms/supertiles keep their original palettes.
 
-#### Original
-Rooms/supertiles keep their original palettes.
+## Pool Expansions
 
-## Shopsanity
+### Pottery
+
+New pottery option that control which pots (and large blocks) are in the locations pool:
+
+* None: No pots are in the pool, like normal randomizer
+* Key Pots: The pots that have keys are in the pool. This is about half of the old keydropshuffle option
+* Cave Pots: The pots that are not found in dungeons are in the pool. (Includes the large block in Spike Cave). Does
+  not include key pots.
+* Cave + Keys Pots: Both non-dungeon pots and pots that used to have keys are in the pool.
+* Reduced Dungeon Pots: Same as Cave+Keys but also roughly a quarter of dungeon pots are added to the location pool picked at random. This is a dynamic mode so pots in the pool will be colored. Pots out of the pool will have vanilla contents.
+* Clustered Dungeon Pots: Like reduced but pots are grouped by logical sets and roughly 50% of pots are chosen from those groups. This is a dynamic mode like the above.
+* Excludes Empty Pots: All pots that had some sort of objects under them are chosen to be in the location pool. This excludes most large blocks and some pots out of dungeons.
+* Dungeon Pots: The pots that are in dungeons are in the pool. (Includes several large blocks)
+* Lottery: All pots and large blocks are in the pool.
+
+By default, switches remain in their vanilla location (unless you turn on the legacy option below)
+
+CLI `--pottery <option>` from `none, keys, cave, cavekeys, reduced, clustered, nonempty, dungeon, lottery`
+
+Note for multiworld: due to the design of the pottery lottery, only 256 items for other players can be under pots in your world.
+
+#### Colorize Pots
+
+If the pottery mode is dynamic, this option is forced to be on (clustered and reduced). It is allowed to be on in all other pottery modes. Exceptions include "none" where no pots would be colored, and "lottery" where all pots would be. This option colors the pots differently that have been chosen to be part of the location pool. If not specified, you are expected to remember the pottery setting you chose. Note that Mystery will colorize all pots if lottery is chosen randomly.
+
+CLI `--colorizepots`
+
+#### Pot Shuffle (Legacy)
+
+This continues to works the same by shuffling all pots on a supertile. It works with the lottery option as well to move the switches to any valid pot on the supertile regardless of the pots chosen in the pottery mode. This may increase the number of pot locations slightly depending on the mode.
+
+### Shuffle Enemy Drops
+
+Option that controls whether enemies that drop items are randomized or not.
+
+* None: Special enemies drop keys normally
+* Keys: Enemies that drop keys are added to the randomization pool. Includes the Hyrule Castle Big Key. Universal adds
+   generic keys to the pool instead.
+* Underworld: Enemies in the underworld are added to the randomization pool. Vanilla drops from the various drop tables are added to the item pool. In caves and in dungeons while you have the compass, a blue square will indicate if there are any enemies on the supertile that still have an available drop in the dungeon. Certain enemies do have logical requirements. In particular, the Red Bari requires Fire Rod or Bombos to collect its drop. More information in the [Enemizer](#enemizer) section.
+
+CLI: `--dropshuffle [none|keys|underworld]`
+
+### Enable Key Drop Shuffle (Legacy)
+
+This sets Pottery to "Key Pots" and Shuffle Enemy Drop to "Keys" unless those option have already been changed.
+
+### Take Any Caves
+
+These are now independent of retro mode and have three options: None, Random, and Fixed. None disables the caves. Random works as take-any caves did before. Fixed means that the take any caves replace specific fairy caves in the pool and will be at those entrances unless ER is turned on (then they can be shuffled wherever). The fixed entrances are:
+
+* Desert Healer Fairy
+* Swamp Healer Fairy (aka Light Hype Cave)
+* Dark Death Mountain Healer Fairy
+* Dark Lake Hylia Ledge Healer Fairy (aka Shopping Mall Bomb)
+* Bonk Fairy (Dark)
+
+## Item Randomization
+
+### New "Items"
+
+#### Bombbag 
+
+Two bomb bags are added to the item pool (They look like +10 Capacity upgrades). Bombs are unable to be used until one is found. Bomb capacity upgrades are otherwise unavailable. 
+
+CLI `--bombbag`
+
+#### Pseudo Boots 
+
+Dashing is allowed without the boots item however doors and certain rocks remain un-openable until boots are found. Items that require boots are still unattainable. Specific sequence breaks like hovering and water-walking are not allowed until boots are found. Bonk distance is shortened to prevent certain pits from being crossed. Finding boots restores all normal behavior.
+
+CLI `--pseudoboots`
+
+#### Flute Mode
+
+Normal mode for flute means you need to activate it at the village statue after finding it like usual. Activated flute mode mean you can use it immediately upon finding it. The flute SFX plays to let you know this is the case. 
+
+CLI:`--flute_mode`
+
+#### Bow Mode
+
+Four options here :
+
+* Progressive. Standard progressive bows.
+* Silvers separate. One bow in the pool and silvers are a separate item.
+* Retro (progressive). Arrows cost rupees. You need to purchase the single arrow item at a shop and there are two progressive bows places.
+* Retro + Silvers. Arrows cost rupees. You need to purchase the single arrow item or find the silvers, there is only one bow, and silvers are a separate item (but count for the quiver if found).
+
+CLI: `--bow_mode [progressive|silvers|retro|retro_silvers]`
+
+### Shopsanity
 
 This adds 32 shop locations (9 more in retro) to the general location pool.
 
@@ -192,34 +371,34 @@ Detailed explanation: It is calculated how much money is available in the item p
 
 All prices range approx. from half the base price to twice the base price (as a max) in increments of 5, the exact price is chosen randomly within the range subject to adjustments by the sphere effects above.
 
-| Category          | Items   | Base Price | Typical Range |
-| ----------------- | ------- |:----------:|:-------------:|
-| Major Progression | Hammer, Hookshot, Mirror, Ocarina, Boots, Somaria, Fire Rod, Ice Rod | 250 | 125-500
-|                   | Moon Pearl | 200 | 100-400
-|                   | Lamp, Progressive Bows, Gloves, & Swords | 150 | 75-300
-|                   | Triforce Piece | 100 | 50-200
-| Medallions        | Bombos, Ether, Quake | 100 | 50-200
-| Safety/Fetch      | Cape, Mushroom, Shovel, Powder, Bug Net, Byrna, Progressive Armor & Shields, Half Magic | 50 | 25-100
-| Bottles			| Empty Bottle or Bee Bottle | 50 | 25-100
-|       			| Green Goo or Good Bee | 60 | 30-120
-|       			| Red Goo or Fairy | 70 | 35-140
-|        			| Blue Goo | 80 | 40-160
-| Health            | Heart Container | 40 | 20-80
-|                   | Sanctuary Heart | 50 | 25-100 
-|                   | Piece of Heart | 10 | 5-20
-| Dungeon           | Big Keys | 60 | 30-120
-|                   | Small Keys | 40 | 20-80
-|                   | Info Maps | 20 | 10-40
-|                   | Other Maps & Compasses | 10 | 5-20
-| Rupees			| Green | Free | Free
-|       			| Blue  | 2 | 2-4
-|       			| Red  | 10 | 5-20
-|       			| Fifty  | 25 | 15-50
-|       			| One Hundred  | 50 | 25-100
-|       			| Three Hundred  | 150 | 75-300
-| Ammo	            | Three Bombs | 15 | 10-30
-|       			| Single Arrow | 3 | 3-6
-| Original Shop Items | Other Ammo, Refills, Non-Progressive Shields, Capacity Upgrades, Small Hearts, Retro Quiver, Universal Key | Original | .5 - 2 * Original
+| Category            | Items                                                                                                      | Base Price |   Typical Range   |
+|---------------------|------------------------------------------------------------------------------------------------------------|:----------:|:-----------------:|
+| Major Progression   | Hammer, Hookshot, Mirror, Ocarina, Boots, Somaria, Fire Rod, Ice Rod                                       |    250     |      125-500      |
+|                     | Moon Pearl                                                                                                 |    200     |      100-400      |
+|                     | Lamp, Progressive Bows, Gloves, & Swords                                                                   |    150     |      75-300       |
+|                     | Triforce Piece                                                                                             |    100     |      50-200       |
+| Medallions          | Bombos, Ether, Quake                                                                                       |    100     |      50-200       |
+| Safety/Fetch        | Cape, Mushroom, Shovel, Powder, Bug Net, Byrna, Progressive Armor & Shields, Half Magic                    |     50     |      25-100       |
+| Bottles			          | Empty Bottle or Bee Bottle                                                                                 |     50     |      25-100       |
+| 			                 | Green Goo or Good Bee                                                                                      |     60     |      30-120       |
+| 			                 | Red Goo or Fairy                                                                                           |     70     |      35-140       |
+| 			                 | Blue Goo                                                                                                   |     80     |      40-160       |
+| Health              | Heart Container                                                                                            |     40     |       20-80       |
+|                     | Sanctuary Heart                                                                                            |     50     |      25-100       |
+|                     | Piece of Heart                                                                                             |     10     |       5-20        |
+| Dungeon             | Big Keys                                                                                                   |     60     |      30-120       |
+|                     | Small Keys                                                                                                 |     40     |       20-80       |
+|                     | Info Maps                                                                                                  |     20     |       10-40       |
+|                     | Other Maps & Compasses                                                                                     |     10     |       5-20        |
+| Rupees			           | Green                                                                                                      |    Free    |       Free        |
+| 			                 | Blue                                                                                                       |     2      |        2-4        |
+| 			                 | Red                                                                                                        |     10     |       5-20        |
+| 			                 | Fifty                                                                                                      |     25     |       15-50       |
+| 			                 | One Hundred                                                                                                |     50     |      25-100       |
+| 			                 | Three Hundred                                                                                              |    150     |      75-300       |
+| Ammo	               | Three Bombs                                                                                                |     15     |       10-30       |
+| 			                 | Single Arrow                                                                                               |     3      |        3-6        |
+| Original Shop Items | Other Ammo, Refills, Non-Progressive Shields, Capacity Upgrades, Small Hearts, Retro Quiver, Universal Key |  Original  | .5 - 2 * Original |
 
 #### Rupee Balancing Algorithm
 
@@ -241,150 +420,310 @@ Arrow Capacity upgrades are now replaced by Rupees wherever it might end up.
  
 The Ten Arrows and 5 randomly selected Small Hearts or Blue Shields are replaced by the quiver item (represented by the Single Arrow in game.) 5 Red Potion refills are replaced by the Universal small key. It is assured that at least one shop sells Universal Small Keys. The quiver may thus not be found in shops. The quiver and small keys retain their original base price, but may be discounted.
 
-## Logic Level
+### Goal
 
-### Overworld Glitches
+New supported goals:
 
-Set `--logic` to `owglitches` to make overworld glitches required in the logic.
+* Trinity: Find one of 3 triforces to win. One is at pedestal. One is with Ganon. One is with Murahdahla who wants you to find 8 of 10 triforce pieces to complete.
+* Ganonhunt: Collect the requisite triforce pieces, then defeat Ganon. (Aga2 not required). Use `ganonhunt` on CLI
+* Completionist: All dungeons not enough for you? You have to obtain every item in the game too. This option turns on the collection rate counter and forces accessibility to be 100% locations. Finish by defeating Ganon.
 
-## Shuffle Links House
+
+### Item Sorting
+
+The "Item Sorting" option or ```--algorithm``` has been updated with new placement algorithms. Older algorithms have been removed.
+
+When referenced below, Major Items include all Y items, all A items, all equipment (swords, shields, & armor) and Heart Containers. Dungeon items are considered major if shuffled outside of dungeons. Bomb and arrows upgrades are Major if shopsanity is turned on. The arrow quiver and universal small keys are Major if retro is turned on. Triforce Pieces are Major if that is the goal, and the Bomb Bag is Major if that is enabled.
+
+Here are the current fill options:
+
+#### Balanced
+
+This one stays the same as before and is recommended for the most random distribution of items.
+
+#### Vanilla Fill
+
+This fill attempts to place all items in their vanilla locations when possible. Obviously shuffling entrances or the dungeon interiors will often prevent items from being placed in their vanilla location. If the vanilla fill is not possible, then other locations are tried in sequence preferring "major" locations (see below), then heart piece locations, then the rest except for GT locations which are preferred last. Note the PoD small key that is normally found in the dark maze in vanilla is move to Harmless Hellway due to the placement algorithm limitation.
+
+#### Major Location Restriction
+
+This fill attempts to place major items in major locations. Major locations are where the major items are found in the vanilla game. This includes the spot next to Uncle in the Sewers, and the Boomerang chest in Hyrule Castle.
+
+The location pool expands to where dungeon items are located if those dungeon items are shuffled. The Capacity Fairy locations are included if Shopsanity is on. If retro is enabled in addition to shopsanity, then the major locations will include the Old Man Sword Cave and one location in each retro cave. When the various enemy and pots keys are in the location pool, then those are included if small or big key shuffle is on. 
+
+THe location pool will be expanded to include visible heart pieces locations if the number of major items exceeds the number of locations that are considered major. This mainly affects Trinity goal, Triforce Pieces hunts, Bomb Bag shuffle, and other settings that may not have perfect 1-to-1 correspondence with major locations and items.
+
+This algorithm generally gives a good balance between overworld and underworld locations. Seeds do become more linear but usually easier to figure out.
+
+#### Dungeon Restriction
+
+The fill attempts to place all major items in dungeons. It will overflow to the overworld if there are more items than locations (e.g. Triforce hunt.) This fill does attempt to run the GT trash fill when possible. Seeds are typically very linear but tend to be more difficult.
+
+#### District Restriction
+
+The world is divided up into different regions or districts. Each dungeon is its own district. The overworld consists of the following districts:
+
+Light world:
+
+* Kakariko (The main screen, blacksmith screen, and library/maze race screens)
+* Northwest Hyrule (The lost woods and fortune teller screens all the way to the river west of the potion shop)
+* Central Hyrule (Hyrule castle, Link's House, the marsh, and the haunted grove)
+* Desert (From the thief to the main desert screen)
+* Lake Hylia (Around the lake)
+* Eastern Hyrule (The eastern wild, the potion shop, and Zora's Domain)
+* Death Mountain
+
+Dark world:
+
+* East Dark World (The pyramid, Palace of darkness, and Catfish)
+* South Dark World (The dark lake, swamp area, to the dig game)
+* Northwest Dark World (Village of Outcasts, to the Dark Sanctuary and screens in between)
+* The Mire
+* Dark Death Mountain
+
+These districts are chosen at random and then filled with major items. If a location is part of a chosen district, but there are no more major items to place, a single green rupee is placed in the extra to indicate that as a placeholder. All other single green rupees are changed to be a blue rupee in order to not give false positives.
+
+In entrance shuffle, what is shuffled to the entrances is considered instead of where the interior was originally. For example, if Blind's Hut is shuffled to the Dam, then the 5 chests in Blind's Hut are part of Central Hyrule instead of Kakariko.
+
+Note: Bombos Tablet, Lake Hylia Island, Bumper Cave Ledge, the Floating Island, Cave 45, the Graveyard Cave, Checkerboard Cave and Mimic Cave are considered part of the light world region rather than the dark world region you mirror from.
+
+In multiworld, the districts chosen apply to all players.
+
+#### CLI values:
+
+```balanced, vanilla_fill, major_only, dungeon_only, district```
+
+#### New Hints
+
+Based on the district algorithm above (whether it is enabled or not), new hints can appear about that district or dungeon. For each district and dungeon, it is evaluated whether it contains vital items and how many. If it has not any vital item, items then it moves onto useful items. Useful items are generally safeties or convenience items: shields, mails, half magic, bottles, medallions that aren't required, etc. If it contains none of those and is an overworld district, then it checks for a couple more things. First, if dungeons are shuffled, it looks to see if any are in the district, if so, one of those dungeons is picked for the hint. Then, if connectors are shuffled, it checks to see if you can get to unique region through a connector in that district. If none of the above apply, the district or dungeon is considered completely foolish.
+
+### Forbidden Boss Items
+
+You may now restrict the items that can appear on the boss, like the popular ambrosia preset does.
+
+CLI: ```--restrict_boss_items <option>```
+
+#### Options
+
+* none: As before, the boss may have any item including any dungeon item that could occur there.
+* mapcompass: ~~The map and compass are logically required to defeat a boss. This prevents both of those from appearing on the dungeon boss. Note that this does affect item placement logic and the placement algorithm as maps and compasses are considered as required items to beat a boss.~~ Currently bugged, not recommended for use.
+* dungeon: Same as above but both small keys and bigs keys of the dungeon are not allowed on a boss. (Note: this does not affect universal keys as they are not dungeon-specific)
+
+## Customizer
+
+Please see [Customizer documentation](docs/Customizer.md) on how to create custom seeds.
+
+## Entrance Randomization
+
+### New Modes
+
+* Lite: Non item entrances are vanilla.
+  - Dungeon and multi-entrance caves can only lead to dungeon and multi-entrance caves
+  - Dropdowns can only lead to dropdowns, with them staying coupled to their appropriate exits
+  - Cave entrances that normally lead to items can only lead to caves that have items (this includes Potion Shop and Big Bomb Shop)
+  - All remaining entrances remain vanilla
+  - Multi-entrance caves are connected same-world only
+  - LW is guaranteed to have HC/EP/DP/ToH/AT and DW: IP/MM/TR/GT
+  - Shop locations are included in the Item Cave pool if Shopsanity is enabled
+  - Caves with pots are included in the Item Cave pool if Pottery is enabled
+  - Caves with enemies/fairies are included in the Item Cave pool if Shuffle Enemy Drops is enabled
+* Lean
+  - Same grouping/pooling mechanism as in Lite ER
+  - Both dungeons and connectors can be cross-world connections
+  - No dungeon guarantees like in Lite ER
+* Swapped: Entrances are swapped with each other
+
+### Shuffle Links House
 
 In certain ER shuffles, (not dungeonssimple or dungeonsfulls), you can now control whether Links House is shuffled or remains vanilla. Previously, inverted seeds had this behavior and would shuffle links house, but now if will only do so if this is specified. Now, also works for open modes, but links house is never shuffled in standard mode.
 
-## Bomb Logic (--bombbag)
+### Shuffle Back of Tavern
 
-When enabling this option, you do not start with bomb capacity but rather you must find 1 of 2 bomb bags. (They are represented by the +10 capacity item.) Bomb capacity upgrades are otherwise unavailable.
+You may shuffle the back of tavern entrance in ER modes when Experimental Features are turned on.
 
-## Reduce Flashing
+### Skull Woods Shuffle
 
-Accessibility option to reducing some flashing animations in the game.
+In an effort to reduce annoying Skull Woods layouts, several new options have been created.
 
-## Pseudo-boots
+- Original: Skull woods shuffles classically amongst itself unless insanity is the mode. This should mimic prior behavior.
+- Restricted (Vanilla Drops, Entrances Restricted): Skull woods drops are vanilla. Skull woods entrances stay in skull woods and are shuffled.
+- Loose (Vanilla Drops, Entrances use Shuffle): Skull woods drops are vanilla. The main ER mode's pool determines how to handle.
+- Followlinked (Follow Linked Drops Setting): This looks at the new linked drop settings. If linked drops are turned on, then two new pairs of linked drop down and holes are formed. Skull front and the hole near the big chest form a pair. The east entrance to Skull 2 and th hole in the back of skull woods form another pair. If the mode is not a cross-world shuffle, then these 2 new drop-down pairs are limited to the dark world. The other drop-down in skull woods, the front two holes will be vanilla. If linked drops are off, then the mode determines how to handle the holes and entrances.
 
-Option to start with ability to dash, but not able to make any boots required logical checks or traversal.
+### Linked Drops Override
 
-## SFX Shuffle (--shuffle_sfx)
+This controls whether drops should be linked to nearby entrances or not.
+
+- Unset: This uses the mode's default which is considered linked for all modes except insanity
+- Linked: Forces drops to be linked to their entrances.
+- Independent: Decouples drops from their entrances. In same-world shuffles, holes & entrances may be restricted to a singe world depending on settings and placement to prevent cross-world connection through holes and/or entrances in dungeons.
+
+### Brief Explanations
+
+Loose Skull Woods Shuffle:
+
+- Simple dungeons modes will attempt to fix the layout of skull woods to be more vanilla. This includes dungeonssimple, simple, and restricted ER modes.
+- The dungeonsfull mode allows skull woods to be used as a connector but attempt to maintain same-world connectivity.
+- Same world modes like lite & full will generally keep skull woods entrances to a single world to prevent cross-world connections. If not inverted, this is not guaranteed to be the dark world though.
+- Cross-world modes will be eaiser to comprehend due to fewer restrictions like crossed, lean and swapped.
+
+Followdrops with Linked Drops:
+
+- Some modes don't care much about linked drops: simple, dungeonssimple, dungeonsfull
+- Same-world modes like restricted, full, & lite will often keep skull woods drop pairs in the dark world and there are only 3 options there: pyramid, and the vanilla locations
+- Cross-world modes will benefit the most from the changes as the drop pool expands by two new options for drop placement and guarantees a way out from skull woods west, though the connector must be located.
+- Insanity with linked drops will kind of allow a player to scout holes, at the cost of not being to get back to the hole immediately.
+
+Followdrops with Independent Drops:
+- dungeonssimple will place holes vanilla anyway
+- dungeonsfull will shuffle the holes
+- Same-world modes like simple, restricted, full, & lite will likely pull all skull woods entrances to a single world. (It'll likely be the light world if a single hole is in the light world, unless inverted, then the reverse.)
+- Cross-world modes like swapped, lean, and crossed will mean drops are no longer scoutable. Enjoy your coin flips!
+- This is insanity's default anyway, no change.
+
+### Overworld Map
+
+Option to move indicators on overworld map to reference dungeon location. The non-default options include indicators for Hyrule Castle, Agahnim's Tower, and Ganon's Tower.
+
+* Default:  Status quo. Showing only the prize markers on the vanilla dungeon locations.
+* Compass:
+    The compass item controls whether the marker is moved to the dungeons locations. If you possess the compass but not the map, only a glowing X will be present regardless of dungeon prize type, if you only possess the map, the prizes will be shown in predicable locations at the bottom of the overworld map instead of the vanilla location. Light world dungeons on the light world map and dark world dungeons on the dark world map. If you posses both map and compass, then the prize of the dungeon and the location will be on the map.
+* Map: The map item plays double duty in this mode and only possession of the map will show both prize and location of the dungeon. If you do not shuffle maps or the dungeon does not have a map, the information will be displayed without needing to find any items.
+
+If you do not shuffle the compass or map outside of the dungeon, the non-shuffled items are not needed to display the information. If a dungeon does not have a map or compass, it is not needed for the information. Talking to the bomb shop or Sahasrahla furnishes you with complete information as well as map information.
+
+CLI ```--overworld_map [default|compass|map]```
+
+
+## Enemizer
+
+Enemizer has been incorporated into the generator and no longer requires an external program. However, there are differences.
+
+Please see this document for extensive details: [Enemizer in DR](https://docs.google.com/document/d/1iwY7Gy50DR3SsdXVaLFIbx4xRBqo9a-e1_jAl5LMCX8/edit?usp=sharing)
+
+Notable differences:
+
+* Several sprites added to the pool. Most notable is how enemies behave on shallow water. They work now.
+* Clearing rooms, spawnable chests, and enemy keys drops can now have enemies with specific logic in the room. This logic is controlled by the new [Enemy Logic option](#enemy-logic)
+* New system for banning enemies that cause issues is in place. If you see an enemy in a place that would cause issue, please report it and it can be banned to never happen again. Current bans can be found [in the code](source/enemizer/enemy_deny.yaml) for the curious
+* Thieves are always unkillable, but banned from the entire underworld. We can selectively ban them from problematic places in the overworld, and if someone wants to figure out where they could be safe in the underworld, I'll allow them there once the major problems have been banned.
+* Tile room patterns are currently shuffled with enemies.
+
+### Enemy Shuffle
+
+Shuffling enemies is different as there are places that certain enemies are not allowed to go. This is known as the enemy ban list, and is updated regularly as reports of poor enemy placement occurs. Poor enemy placement included Bumpers, Statues, Beamos or other enemies that block your path with or without certain items. Other disallowed placements include unavoidable damage and glitches. Thieves are unkillable, but restricted to the overworld and even then, are banned from narrow locations.
+
+### Enemy Damage
+
+The shuffled setting actually shuffled the damage table unlike the process from the enemizer that simply randomizes values and lowers damage for armor upgrades.
+
+### Boss Shuffle: Unique
+
+Same as before, with some exceptions: 
+
+* Trinexx is not allowed on the GT basement when DR is enabled to avoid certain low percentage kills. Future work on health logic should make this reasonable.
+* In general, some of the harder bosses in the GT basement now have some concessions in the logic to make low precentage requirements less likely and onerous.
+
+New variant Unique: At least one boss each of the prize bosses will be present guarding the prizes. GT bosses can be anything.
+
+Blind Note: If bosses are shuffled and Blind is chosen to be the boss of Thieves Town, then bombing the attic and delivering the maiden is still required.
+
+### Enemy Health
+
+Same as beofre but health is taken into account for challenge rooms if magic or ammo is required
+
+### Enemy Logic
+
+This version of the enemizer can account for logical access to both challenge room and item or key drops when enemies are shuffled. (See [Enemy Drop Shuffle](#shuffle-enemy-drops)). The enemies with particularly special logic are: Red Mimics, Red Eyegores, Terrorpins, Deadrocks, & Lynels. When bombbag is enabled Stalfos Knights, and Buzzblobs have advanced logic. For enemy drops, in particular, Red Baris must be killed with either the Fire Rod or Bombos to acquire the drop. These are in effect unless a different option is chosen:
+
+* Forbid special enemies: These special enemies are disallowed from drops and challenge rooms.
+* Item drops may have special enemies: Challenge rooms will not have these special enemies, but item drops may.
+* Allow special enemies anywhere: Both challenge rooms and enemy drops can have these special requirements occur.
+
+## Standard Changes
+
+When dungeon door shuffle is on, the Sanctuary is guaranteed to be behind the Throne Room and the Mirror Scroll works like death warping instead of the mirror during the escape sequence.
+
+## Retro Changes
+
+Retro can be partially enabled: see Small Key Shuffle, Bow Mode, and Take Any Caves. Enable Retro button enables all 3 options.
+
+## Glitched Logic
+
+Overworld glitches, Hybrid Major Glitches (HMG) and No Logic are currently supported.
+
+CLI: `--logic [noglitches|owglitches|hybridglitches|nologic]`
+
+### Overworld Glitches
+_Support added by qadan and compiling_
+
+Overworld Glitches logic includes (but is not limited to) the following:
+* Overworld teleports and clips to reach various items/entrances
+* Use of superbunny to obtain items and/or bonk open entrances
+* Use of mirror to access Desert Palace East Entrance
+* Use of bunny pocket to access the Back of Skull Woods and VOO Hammer house entrances
+
+
+### Hybrid Major Glitches
+_Support added by Muffins (ported from work by Espeon)_.
+
+**Not currently compatible with Door Shuffle**
+
+Hybrid Major Glitches logic includes the following:
+* All Overworld Glitches logic
+* Kikiskip to access PoD wihtout MP or DW access
+* IP Lobby clip to skip fire requirement
+* Traversal between TT -> Desert
+* Traversal between Spec rock upper -> Spec rock mid
+* Traversal between Paradox lower -> Paradox mid + upper
+* Traversal between Mire -> Hera -> Swamp
+* Stealing SK from Mire to open SP
+* Using the Mire big key to open Hera doors and big chest
+
+All traversals mentioned are considered connectors in entrance shuffle
+
+
+## Game Options
+
+### MSU Resume
+
+Turns on msu resume support. Found on "Game Options" tab, the "Adjust/Patch" tab, or use the `--msu_resume` CLI option.
+
+### Collection Rate
+
+Display the collection rate unless the triforce piece counter is needed. If the game was generated as a mystery, then the total count is not displayed. `--collection_rate`
+
+### Reduce Flashing
+
+Accessibility option to reducing some flashing animations in the game. `--reduce_flashing`
+
+### Shuffle Sound Effects (--shuffle_sfx)
 
 Shuffles a large portion of the sounds effects. Can be used with the adjuster.
 
-## Experimental Features
+## Generation Setup & Miscellaneous
 
-You will start as a bunny if your spawn point is in the dark world.
+### Create BPS Patches
 
-## Triforce Hunt Settings
+Create bps patch(es) instead of generating rom(s) for distribution. `--bps`
 
-A collection of settings to control the triforce piece pool.
+### Triforce Hunt Settings
+
+A collection of settings to control the triforce piece pool if not specified through --triforce_goal and --triforce_pool
 
 * --triforce_goal_min: Minimum number of pieces to collect to win
 * --triforce_goal_max: Maximum number of pieces to collect to win
 * --triforce_pool_min: Minimum number of pieces in item pool
 * --triforce_pool_max: Maximum number of pieces in item pool
 * --triforce_min_difference: Minimum difference between pool and goal to win
+* --triforce_max_difference: Maximum difference between pool and goal to win
 
-## Seed
+### Seed
 
 Can be used to set a seed number to generate. Using the same seed with same settings on the same version of the entrance randomizer will always yield an identical output.
 
-## Count
+### Count
 
 Use to batch generate multiple seeds with same settings. If a seed number is provided, it will be used for the first seed, then used to derive the next seed (i.e. generating 10 seeds with the same seed number given will produce the same 10 (different) roms each time).
-
-# Command Line Options
-
-```
--h, --help            
-```
-
-Show the help message and exit.
-
-```
---door_shuffle <mode>     
-```
-
-For specifying the door shuffle you want as above. (default: basic)
-
-```
---intensity <number>     
-```
-
-For specifying the door shuffle intensity level you want as above. (default: 2)
-
-```
---keydropshuffle      
-```
-
-Include mobs and pots drop in the item pool. (default: not enabled)
-
-```
---shopsanity      
-```
-
-Includes shop locations in the item pool.
-
-```
---pseudoboots
-```
-
-Start with dash ability, but no way to use boots to accomplish checks 
-
-```
---shufflelinks
-```
-
-Whether to shuffle links house in most ER modes.
-
-```
---shuffletavern
-```
-
-Whether to shuffle the back of the tavern in most ER modes.
-
-```
---bombbag
-```
-Need to find the bombbag upgrade to used bombs
-
-```
---experimental
-```
-
-Enables experimental features
-
-```
---mixed_travel <mode>      
-```
-
-How to handle certain glitches in crossed dungeon mode. (default: prevent)
-
-```
---standardize_palettes (mode)
-```
-
-Whether to standardize dungeon palettes in crossed dungeon mode. (default: standardize)
-
-```
---reduce_flashing
-```
-
-Reduces amount of flashing in some animations
-
-```
---shuffle_sfx
-```
-
-Shuffles a bunch of the sounds effects
-
-```
---msu_resume
-```
-
-Enable MSU resume feature
-
-```
---collection_rate
-```
-
-Total collection rate is displayed unless Triforce Hunt is on. If the game was designed as a mystery, then the total count is not displayed. 
-
 
 

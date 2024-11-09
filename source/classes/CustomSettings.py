@@ -3,6 +3,7 @@ from pathlib import Path
 import urllib.request
 import urllib.parse
 import yaml
+from typing import Any
 from yaml.representer import Representer
 from collections import defaultdict
 from pathlib import Path
@@ -25,15 +26,20 @@ class CustomSettings(object):
         head, filename = os.path.split(file)
         self.relative_dir = head
 
-    def determine_seed(self):
-        if 'meta' not in self.file_source:
-            return None
-        meta = defaultdict(lambda: None, self.file_source['meta'])
-        seed = meta['seed']
-        if seed:
-            random.seed(seed)
-            return seed
-        return None
+    def determine_seed(self, default_seed):
+        if 'meta' in self.file_source:
+            meta = defaultdict(lambda: None, self.file_source['meta'])
+            seed = meta['seed']
+            if seed:
+                random.seed(seed)
+                return seed
+        if default_seed is None:
+            random.seed(None)
+            seed = random.randint(0, 999999999)
+        else:
+            seed = default_seed
+        random.seed(seed)
+        return seed
 
     def determine_players(self):
         if 'meta' not in self.file_source:
@@ -42,9 +48,12 @@ class CustomSettings(object):
         return meta['players']
 
     def adjust_args(self, args):
-        def get_setting(value, default):
-            if value:
-                return value
+        def get_setting(value: Any, default):
+            if value or value == 0:
+                if isinstance(value, dict):
+                    return random.choices(list(value.keys()), list(value.values()), k=1)[0]
+                else:
+                    return value
             return default
         if 'meta' in self.file_source:
             meta = defaultdict(lambda: None, self.file_source['meta'])
@@ -54,6 +63,8 @@ class CustomSettings(object):
             args.bps = get_setting(meta['bps'], args.bps)
             args.suppress_rom = get_setting(meta['suppress_rom'], args.suppress_rom)
             args.names = get_setting(meta['names'], args.names)
+            args.race = get_setting(meta['race'], args.race)
+            args.notes = get_setting(meta['user_notes'], args.notes)
         self.player_range = range(1, args.multi + 1)
         if 'settings' in self.file_source:
             for p in self.player_range:
@@ -68,30 +79,49 @@ class CustomSettings(object):
                 args.door_shuffle[p] = get_setting(settings['door_shuffle'], args.door_shuffle[p])
                 args.logic[p] = get_setting(settings['logic'], args.logic[p])
                 args.mode[p] = get_setting(settings['mode'], args.mode[p])
+                args.boots_hint[p] = get_setting(settings['boots_hint'], args.boots_hint[p])
                 args.swords[p] = get_setting(settings['swords'], args.swords[p])
+                args.flute_mode[p] = get_setting(settings['flute_mode'], args.flute_mode[p])
+                args.bow_mode[p] = get_setting(settings['bow_mode'], args.bow_mode[p])
                 args.item_functionality[p] = get_setting(settings['item_functionality'], args.item_functionality[p])
                 args.goal[p] = get_setting(settings['goal'], args.goal[p])
                 args.difficulty[p] = get_setting(settings['difficulty'], args.difficulty[p])
                 args.accessibility[p] = get_setting(settings['accessibility'], args.accessibility[p])
                 args.retro[p] = get_setting(settings['retro'], args.retro[p])
+                args.take_any[p] = get_setting(settings['take_any'], args.take_any[p])
                 args.hints[p] = get_setting(settings['hints'], args.hints[p])
                 args.shopsanity[p] = get_setting(settings['shopsanity'], args.shopsanity[p])
                 args.dropshuffle[p] = get_setting(settings['dropshuffle'], args.dropshuffle[p])
                 args.pottery[p] = get_setting(settings['pottery'], args.pottery[p])
 
                 if get_setting(settings['keydropshuffle'], args.keydropshuffle[p]):
-                    args.dropshuffle[p] = True
+                    if args.dropshuffle[p] == 'none':
+                        args.dropshuffle[p] = 'keys'
                     if args.pottery[p] == 'none':
                         args.pottery[p] = 'keys'
+
+                if args.retro[p] or args.mode[p] == 'retro':
+                    if args.bow_mode[p] == 'progressive':
+                        args.bow_mode[p] = 'retro'
+                    elif args.bow_mode[p] == 'silvers':
+                        args.bow_mode[p] = 'retro_silvers'
+                    args.take_any[p] = 'random' if args.take_any[p] == 'none' else args.take_any[p]
+                    args.keyshuffle[p] = 'universal'
 
                 args.mixed_travel[p] = get_setting(settings['mixed_travel'], args.mixed_travel[p])
                 args.standardize_palettes[p] = get_setting(settings['standardize_palettes'],
                                                            args.standardize_palettes[p])
                 args.intensity[p] = get_setting(settings['intensity'], args.intensity[p])
+                args.door_type_mode[p] = get_setting(settings['door_type_mode'], args.door_type_mode[p])
+                args.trap_door_mode[p] = get_setting(settings['trap_door_mode'], args.trap_door_mode[p])
+                args.key_logic_algorithm[p] = get_setting(settings['key_logic_algorithm'], args.key_logic_algorithm[p])
+                args.decoupledoors[p] = get_setting(settings['decoupledoors'], args.decoupledoors[p])
+                args.door_self_loops[p] = get_setting(settings['door_self_loops'], args.door_self_loops[p])
                 args.dungeon_counters[p] = get_setting(settings['dungeon_counters'], args.dungeon_counters[p])
                 args.crystals_gt[p] = get_setting(settings['crystals_gt'], args.crystals_gt[p])
                 args.crystals_ganon[p] = get_setting(settings['crystals_ganon'], args.crystals_ganon[p])
                 args.experimental[p] = get_setting(settings['experimental'], args.experimental[p])
+                args.collection_rate[p] = get_setting(settings['collection_rate'], args.collection_rate[p])
                 args.openpyramid[p] = get_setting(settings['openpyramid'], args.openpyramid[p])
                 args.bigkeyshuffle[p] = get_setting(settings['bigkeyshuffle'], args.bigkeyshuffle[p])
                 args.keyshuffle[p] = get_setting(settings['keyshuffle'], args.keyshuffle[p])
@@ -100,24 +130,35 @@ class CustomSettings(object):
 
                 if get_setting(settings['keysanity'], args.keysanity):
                     args.bigkeyshuffle[p] = True
-                    args.keyshuffle[p] = True
+                    if args.keyshuffle[p] == 'none':
+                        args.keyshuffle[p] = 'wild'
                     args.mapshuffle[p] = True
                     args.compassshuffle[p] = True
 
-                args.shufflebosses[p] = get_setting(settings['shufflebosses'], args.shufflebosses[p])
-                args.shuffleenemies[p] = get_setting(settings['shuffleenemies'], args.shuffleenemies[p])
+                args.shufflebosses[p] = get_setting(settings['boss_shuffle'], get_setting(settings['shufflebosses'], args.shufflebosses[p]))
+                args.shuffleenemies[p] = get_setting(settings['enemy_shuffle'], get_setting(settings['shuffleenemies'], args.shuffleenemies[p]))
                 args.enemy_health[p] = get_setting(settings['enemy_health'], args.enemy_health[p])
                 args.enemy_damage[p] = get_setting(settings['enemy_damage'], args.enemy_damage[p])
+                args.any_enemy_logic[p] = get_setting(settings['any_enemy_logic'], args.any_enemy_logic[p])
                 args.shufflepots[p] = get_setting(settings['shufflepots'], args.shufflepots[p])
                 args.bombbag[p] = get_setting(settings['bombbag'], args.bombbag[p])
                 args.shufflelinks[p] = get_setting(settings['shufflelinks'], args.shufflelinks[p])
                 args.shuffletavern[p] = get_setting(settings['shuffletavern'], args.shuffletavern[p])
+                args.skullwoods[p] = get_setting(settings['skullwoods'], args.skullwoods[p])
+                args.linked_drops[p] = get_setting(settings['linked_drops'], args.linked_drops[p])
                 args.restrict_boss_items[p] = get_setting(settings['restrict_boss_items'], args.restrict_boss_items[p])
                 args.overworld_map[p] = get_setting(settings['overworld_map'], args.overworld_map[p])
                 args.pseudoboots[p] = get_setting(settings['pseudoboots'], args.pseudoboots[p])
                 args.triforce_goal[p] = get_setting(settings['triforce_goal'], args.triforce_goal[p])
                 args.triforce_pool[p] = get_setting(settings['triforce_pool'], args.triforce_pool[p])
+                args.triforce_goal_min[p] = get_setting(settings['triforce_goal_min'], args.triforce_goal_min[p])
+                args.triforce_goal_max[p] = get_setting(settings['triforce_goal_max'], args.triforce_goal_max[p])
+                args.triforce_pool_min[p] = get_setting(settings['triforce_pool_min'], args.triforce_pool_min[p])
+                args.triforce_pool_max[p] = get_setting(settings['triforce_pool_max'], args.triforce_pool_max[p])
+                args.triforce_min_difference[p] = get_setting(settings['triforce_min_difference'], args.triforce_min_difference[p])
+                args.triforce_max_difference[p] = get_setting(settings['triforce_max_difference'], args.triforce_max_difference[p])
                 args.beemizer[p] = get_setting(settings['beemizer'], args.beemizer[p])
+                args.aga_randomness[p] = get_setting(settings['aga_randomness'], args.aga_randomness[p])
 
                 # mystery usage
                 args.usestartinventory[p] = get_setting(settings['usestartinventory'], args.usestartinventory[p])
@@ -134,6 +175,7 @@ class CustomSettings(object):
                 args.ow_palettes[p] = get_setting(settings['ow_palettes'], args.ow_palettes[p])
                 args.uw_palettes[p] = get_setting(settings['uw_palettes'], args.uw_palettes[p])
                 args.shuffle_sfx[p] = get_setting(settings['shuffle_sfx'], args.shuffle_sfx[p])
+                args.msu_resume[p] = get_setting(settings['msu_resume'], args.msu_resume[p])
 
     def get_item_pool(self):
         if 'item_pool' in self.file_source:
@@ -143,6 +185,11 @@ class CustomSettings(object):
     def get_placements(self):
         if 'placements' in self.file_source:
             return self.file_source['placements']
+        return None
+
+    def get_advanced_placements(self):
+        if 'advanced_placements' in self.file_source:
+            return self.file_source['advanced_placements']
         return None
 
     def get_entrances(self):
@@ -170,27 +217,46 @@ class CustomSettings(object):
             return self.file_source['medallions']
         return None
 
-    def create_from_world(self, world):
+    def get_drops(self):
+        if 'drops' in self.file_source:
+            return self.file_source['drops']
+        return None
+
+    def get_enemies(self):
+        if 'enemies' in self.file_source:
+            return self.file_source['enemies']
+        return None
+
+    def create_from_world(self, world, settings):
         self.player_range = range(1, world.players + 1)
         settings_dict, meta_dict = {}, {}
         self.world_rep['meta'] = meta_dict
         meta_dict['players'] = world.players
         meta_dict['algorithm'] = world.algorithm
         meta_dict['seed'] = world.seed
+        meta_dict['race'] = settings.race
+        meta_dict['user_notes'] = settings.notes
         self.world_rep['settings'] = settings_dict
         for p in self.player_range:
             settings_dict[p] = {}
             settings_dict[p]['shuffle'] = world.shuffle[p]
             settings_dict[p]['door_shuffle'] = world.doorShuffle[p]
             settings_dict[p]['intensity'] = world.intensity[p]
+            settings_dict[p]['door_type_mode'] = world.door_type_mode[p]
+            settings_dict[p]['trap_door_mode'] = world.trap_door_mode[p]
+            settings_dict[p]['key_logic_algorithm'] = world.key_logic_algorithm[p]
+            settings_dict[p]['decoupledoors'] = world.decoupledoors[p]
+            settings_dict[p]['door_self_loops'] = world.door_self_loops[p]
             settings_dict[p]['logic'] = world.logic[p]
             settings_dict[p]['mode'] = world.mode[p]
             settings_dict[p]['swords'] = world.swords[p]
+            settings_dict[p]['flute_mode'] = world.flute_mode[p]
+            settings_dict[p]['bow_mode'] = world.bow_mode[p]
             settings_dict[p]['difficulty'] = world.difficulty[p]
             settings_dict[p]['goal'] = world.goal[p]
             settings_dict[p]['accessibility'] = world.accessibility[p]
             settings_dict[p]['item_functionality'] = world.difficulty_adjustments[p]
-            settings_dict[p]['retro'] = world.retro[p]
+            settings_dict[p]['take_any'] = world.take_any[p]
             settings_dict[p]['hints'] = world.hints[p]
             settings_dict[p]['shopsanity'] = world.shopsanity[p]
             settings_dict[p]['dropshuffle'] = world.dropshuffle[p]
@@ -201,24 +267,29 @@ class CustomSettings(object):
             settings_dict[p]['crystals_gt'] = world.crystals_gt_orig[p]
             settings_dict[p]['crystals_ganon'] = world.crystals_ganon_orig[p]
             settings_dict[p]['experimental'] = world.experimental[p]
+            settings_dict[p]['collection_rate'] = world.collection_rate[p]
             settings_dict[p]['openpyramid'] = world.open_pyramid[p]
             settings_dict[p]['bigkeyshuffle'] = world.bigkeyshuffle[p]
             settings_dict[p]['keyshuffle'] = world.keyshuffle[p]
             settings_dict[p]['mapshuffle'] = world.mapshuffle[p]
             settings_dict[p]['compassshuffle'] = world.compassshuffle[p]
-            settings_dict[p]['shufflebosses'] = world.boss_shuffle[p]
-            settings_dict[p]['shuffleenemies'] = world.enemy_shuffle[p]
+            settings_dict[p]['boss_shuffle'] = world.boss_shuffle[p]
+            settings_dict[p]['enemy_shuffle'] = world.enemy_shuffle[p]
             settings_dict[p]['enemy_health'] = world.enemy_health[p]
             settings_dict[p]['enemy_damage'] = world.enemy_damage[p]
+            settings_dict[p]['any_enemy_logic'] = world.any_enemy_logic[p]
             settings_dict[p]['shufflepots'] = world.potshuffle[p]
             settings_dict[p]['bombbag'] = world.bombbag[p]
             settings_dict[p]['shufflelinks'] = world.shufflelinks[p]
             settings_dict[p]['shuffletavern'] = world.shuffletavern[p]
+            settings_dict[p]['skullwoods'] = world.skullwoods[p]
+            settings_dict[p]['linked_drops'] = world.linked_drops[p]
             settings_dict[p]['overworld_map'] = world.overworld_map[p]
             settings_dict[p]['pseudoboots'] = world.pseudoboots[p]
             settings_dict[p]['triforce_goal'] = world.treasure_hunt_count[p]
             settings_dict[p]['triforce_pool'] = world.treasure_hunt_total[p]
             settings_dict[p]['beemizer'] = world.beemizer[p]
+            settings_dict[p]['aga_randomness'] = world.aga_randomness[p]
 
             # rom adjust stuff
             # settings_dict[p]['sprite'] = world.sprite[p]

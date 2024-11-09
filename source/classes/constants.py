@@ -56,55 +56,70 @@ SETTINGSTOPROCESS = {
   "randomizer": {
     "item": {
       "hints": "hints",
-      "retro": "retro",
-      "bombbag": "bombbag",
-      "shopsanity": "shopsanity",
       "pseudoboots": "pseudoboots",
+      "race": "race",
+
       "worldstate": "mode",
       "logiclevel": "logic",
       "goal": "goal",
       "crystals_gt": "crystals_gt",
       "crystals_ganon": "crystals_ganon",
       "weapons": "swords",
-      "itempool": "difficulty",
+
+      "retro": "retro",
+      "sortingalgo": "algorithm",
+      "accessibility": "accessibility",
+      "restrict_boss_items": "restrict_boss_items",
       "itemfunction": "item_functionality",
       "timer": "timer",
-      "progressives": "progressive",
-      "accessibility": "accessibility",
-      "sortingalgo": "algorithm",
+
+      "shopsanity": "shopsanity",
+      "pottery": "pottery",
+      "colorizepots": "colorizepots",
+      "potshuffle": "shufflepots",
+      "dropshuffle": "dropshuffle",
+      "keydropshuffle": "keydropshuffle",
+      "take_any": "take_any",
+
+      "itempool": "difficulty",
+      "flute_mode": "flute_mode",
+      "bow_mode": "bow_mode",
       "beemizer": "beemizer",
-      "restrict_boss_items": "restrict_boss_items"
+      "bombbag": "bombbag"
     },
     "entrance": {
-      "openpyramid": "openpyramid",
+      "entranceshuffle": "shuffle",
       "shuffleganon": "shuffleganon",
       "shufflelinks": "shufflelinks",
       "shuffletavern": "shuffletavern",
-      "entranceshuffle": "shuffle",
+      "skullwoods": "skullwoods",
+      "linked_drops": "linked_drops",
+      "openpyramid": "openpyramid",
       "overworld_map": "overworld_map",
+    },
+    "dungeon": {
+      "smallkeyshuffle": "keyshuffle",
+      "mapshuffle": "mapshuffle",
+      "compassshuffle": "compassshuffle",
+      "bigkeyshuffle": "bigkeyshuffle",
+      "key_logic_algorithm": "key_logic_algorithm",
+      "dungeondoorshuffle": "door_shuffle",
+      "dungeonintensity": "intensity",
+      "door_type_mode": "door_type_mode",
+      "trap_door_mode": "trap_door_mode",
+      "decoupledoors": "decoupledoors",
+      "door_self_loops": "door_self_loops",
+      "experimental": "experimental",
+      "dungeon_counters": "dungeon_counters",
+      "mixed_travel": "mixed_travel",
+      "standardize_palettes": "standardize_palettes",
     },
     "enemizer": {
       "enemyshuffle": "shuffleenemies",
       "bossshuffle": "shufflebosses",
       "enemydamage": "enemy_damage",
-      "enemyhealth": "enemy_health"
-    },
-    "dungeon": {
-      "mapshuffle": "mapshuffle",
-      "compassshuffle": "compassshuffle",
-      "smallkeyshuffle": "keyshuffle",
-      "bigkeyshuffle": "bigkeyshuffle",
-      "dungeondoorshuffle": "door_shuffle",
-      "dungeonintensity": "intensity",
-      "keydropshuffle": "keydropshuffle",
-      "dropshuffle": "dropshuffle",
-      "pottery": "pottery",
-      "colorizepots": "colorizepots",
-      "potshuffle": "shufflepots",
-      "experimental": "experimental",
-      "dungeon_counters": "dungeon_counters",
-      "mixed_travel": "mixed_travel",
-      "standardize_palettes": "standardize_palettes",
+      "enemyhealth": "enemy_health",
+      "enemylogic": "any_enemy_logic"
     },
     "gameoptions": {
       "nobgm": "disablemusic",
@@ -121,15 +136,18 @@ SETTINGSTOPROCESS = {
     },
     "generation": {
       "bps": "bps",
-      "createspoiler": "create_spoiler",
+      "spoiler": "spoiler",
       "createrom": "create_rom",
       "calcplaythrough": "calc_playthrough",
       "print_custom_yaml": "print_custom_yaml",
-      "usestartinventory": "usestartinventory",
-      "usecustompool": "custom",
-      "saveonexit": "saveonexit",
-      "customizer": "customizer",
+      "saveonexit": "saveonexit"
     }
+  },
+  "startinventory": {
+    "usestartinventory": "usestartinventory"
+  },
+  "custom": {
+    "usecustompool": "custom"
   },
   "bottom": {
     "content": {

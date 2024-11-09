@@ -53,27 +53,27 @@ class InitialSram:
     def pre_open_pyramid_hole(self):
         self._or_value(OVERWORLD_DATA+0x5B, 0x20)
 
+    def pre_open_tr_bomb_doors(self):
+        self._or_value(ROOM_DATA+0x47, 0x80)
+        self._or_value(ROOM_DATA+0x01AB, 0x80)
+
     def set_starting_equipment(self, world: object, player: int):
         equip = [0] * (0x340 + 0x4F)
         equip[0x36C] = 0x18
         equip[0x36D] = 0x18
         equip[0x379] = 0x68
-        if world.bombbag[player]:
-            starting_max_bombs = 0
-        else:
-            starting_max_bombs = 10
-        starting_max_arrows = 30
-        starting_bomb_cap_upgrades = 0
-        starting_arrow_cap_upgrades = 0
+        starting_bomb_cap_upgrades = 10 if not world.bombbag[player] else 0
+        starting_arrow_cap_upgrades = 30
         starting_bombs = 0
         starting_arrows = 0
+        starting_magic = 0
 
         startingstate = CollectionState(world)
 
         if startingstate.has('Bow', player):
             equip[0x340] = 3 if startingstate.has('Silver Arrows', player) else 1
             equip[0x38E] |= 0x20  # progressive flag to get the correct hint in all cases
-            if not world.retro[player]:
+            if not world.bow_mode[player].startswith('retro'):
                 equip[0x38E] |= 0x80
         if startingstate.has('Silver Arrows', player):
             equip[0x38E] |= 0x40
@@ -106,10 +106,10 @@ class InitialSram:
 
         if startingstate.has('Magic Upgrade (1/4)', player):
             equip[0x37B] = 2
-            equip[0x36E] = 0x80
+            starting_magic = 0x80
         elif startingstate.has('Magic Upgrade (1/2)', player):
             equip[0x37B] = 1
-            equip[0x36E] = 0x80
+            starting_magic = 0x80
 
         for item in world.precollected_items:
             if item.player != player:
@@ -142,8 +142,9 @@ class InitialSram:
                         'Big Key (Misery Mire)': (0x367, 0x01), 'Compass (Misery Mire)': (0x365, 0x01), 'Map (Misery Mire)': (0x369, 0x01),
                         'Big Key (Turtle Rock)': (0x366, 0x08), 'Compass (Turtle Rock)': (0x364, 0x08), 'Map (Turtle Rock)': (0x368, 0x08),
                         'Big Key (Ganons Tower)': (0x366, 0x04), 'Compass (Ganons Tower)': (0x364, 0x04), 'Map (Ganons Tower)': (0x368, 0x04)}
-            set_or_table = {'Flippers': (0x356, 1, 0x379, 0x02),'Pegasus Boots': (0x355, 1, 0x379, 0x04),
-                            'Shovel': (0x34C, 1, 0x38C, 0x04), 'Ocarina': (0x34C, 3, 0x38C, 0x01),
+            set_or_table = {'Flippers': (0x356, 1, 0x379, 0x02), 'Pegasus Boots': (0x355, 1, 0x379, 0x04),
+                            'Shovel': (0x34C, 1, 0x38C, 0x04), 'Ocarina': (0x34C, 2, 0x38C, 0x02),
+                            'Ocarina (Activated)': (0x34C, 3, 0x38C, 0x01),
                             'Mushroom': (0x344, 1, 0x38C, 0x20 | 0x08), 'Magic Powder': (0x344, 2, 0x38C, 0x10),
                             'Blue Boomerang': (0x341, 1, 0x38C, 0x80), 'Red Boomerang': (0x341, 2, 0x38C, 0x40)}
             keys = {'Small Key (Eastern Palace)': [0x37E], 'Small Key (Desert Palace)': [0x37F],
@@ -162,6 +163,7 @@ class InitialSram:
             arrow_caps = {'Arrow Upgrade (+5)': 5, 'Arrow Upgrade (+10)': 10}
             bombs = {'Single Bomb': 1, 'Bombs (3)': 3, 'Bombs (10)': 10}
             arrows = {'Single Arrow': 1, 'Arrows (10)': 10}
+            magic = {'Big Magic': 0x80, 'Small Magic': 0x10}
 
             if item.name in set_table:
                 equip[set_table[item.name][0]] = set_table[item.name][1]
@@ -187,7 +189,7 @@ class InitialSram:
             elif item.name in bombs:
                 starting_bombs += bombs[item.name]
             elif item.name in arrows:
-                if world.retro[player]:
+                if world.bow_mode[player].startswith('retro'):
                     equip[0x38E] |= 0x80
                     starting_arrows = 1
                 else:
@@ -198,13 +200,19 @@ class InitialSram:
                 if item.name != 'Piece of Heart' or equip[0x36B] == 0:
                     equip[0x36C] = min(equip[0x36C] + 0x08, 0xA0)
                     equip[0x36D] = min(equip[0x36D] + 0x08, 0xA0)
+            elif item.name in magic:
+                starting_magic += magic[item.name]
             else:
                 raise RuntimeError(f'Unsupported item in starting equipment: {item.name}')
 
+        equip[0x36E] = min(starting_magic, 0x80)
         equip[0x370] = min(starting_bomb_cap_upgrades, 50)
         equip[0x371] = min(starting_arrow_cap_upgrades, 70)
-        equip[0x343] = min(starting_bombs, (equip[0x370] + starting_max_bombs))
-        equip[0x377] = min(starting_arrows, (equip[0x371] + starting_max_arrows))
+        equip[0x343] = min(starting_bombs, equip[0x370])
+        equip[0x377] = min(starting_arrows, equip[0x371])
+
+        if not startingstate.has('Magic Mirror', player) and world.doorShuffle[player] != 'vanilla':
+            equip[0x353] = 1
         
         # Assertion and copy equip to initial_sram_bytes
         assert equip[:0x340] == [0] * 0x340

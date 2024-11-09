@@ -1,15 +1,18 @@
+import os
+import sys
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
 import RaceRandom as random
-import logging
 import time
 
 from collections import Counter, defaultdict
 
 from source.overworld.EntranceShuffle2 import link_entrances_new
-from EntranceShuffle import link_entrances, link_inverted_entrances
+# from source.oEntranceShuffle import link_entrances_new
 from BaseClasses import World
 from Regions import create_regions, create_dungeon_regions
-from InvertedRegions import create_inverted_regions
 
+
+# probably deprecated
 
 # tested: open + crossed (lh) Mar. 17 (made changes)
 # tested: open + simple (lh) Mar. 22
@@ -30,10 +33,7 @@ def run_stats():
                     link_entrances_new(world, 1)
 
                 def runner_old(world):
-                    if main_mode == 'inverted':
-                        link_inverted_entrances(world, 1)
-                    else:
-                        link_entrances(world, 1)
+                    link_entrances(world, 1)
                 compare_tests(tests, shuffle_mode, main_mode, ls, runner_old, runner_new)
 
 
@@ -68,10 +68,7 @@ def run_old_stats():
                     continue
 
                 def runner(world):
-                    if main_mode == 'inverted':
-                        link_inverted_entrances(world, 1)
-                    else:
-                        link_entrances(world, 1)
+                    link_entrances(world, 1)
                 run_tests(tests, shuffle_mode, main_mode, ls, runner)
 
 
@@ -106,13 +103,11 @@ def test_loop(tests, entrance_set, exit_set, ctr, shuffle_mode, main_mode, links
         # seed = 635441530
         random.seed(seed)
         world = World(1, {1: shuffle_mode}, {1: 'vanilla'}, {1: 'noglitches'}, {1: main_mode}, {}, {}, {},
-                      {}, {}, {}, {}, {}, True, {}, {}, [], {})
+                      {}, {}, {}, {}, {}, True, {}, [], {})
         world.customizer = False
         world.shufflelinks = {1: links}
-        if world.mode[1] != 'inverted':
-            create_regions(world, 1)
-        else:
-            create_inverted_regions(world, 1)
+        world.shuffletavern = {1: False}
+        create_regions(world, 1)
         create_dungeon_regions(world, 1)
         # print(f'Linking seed {seed}')
         # try:

@@ -1,11 +1,25 @@
 {
   "widgets": {
+    "key_logic_algorithm": {
+      "type": "selectbox",
+      "default": "partial",
+      "options": [
+        "partial",
+        "strict",
+        "dangerous"
+      ],
+      "config": {
+        "padx": [20,0],
+        "pady": [0,20]
+      }
+    },
     "dungeondoorshuffle": {
       "type": "selectbox",
       "default": "basic",
       "options": [
         "vanilla",
         "basic",
+        "partitioned",
         "crossed"
       ]
     },
@@ -19,31 +33,51 @@
         "random"
       ],
       "config": {
-        "width": 45
+        "width": 45,
+        "padx": [20,0]
       }
     },
-    "keydropshuffle": { "type": "checkbox" },
-    "pottery": {
+    "door_type_mode": {
       "type": "selectbox",
-      "default": "none",
+      "default": "original",
       "options": [
-        "none",
-        "keys",
-        "cave",
-        "cavekeys",
-        "reduced",
-        "clustered",
-        "nonempty",
-        "dungeon",
-        "lottery"
+        "original",
+        "big",
+        "all",
+        "chaos"
       ],
       "config": {
-        "width": 35
+        "width": 45,
+        "padx": [20,0]
       }
     },
-    "colorizepots": { "type": "checkbox" },
-    "dropshuffle": { "type": "checkbox" },
-    "potshuffle": { "type": "checkbox" },
+    "trap_door_mode": {
+      "type": "selectbox",
+      "default": "optional",
+      "options": [
+        "vanilla",
+        "optional",
+        "boss",
+        "oneway"
+      ],
+      "config": {
+        "width": 30,
+        "padx": [20,0]
+      }
+    },
+    "decoupledoors": {
+      "type": "checkbox",
+      "config": {
+        "padx": [20,0]
+      }
+    },
+    "door_self_loops": {
+      "type": "checkbox",
+      "config": {
+        "padx": [20,0],
+        "pady": [0,20]
+      }
+    },
     "experimental": { "type": "checkbox" },
     "dungeon_counters": {
       "type": "selectbox",

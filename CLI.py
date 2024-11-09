@@ -103,29 +103,46 @@ def parse_cli(argv, no_defaults=False):
     ret = parser.parse_args(argv)
 
     if ret.keysanity:
-        ret.mapshuffle, ret.compassshuffle, ret.keyshuffle, ret.bigkeyshuffle = [True] * 4
+        ret.mapshuffle, ret.compassshuffle, ret.bigkeyshuffle = [True] * 3
+        ret.keyshuffle = 'wild'
 
     if ret.keydropshuffle:
-        ret.dropshuffle = True
+        ret.dropshuffle = 'keys' if ret.dropshuffle == 'none' else ret.dropshuffle
         ret.pottery = 'keys' if ret.pottery == 'none' else ret.pottery
+
+    if ret.retro or ret.mode == 'retro':
+        if ret.bow_mode == 'progressive':
+            ret.bow_mode = 'retro'
+        elif ret.bow_mode == 'silvers':
+            ret.bow_mode = 'retro_silvers'
+        ret.take_any = 'random' if ret.take_any == 'none' else ret.take_any
+        ret.keyshuffle = 'universal'
 
     if player_num:
         defaults = copy.deepcopy(ret)
         for player in range(1, player_num + 1):
             playerargs = parse_cli(shlex.split(getattr(ret, f"p{player}")), True)
+            
+            if playerargs.filename:
+                playersettings = apply_settings_file({}, playerargs.filename)
+                for k, v in playersettings.items():
+                    setattr(playerargs, k, v)
 
             for name in ['logic', 'mode', 'swords', 'goal', 'difficulty', 'item_functionality',
+                         'flute_mode', 'bow_mode', 'take_any', 'boots_hint',
                          'shuffle', 'door_shuffle', 'intensity', 'crystals_ganon', 'crystals_gt', 'openpyramid',
                          'mapshuffle', 'compassshuffle', 'keyshuffle', 'bigkeyshuffle', 'startinventory',
-                         'usestartinventory', 'bombbag', 'overworld_map', 'restrict_boss_items',
+                         'usestartinventory', 'bombbag', 'overworld_map', 'restrict_boss_items', 'triforce_max_difference',
                          'triforce_pool_min', 'triforce_pool_max', 'triforce_goal_min', 'triforce_goal_max',
                          'triforce_min_difference', 'triforce_goal', 'triforce_pool', 'shufflelinks', 'shuffletavern',
+                         'skullwoods', 'linked_drops',
                          'pseudoboots', 'retro', 'accessibility', 'hints', 'beemizer', 'experimental', 'dungeon_counters',
                          'shufflebosses', 'shuffleenemies', 'enemy_health', 'enemy_damage', 'shufflepots',
                          'ow_palettes', 'uw_palettes', 'sprite', 'disablemusic', 'quickswap', 'fastmenu', 'heartcolor',
                          'heartbeep', 'remote_items', 'shopsanity', 'dropshuffle', 'pottery', 'keydropshuffle',
                          'mixed_travel', 'standardize_palettes', 'code', 'reduce_flashing', 'shuffle_sfx',
-                         'msu_resume', 'collection_rate', 'colorizepots']:
+                         'msu_resume', 'collection_rate', 'colorizepots', 'decoupledoors', 'door_type_mode',
+                         'trap_door_mode', 'key_logic_algorithm', 'door_self_loops', 'any_enemy_logic', 'aga_randomness']:
                 value = getattr(defaults, name) if getattr(playerargs, name) is None else getattr(playerargs, name)
                 if player == 1:
                     setattr(ret, name, {1: value})
@@ -151,11 +168,14 @@ def parse_settings():
         "retro": False,
         "bombbag": False,
         "mode": "open",
+        "boots_hint": False,
         "logic": "noglitches",
         "goal": "ganon",
         "crystals_gt": "7",
         "crystals_ganon": "7",
         "swords": "random",
+        'flute_mode': 'normal',
+        'bow_mode': 'progressive',
         "difficulty": "normal",
         "item_functionality": "normal",
         "timer": "none",
@@ -167,45 +187,55 @@ def parse_settings():
         "restrict_boss_items": "none",
 
         # Shuffle Ganon defaults to TRUE
-        "openpyramid": False,
+        "openpyramid": 'auto',
         "shuffleganon": True,
         "shuffle": "vanilla",
         "shufflelinks": False,
-        "shuffletavern": False,
+        "shuffletavern": True,
+        'skullwoods': 'original',
+        'linked_drops': 'unset',
         "overworld_map": "default",
+        'take_any': 'none',
         "pseudoboots": False,
 
         "shuffleenemies": "none",
         "shufflebosses": "none",
         "enemy_damage": "default",
         "enemy_health": "default",
-        "enemizercli": os.path.join(".", "EnemizerCLI", "EnemizerCLI.Core"),
+        'any_enemy_logic': 'allow_all',
 
         "shopsanity": False,
         'keydropshuffle': False,
-        'dropshuffle': False,
+        'dropshuffle': 'none',
         'pottery': 'none',
-        'colorizepots': False,
+        'colorizepots': True,
         'shufflepots': False,
-        "mapshuffle": False,
-        "compassshuffle": False,
-        "keyshuffle": False,
-        "bigkeyshuffle": False,
-        "keysanity": False,
-        "door_shuffle": "basic",
-        "intensity": 2,
-        "experimental": False,
-        "dungeon_counters": "default",
-        "mixed_travel": "prevent",
-        "standardize_palettes": "standardize",
-        
+        'mapshuffle': False,
+        'compassshuffle': False,
+        'keyshuffle': 'none',
+        'bigkeyshuffle': False,
+        'keysanity': False,
+        'door_shuffle': 'vanilla',
+        'intensity': 2,
+        'door_type_mode': 'original',
+        'trap_door_mode': 'optional',
+        'key_logic_algorithm': 'partial',
+        'decoupledoors': False,
+        'door_self_loops': False,
+        'experimental': False,
+        'dungeon_counters': 'default',
+        'mixed_travel': 'prevent',
+        'standardize_palettes': 'standardize',
+        'aga_randomness': True,
+
         "triforce_pool": 0,
         "triforce_goal": 0,
         "triforce_pool_min": 0,
         "triforce_pool_max": 0,
         "triforce_goal_min": 0,
         "triforce_goal_max": 0,
-        "triforce_min_difference": 10,
+        "triforce_min_difference": 0,
+        "triforce_max_difference": 10000,
 
         "code": "",
         "multi": 1,
@@ -226,10 +256,9 @@ def parse_settings():
         'msu_resume': False,
         'collection_rate': False,
 
-        # Spoiler     defaults to TRUE
+        'spoiler': 'full',
         # Playthrough defaults to TRUE
         # ROM         defaults to TRUE
-        "create_spoiler": True,
         "calc_playthrough": True,
         "create_rom": True,
         "bps": False,
@@ -321,11 +350,9 @@ def parse_settings():
         "outputpath": os.path.join("."),
         "saveonexit": "ask",
         "outputname": "",
-        "startinventoryarray": {}
+        "startinventoryarray": {},
+        "notes": ""
     }
-
-    if sys.platform.lower().find("windows"):
-        settings["enemizercli"] += ".exe"
 
     # read saved settings file if it exists and set these
     settings_path = os.path.join(".", "resources", "user", "settings.json")

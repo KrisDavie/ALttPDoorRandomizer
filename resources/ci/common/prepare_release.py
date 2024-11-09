@@ -71,7 +71,7 @@ if len(BUILD_FILENAMES) > 0:
   # clean the git slate
   git_clean()
 
-	# mv dirs from source code
+  # mv dirs from source code
   dirs = [
     os.path.join(".",".git"),
     os.path.join(".",".github"),
@@ -98,8 +98,8 @@ if len(BUILD_FILENAMES) > 0:
       	if "linux" in env["OS_NAME"] or "ubuntu" in env["OS_NAME"] or "mac" in env["OS_NAME"] or "osx" in env["OS_NAME"]:
       		os.chmod(os.path.join(".",BUILD_FILENAME),0o755)
 
-	# .zip if windows
-	# .tar.gz otherwise
+  # .zip if windows
+  # .tar.gz otherwise
   if len(BUILD_FILENAMES) > 1:
     ZIP_FILENAME = os.path.join("..","deploy",env["REPO_NAME"])
   else:
@@ -111,7 +111,7 @@ if len(BUILD_FILENAMES) > 0:
     make_archive(ZIP_FILENAME,"gztar")
     ZIP_FILENAME += ".tar.gz"
 
-	# mv dirs back
+  # mv dirs back
   for dir in dirs:
     if os.path.isdir(os.path.join("..","build",dir)):
       move(
@@ -124,15 +124,15 @@ for BUILD_FILENAME in BUILD_FILENAMES:
     print("Build Filename: " + BUILD_FILENAME)
     print("Build Filesize: " + common.file_size(BUILD_FILENAME))
   else:
-    print("No Build to prepare: " + BUILD_FILENAME)
+    print("🟡No Build to prepare: " + BUILD_FILENAME)
 
 if not ZIP_FILENAME == "":
   print("Zip Filename:   " + ZIP_FILENAME)
   print("Zip Filesize:   " + common.file_size(ZIP_FILENAME))
 else:
-  print("No Zip to prepare: " + ZIP_FILENAME)
+  print("🟡No Zip to prepare: " + ZIP_FILENAME)
 
-print("Git tag:        " + env["GITHUB_TAG"])
+print("App Version:    " + env["GITHUB_TAG"])
 
 if (len(BUILD_FILENAMES) == 0) or (ZIP_FILENAME == ""):
   exit(1)

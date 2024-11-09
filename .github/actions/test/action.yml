@@ -1,0 +1,97 @@
+name: ⏱️Test
+description: Test app
+inputs:
+  os-name:
+    required: true
+    description: OS to run on
+  python-version:
+    required: true
+    description: Python version to install
+
+#########
+# actions
+#########
+# actions/checkout@v4.1.4
+# actions/download-artifact@v4.1.7
+# actions/upload-artifact@v4.3.3
+# coactions/setup-xvfb@v1.0.1
+
+runs:
+  using: "composite"
+  steps:
+    # download pipline
+    - name: 🔽Download PipLine
+      shell: bash
+      run: |
+        echo "🔽Download PipLine"
+    - name: 🔽Download PipLine
+      uses: actions/download-artifact@v4.1.7
+      with:
+        name: pipline-test-${{ inputs.os-name }}-py${{ inputs.python-version }}
+        path: ./resources/user/meta/manifests
+
+    # run tests
+    - name: 🖥️Test Base
+      shell: bash
+      run: |
+        echo "🖥️Test Base"
+    - name: 🖥️Test Base
+      shell: bash
+      run: |
+        mkdir -p ./failures
+        echo "" > ./failures/errors.txt
+        python -m pip install tqdm
+        python ./test/NewTestSuite.py
+    # - name: 🖥️Test Mystery
+    #   shell: bash
+    #   run: |
+    #     echo "🖥️Test Mystery"
+    #   if: contains(inputs.os-name, 'macos')
+    # - name: 🖥️Test Mystery
+    #   shell: bash
+    #   run: |
+    #     python ./test/MysteryTestSuite.py
+    #   if: contains(inputs.os-name, 'macos')
+
+    # upload logs
+    - name: 🔼Upload Logs
+      shell: bash
+      run: |
+        echo "🔼Upload Logs"
+    - name: 🔼Upload Logs
+      uses: actions/upload-artifact@v4.3.3
+      with:
+        name: logs-${{ inputs.os-name }}-py${{ inputs.python-version }}
+        path: ./logs
+        if-no-files-found: ignore
+
+    # print failures
+    - name: 💬Print Failures
+      if: failure()
+      shell: bash
+      run: |
+        echo "💬Print Failures"
+    - name: Print Failures
+      if: failure()
+      shell: bash
+      run: |
+        ERR_STRING="$(cat ./failures/errors.txt)"
+        ERR_STRING="${ERR_STRING//'%'/'%25'}"
+        ERR_STRING="${ERR_STRING//$'\n'/' | '}"
+        ERR_STRING="${ERR_STRING//$'\r'/' | '}"
+        ERR_STRING="${ERR_STRING//$'\n'/'%0A'}"
+        ERR_STRING="${ERR_STRING//$'\r'/'%0D'}"
+        echo "::error ::$ERR_STRING"
+
+    # upload failures
+    - name: 🔼Upload Failures
+      if: failure()
+      shell: bash
+      run: |
+        echo "🔼Upload Failures"
+    - name: 🔼Upload Failures
+      if: failure()
+      uses: actions/upload-artifact@v4.3.3
+      with:
+        name: failures-${{ inputs.os-name }}-py${{ inputs.python-version }}
+        path: ./failures

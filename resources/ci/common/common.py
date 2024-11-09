@@ -1,6 +1,11 @@
 import os   # for env vars
 import stat # file statistics
 import sys  # default system info
+try:
+    import distro
+except ModuleNotFoundError as e:
+    pass
+
 from my_path import get_py_path
 
 global UBUNTU_VERSIONS
@@ -8,15 +13,20 @@ global DEFAULT_EVENT
 global DEFAULT_REPO_SLUG
 global FILENAME_CHECKS
 global FILESIZE_CHECK
-UBUNTU_VERSIONS = {
-  "latest": "focal",
-  "20.04": "focal",
-  "18.04": "bionic",
-  "16.04": "xenial"
-}
+# GitHub Hosted Runners
+# https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners/about-github-hosted-runners#standard-github-hosted-runners-for-public-repositories
+#  ubuntu:   22.04, 20.04
+#  windows:  2022, 2019
+#  macos:    14, 13, 12, 11
 DEFAULT_EVENT = "event"
-DEFAULT_REPO_SLUG = "miketrethewey/ALttPDoorRandomizer"
-FILENAME_CHECKS = [ "Gui", "DungeonRandomizer" ]
+DEFAULT_REPO_SLUG = "aerinon/ALttPDoorRandomizer"
+FILENAME_CHECKS = [
+  "DungeonRandomizer",
+  "Gui",
+  "MultiClient",
+  "MultiServer",
+  "Mystery"
+]
 FILESIZE_CHECK = (6 * 1024 * 1024) # 6MB
 
 # take number of bytes and convert to string with units measure
@@ -38,12 +48,19 @@ def prepare_env():
   global DEFAULT_REPO_SLUG
   env = {}
 
-	# get app version
+  # get app version
   APP_VERSION = ""
-  APP_VERSION_FILE = os.path.join(".","resources","app","meta","manifests","app_version.txt")
-  if os.path.isfile(APP_VERSION_FILE):
-    with open(APP_VERSION_FILE,"r") as f:
-      APP_VERSION = f.readlines()[0].strip()
+  APP_VERSION_FILES = [
+    os.path.join(".","resources","app","meta","manifests","app_version.txt"),
+    os.path.join("..","build","app_version.txt")
+  ]
+  for app_version_file in APP_VERSION_FILES:
+    if os.path.isfile(app_version_file):
+      with open(app_version_file,"r") as f:
+        lines = f.readlines()
+        if len(lines) > 0:
+          APP_VERSION = lines[0].strip()
+
   # ci data
   env["CI_SYSTEM"] = os.getenv("CI_SYSTEM","")
   # py data
@@ -96,9 +113,11 @@ def prepare_env():
     OS_VERSION = OS_NAME[OS_NAME.find('-')+1:]
     OS_NAME = OS_NAME[:OS_NAME.find('-')]
     if OS_NAME == "linux" or OS_NAME == "ubuntu":
-      if OS_VERSION in UBUNTU_VERSIONS:
-        OS_VERSION = UBUNTU_VERSIONS[OS_VERSION]
-      OS_DIST = OS_VERSION
+      try:
+        if distro.codename() != "":
+          OS_DIST = distro.codename()
+      except NameError as e:
+        pass
 
   if OS_VERSION == "" and not OS_DIST == "" and not OS_DIST == "notset":
     OS_VERSION = OS_DIST
@@ -111,7 +130,7 @@ def prepare_env():
       # if the app version didn't have the build number, add it
       # set to <app_version>.<build_number>
       if env["BUILD_NUMBER"] not in GITHUB_TAG:
-        GITHUB_TAG += '.' + env["BUILD_NUMBER"]
+        GITHUB_TAG += ".r" + env["BUILD_NUMBER"]
 
   env["GITHUB_TAG"] = GITHUB_TAG
   env["OS_NAME"] = OS_NAME

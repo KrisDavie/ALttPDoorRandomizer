@@ -38,7 +38,7 @@ in each player section you can set up default settings for that player or you ca
   door_shuffle: basic   
 ```
 
-Player 1's settings will be determined by rolling the mystery weights and player 2's setting will be default except for those two specified in his section. Each settings should be consistent with the CLI arguments.
+Player 1's settings will be determined by rolling the mystery weights and player 2's setting will be default except for those two specified in his section. Each setting should be consistent with the CLI arguments. Simple weighted settings are supported here. If you need sub-weights though, use a separate yaml file.
 
 Start inventory is not supported here. It has a separate section.
 
@@ -71,7 +71,25 @@ You may list each location for a player and the item you wish to place there. A 
  
  Example:
  `Pegasus Boots#3` means the boots for player 3.
- 
+
+
+### advanced_placements
+
+This must be defined by player. Each player number should be listed with the appropriate section. Each section is a list of placement rules. Each placement rule has a specific type.
+
+Supported Types: PlacementGroup, NotPlacmentGroup, PreferredLocationGroup
+
+#### PlacementGroup
+
+You may define an item, and a list of locations. The locations may be weighted if desired. The item will be placed at one of the listed locations - this currently ignores logic. The item will be placed there. The special location 'Random' indicates that the item should be placed randomly, without any other consideration. This may be repeated for placement of multiple items like multiple bows or swords.
+
+#### NotPlacementGroup
+
+You may define an item and a list of locations that an item should not be placed at. This will apply to all items of that type. The logic is considered for this. If it is otherwise impossible, the item will be considered for the listed locations. This is important for small key layouts mostly, but it will try other locations first.
+
+#### PreferredPlacementGroup
+
+You may define a list of items and a list of locations. Those items will be considered first for placements and the logic will attempt to place those items in those locations first. If there are more item than locations or vice versa, the leftover items or location will be treated normally. (Although, the leftover items will be placed earlier by the algorithm than those not listed)
  
 ### entrances
 
@@ -144,7 +162,7 @@ Misery Mire: Ether
 Turtle Rock: Quake
 ```
 
-Leave blank or omit if you wish it to be random.
+Leave blank or omit if you wish it to be random. Alternatively, a weighted dictionary is supported and a 'Random' option
 
 ### bosses
 
@@ -173,4 +191,27 @@ To start with multiple copies of progressive items, list them more than once.
 
 This conflicts with the mystery yaml, if specified. These start inventory items will be added after those are added.
 
+### drops
 
+This must be defined by player. You may have prize packs, tree pulls, crab drops, stun prizes, and the fish prize defined using the following keys:
+```
+drops:
+   1: 
+     Pack 1
+     - Small Heart
+     - Bombs (4)
+     - Random
+     - etc
+    Pack 2: (list)
+    ...
+    Pack 7: (list)
+    Tree Pull Tier 1: Single Bomb
+    Tree Pull Tier 2: Arrows (10)
+    Tree Pull Tier 3: Fairy
+    Crab Normal: Rupees (20)
+    Crab Special: Small Magic
+    Stun Prize: Bombs (8)
+    Fish: Big Magic
+```
+
+Prize packs expect a list of eight items each (anything not specified will be whatever randomization would have normally occurred). The special drops expect a single item. Packs 1 through 7 are supported. Prize pack 0 is not customizable.
