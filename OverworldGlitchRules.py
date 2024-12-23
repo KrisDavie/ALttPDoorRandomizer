@@ -282,20 +282,12 @@ def add_alternate_rule(entrance, rule):
     old_rule = entrance.access_rule
     entrance.access_rule = lambda state: old_rule(state) or rule(state)
 
-
-def create_no_logic_connections(player, world, connections, connect_external=False):
+def create_no_logic_connections(player, world, connections):
     for entrance, parent_region, target_region, *rule_override in connections:
         parent = world.get_region(parent_region, player)
-
-        if isinstance(target_region, Region):
-            target_region = target_region.name
-            
-        if connect_external and target_region.endswith(" Portal"):
-            target = world.get_portal(target_region[:-7], player).find_portal_entrance().parent_region
-        else:
-            target = world.get_region(target_region, player)
-
+        target = world.get_region(target_region, player)
         connection = Entrance(player, entrance, parent)
+        connection.spot_type = 'OWG'
         parent.exits.append(connection)
         connection.connect(target)
 
